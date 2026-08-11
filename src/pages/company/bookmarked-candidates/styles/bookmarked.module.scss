@@ -1,0 +1,1402 @@
+// Gold/ink theme for the bookmarked-candidates page.
+// Scoped via CSS Modules so it can't leak into the rest of the Tailwind-based app.
+$ink: #0b1a2c;
+$ink-2: #10243a;
+$paper: #eef0f2;
+$white: #ffffff;
+$gold: #e6a93c;
+$gold-2: #f2c871;
+$gold-deep: #c98a1f;
+$amber-bg: rgba(230, 169, 60, 0.14);
+$slate: #566776;
+$slate-2: #8693a0;
+$line: #e4e7ea;
+$mist: #e8ecf0;
+$redact: #33485b;
+$green: #2f9e69;
+$green-bg: rgba(60, 200, 130, 0.13);
+$green-bd: rgba(60, 200, 130, 0.34);
+$amber-bd: rgba(230, 169, 60, 0.35);
+$red: #cf4b4b;
+$red-bg: rgba(207, 75, 75, 0.1);
+$r-lg: 18px;
+$r-md: 13px;
+$r-sm: 9px;
+$ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+// ===== Page shell =====
+.page {
+  background: $paper;
+  min-height: 100vh;
+  padding: 26px 0 70px;
+}
+
+.phead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+
+  h1 {
+    font-size: 1.7rem;
+    color: $ink;
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+
+  p {
+    color: $slate;
+    font-size: 0.95rem;
+    margin-top: 3px;
+  }
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 99px;
+  background: $amber-bg;
+  color: $gold-deep;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.pheadTools {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+
+.tselect {
+  appearance: none;
+  border: 1.5px solid $line;
+  background: $white;
+  border-radius: $r-sm;
+  padding: 0.62em 2em 0.62em 0.9em;
+  font-size: 0.86rem;
+  font-weight: 500;
+  cursor: pointer;
+  color: $ink;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238693A0' stroke-width='2'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7em center;
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  background: $gold;
+  color: #241704;
+  font-weight: 700;
+  font-size: 0.88rem;
+  border-radius: $r-sm;
+  padding: 0.7em 1.1em;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: $gold-2;
+  }
+}
+
+.btnOutline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  background: $white;
+  border: 1.5px solid $line;
+  color: $ink;
+  font-weight: 600;
+  font-size: 0.86rem;
+  border-radius: $r-sm;
+  padding: 0.65em 1em;
+  transition: border-color 0.2s;
+
+  &:hover {
+    border-color: $ink;
+  }
+
+  &.on {
+    background: $ink;
+    color: $gold;
+    border-color: $ink;
+  }
+}
+
+// A step louder than .btnOutline - the drag-to-reorder toggle should read as
+// its own distinct action next to "Select multiple", not blend into it.
+.btnReorder {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  background: $white;
+  border: 1.5px solid $line;
+  color: $ink;
+  font-weight: 600;
+  font-size: 0.86rem;
+  border-radius: $r-sm;
+  padding: 0.75em 1.2em;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
+
+  svg {
+    color: $gold-deep;
+  }
+
+  &:hover {
+    border-color: $gold-deep;
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
+  }
+
+  &.on {
+    background: $ink;
+    color: $gold;
+    border-color: $ink;
+    box-shadow: none;
+
+    svg {
+      color: $gold;
+    }
+  }
+}
+
+// Same weight as .btnOutline, but the hover matches .btnReorder's gold
+// accent so the two toggle buttons next to each other read as a pair.
+.btnSelectMultiple {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  background: $white;
+  border: 1.5px solid $line;
+  color: $ink;
+  font-weight: 600;
+  font-size: 0.86rem;
+  border-radius: $r-sm;
+  padding: 0.65em 1em;
+  transition: border-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    border-color: $gold-deep;
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
+  }
+
+  &.on {
+    background: $ink;
+    color: $gold;
+    border-color: $ink;
+    box-shadow: none;
+  }
+}
+
+// ===== Limit card =====
+.limit {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  gap: 20px;
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  padding: 16px 20px;
+  box-shadow: 0 16px 36px -32px rgba(11, 26, 44, 0.4);
+
+  &.warn {
+    border-color: rgba(230, 169, 60, 0.4);
+  }
+  &.danger {
+    border-color: rgba(207, 75, 75, 0.35);
+  }
+
+  @media (max-width: 560px) {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  &.stacked {
+    flex-direction: column;
+    text-align: center;
+
+    .limitContent h3 {
+      justify-content: center;
+    }
+
+    .limitNote {
+      justify-content: center;
+    }
+
+    .limitActions {
+      justify-content: center;
+    }
+  }
+}
+
+.limitRing {
+  position: relative;
+  flex: none;
+  width: 110px;
+  height: 110px;
+  display: grid;
+  place-items: center;
+
+  .stacked & {
+    width: 200px;
+    height: 200px;
+  }
+
+  circle:last-of-type {
+    transition: stroke-dashoffset 0.5s $ease;
+  }
+}
+
+.limitRingText {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 600;
+  font-size: 1.15rem;
+  color: $ink;
+
+  .stacked & {
+    font-size: 2.5rem;
+  }
+
+  b {
+    color: $green;
+    font-size: 1.2em;
+  }
+
+  &.warn b {
+    color: $gold-deep;
+  }
+  &.danger b {
+    color: $red;
+  }
+}
+
+.limitContent {
+  flex: 0 1 auto;
+  min-width: 0;
+
+  h3 {
+    font-size: 1rem;
+    color: $ink;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-bottom: 6px;
+    white-space: nowrap;
+  }
+}
+
+.limitNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+  font-size: 0.86rem;
+  color: $slate;
+  margin-bottom: 12px;
+
+  svg {
+    color: $green;
+    flex: none;
+    margin-top: 2px;
+  }
+
+  b {
+    color: $ink;
+  }
+
+  &.danger svg {
+    color: $red;
+  }
+  &.warn svg {
+    color: $gold-deep;
+  }
+}
+
+.limitActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  width: 100%;
+
+  button {
+    flex: 1;
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+  }
+}
+
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  background: $red-bg;
+  color: $red;
+  border: 1px solid rgba(207, 75, 75, 0.3);
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: $r-sm;
+  padding: 0.68em 1em;
+  transition: 0.18s;
+
+  &:hover {
+    background: rgba(207, 75, 75, 0.18);
+  }
+}
+
+// ===== Limit + filters row: two separate cards side by side (grid tracks in
+// fr units - limit ~35fr, filters ~65fr) =====
+.topRow {
+  display: grid;
+  grid-template-columns: 35fr 65fr;
+  align-items: stretch;
+  gap: 16px;
+  margin-bottom: 16px;
+  transition: grid-template-columns 0.4s $ease;
+
+  // Expanded: limit column shrinks by 1/3 of its width (35fr -> ~23.33fr) so
+  // the filter grid gets the freed space; both sides animate together.
+  // align-items stays "stretch" so the limit card grows to match the taller
+  // expanded filter card's height.
+  &.expanded {
+    grid-template-columns: 23.3333fr 76.6667fr;
+  }
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.topRowLimit {
+  min-width: 0;
+}
+
+.topRowFilters {
+  min-width: 0;
+}
+
+// ===== Filters card =====
+.filters {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  box-shadow: 0 16px 36px -32px rgba(11, 26, 44, 0.4);
+  overflow: hidden;
+}
+
+.filtersHead {
+  padding: 20px 16px;
+}
+
+.filtersHeadRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.filtersTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 600;
+  color: $ink;
+
+  svg {
+    color: $gold-deep;
+  }
+}
+
+.filtersBadge {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: $gold;
+  color: #241704;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.filtersHeadActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filtersClear {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $slate;
+  padding: 0.4em 0.6em;
+  border-radius: $r-sm;
+  transition: 0.18s;
+
+  &:hover {
+    background: $mist;
+    color: $ink;
+  }
+}
+
+.filtersToggle {
+  width: 30px;
+  height: 30px;
+  border-radius: $r-sm;
+  display: grid;
+  place-items: center;
+  color: $slate;
+  transition: 0.18s;
+
+  &:hover {
+    background: $mist;
+    color: $ink;
+  }
+
+  svg {
+    transition: transform 0.2s;
+  }
+  &.open svg {
+    transform: rotate(180deg);
+  }
+}
+
+.quickSearch {
+  margin-top: 12px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  background: $paper;
+  border: 1.5px solid $line;
+  border-radius: $r-sm;
+  padding: 0 0.9em;
+
+  &:focus-within {
+    border-color: $gold;
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
+  }
+
+  svg {
+    color: $slate-2;
+    flex: none;
+  }
+
+  input {
+    flex: 1;
+    height: 100%;
+    border: none;
+    outline: none;
+    padding: 0;
+    margin: 0;
+    line-height: 46px;
+    font-size: 0.92rem;
+    background: transparent;
+    color: $ink;
+
+    &::placeholder {
+      color: $slate-2;
+    }
+  }
+}
+
+.filtersBody {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filtersSplit {
+  display: flex;
+  align-items: stretch;
+  gap: 20px;
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.filtersCol {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.filtersColDivider {
+  width: 1px;
+  flex: none;
+  background: $line;
+
+  @media (max-width: 900px) {
+    width: auto;
+    height: 1px;
+  }
+}
+
+.stackedField {
+  margin-top: 10px;
+}
+
+.salaryRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $ink;
+  margin-bottom: 6px;
+}
+
+.checkLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: $ink;
+  cursor: pointer;
+
+  input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    accent-color: $gold-deep;
+    cursor: pointer;
+  }
+}
+
+.filtersFoot {
+  padding-top: 12px;
+  border-top: 1px solid $line;
+
+  p {
+    font-size: 0.86rem;
+    color: $slate;
+  }
+}
+
+// ===== Bulk actions toolbar =====
+.bulkBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: $amber-bg;
+  border: 1px solid $amber-bd;
+  border-radius: $r-md;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.bulkLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.bulkInfo {
+  font-size: 0.85rem;
+  color: $slate;
+}
+
+.bulkActionsRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $ink;
+  border: 1.5px solid $line;
+  background: $white;
+  border-radius: $r-sm;
+  padding: 0.55em 0.9em;
+  transition: 0.18s;
+
+  &:hover {
+    border-color: $ink;
+  }
+}
+
+.btnGhostMuted {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $slate;
+  padding: 0.55em 0.7em;
+  border-radius: $r-sm;
+  transition: 0.18s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.5);
+    color: $ink;
+  }
+}
+
+// ===== Modal (bulk confirm) =====
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 26, 44, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+  padding: 20px;
+}
+
+.modal {
+  position: relative;
+  background: $white;
+  border-radius: $r-lg;
+  width: 100%;
+  max-width: 420px;
+  padding: 28px;
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.5);
+  animation: bcPop 0.25s $ease;
+}
+
+@keyframes bcPop {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.modalHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.modalIc {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: $amber-bg;
+  display: grid;
+  place-items: center;
+  color: $gold-deep;
+
+  &.danger {
+    background: $red-bg;
+    color: $red;
+  }
+}
+
+.modal h3 {
+  font-size: 1.15rem;
+  color: $ink;
+  margin-bottom: 2px;
+}
+
+.modalSub {
+  font-size: 0.88rem;
+  color: $slate;
+}
+
+.unlockCandidateList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  text-align: right;
+}
+
+// ===== Bulk unlock success: unlocked candidates framed together, capped at
+// 4 rows tall - a 5th+ candidate scrolls into view instead of growing the
+// modal indefinitely. =====
+.unlockedList {
+  display: flex;
+  flex-direction: column;
+  margin-top: 28px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid #21405e;
+  border-radius: $r-md;
+  padding: 0 14px;
+  margin-bottom: 20px;
+
+  // Thin, low-contrast scrollbar - it only needs to hint that more
+  // candidates are below, not compete visually with the content.
+  scrollbar-width: thin;
+  scrollbar-color: rgba(230, 169, 60, 0.3) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(230, 169, 60, 0.3);
+    border-radius: 999px;
+
+    &:hover {
+      background: rgba(230, 169, 60, 0.5);
+    }
+  }
+}
+
+.unlockedRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid #21405e;
+
+  &:first-child {
+    border-top: none;
+  }
+}
+
+.unlockedAvatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex: none;
+  border: 1.5px solid $green-bd;
+  box-shadow: 0 0 0 3px rgba(60, 200, 130, 0.12);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.unlockedInfo {
+  min-width: 0;
+}
+
+.unlockedNameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.unlockedName {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: #e9f0f7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.unlockedCheck {
+  flex: none;
+  color: #6fd39a;
+}
+
+.unlockedRole {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $gold-2;
+  margin-top: 2px;
+}
+
+.modalWarning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6em;
+  background: $red-bg;
+  border: 1px solid rgba(207, 75, 75, 0.25);
+  border-radius: $r-sm;
+  padding: 0.8em 0.9em;
+  margin-bottom: 4px;
+  font-size: 0.86rem;
+  color: $ink;
+  line-height: 1.45;
+
+  svg {
+    flex: none;
+    color: $red;
+    margin-top: 1px;
+  }
+}
+
+.mrow {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 0;
+  font-size: 0.88rem;
+  border-top: 1px solid $line;
+
+  &:first-of-type {
+    border-top: none;
+  }
+
+  .k {
+    color: $slate;
+  }
+  .v {
+    font-weight: 600;
+    color: $ink;
+    font-family: "JetBrains Mono", monospace;
+
+    &.success {
+      color: $green;
+    }
+    &.danger {
+      color: $red;
+    }
+  }
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btnGo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  background: $gold;
+  color: #241704;
+  font-weight: 700;
+  font-size: 0.92rem;
+  border-radius: $r-sm;
+  padding: 0.8em 1em;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: $gold-2;
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &.danger {
+    background: $red;
+    color: $white;
+
+    &:hover {
+      background: #b53f3f;
+    }
+  }
+}
+
+.btnX {
+  flex: 1;
+  padding: 0.8em 1.2em;
+  border: 1.5px solid $line;
+  border-radius: $r-sm;
+  font-weight: 600;
+  color: $slate;
+  transition: 0.18s;
+
+  &:hover {
+    border-color: $ink;
+    color: $ink;
+  }
+}
+
+// ===== Candidate cards grid =====
+.cgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  gap: 16px;
+  align-items: stretch;
+}
+
+.cardSlot {
+  position: relative;
+  transition: opacity 0.15s;
+
+  &.dragging {
+    opacity: 0.4;
+  }
+}
+
+.selectBox {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 10;
+
+  input[type="checkbox"] {
+    width: 19px;
+    height: 19px;
+    accent-color: $gold-deep;
+    cursor: pointer;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.dragHandle {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: $amber-bg;
+  border: 1.5px solid $amber-bd;
+  color: $gold-deep;
+  cursor: grab;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition:
+    border-color 0.18s,
+    background-color 0.18s,
+    color 0.18s,
+    box-shadow 0.18s,
+    transform 0.18s;
+
+  &:hover {
+    background: $gold;
+    border-color: $gold-deep;
+    color: #241704;
+    box-shadow: 0 4px 12px rgba(230, 169, 60, 0.35);
+  }
+
+  &:active {
+    cursor: grabbing;
+    transform: scale(1.06);
+  }
+}
+
+// ===== Top row: saved date (left) + available badge & remove (right) =====
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.savedDate {
+  font-size: 0.76rem;
+  color: $slate-2;
+  white-space: nowrap;
+  margin-left: 0;
+  transition: margin-left 0.2s $ease;
+
+  // In reorder mode the drag handle sits on top of the card's top-left
+  // corner (see .dragHandle) - push the date clear of it instead of
+  // letting it get covered.
+  &.savedDateShifted {
+    margin-left: 32px;
+  }
+}
+
+.cardTopRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.availableBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  background: $green-bg;
+  border: 1px solid $green-bd;
+  color: $green;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 0.4em 0.75em;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3cc882;
+  animation: bcPulse 2s infinite;
+}
+
+@keyframes bcPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(60, 200, 130, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(60, 200, 130, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(60, 200, 130, 0);
+  }
+}
+
+.bcRemove {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  color: $slate-2;
+  transition: 0.18s;
+  flex: none;
+
+  &:hover {
+    background: $red-bg;
+    color: $red;
+  }
+}
+
+// ===== Notes panel =====
+// Animated via the grid 0fr -> 1fr trick so the card grows/shrinks smoothly
+// instead of the notes content just popping in/out.
+.bcNotesWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s $ease;
+
+  &.open {
+    grid-template-rows: 1fr;
+  }
+}
+
+.bcNotesInner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.bcNotes {
+  margin-bottom: 13px;
+  margin-top: 10px;
+  padding: 11px;
+  background: $paper;
+  border: 1px solid $line;
+  border-radius: $r-sm;
+}
+
+.bcNotesTextarea {
+  width: 100%;
+  padding: 8px;
+  font-size: 0.84rem;
+  font-family: inherit;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-sm;
+  resize: vertical;
+  color: $ink;
+  margin-bottom: 8px;
+
+  &:focus {
+    outline: none;
+    border-color: $gold;
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
+  }
+}
+
+.bcNotesSave {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #241704;
+  background: $gold;
+  border-radius: 7px;
+  padding: 0.45em 0.9em;
+  transition: 0.18s;
+
+  &:hover {
+    background: $gold-2;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.bcNotesEdit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $gold-deep;
+  border: 1px solid $amber-bd;
+  background: $amber-bg;
+  border-radius: 7px;
+  padding: 0.45em 0.9em;
+  transition: 0.18s;
+
+  &:hover {
+    color: $gold;
+  }
+}
+
+.bcNotesActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bcNotesDelete {
+  display: grid;
+  place-items: center;
+  color: $slate-2;
+  background: none;
+  border: none;
+  padding: 0.3em;
+  transition: color 0.18s;
+
+  &:hover {
+    color: #e35b5b;
+  }
+}
+
+.tooltip {
+  position: relative;
+
+  &::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    background: $ink;
+    color: $white;
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+    padding: 0.4em 0.75em;
+    border-radius: 6px;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.18s $ease,
+      transform 0.18s $ease;
+    z-index: 20;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(4px);
+    border: 5px solid transparent;
+    border-top-color: $ink;
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      opacity 0.18s $ease,
+      transform 0.18s $ease;
+    z-index: 20;
+  }
+
+  &:hover::after,
+  &:focus-visible::after {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  &:hover::before,
+  &:focus-visible::before {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.bcNotesText {
+  font-size: 0.82rem;
+  color: $slate;
+  margin-bottom: 8px;
+}
+
+// ===== Empty states =====
+.empty {
+  background: $white;
+  border: 1px dashed $line;
+  border-radius: $r-lg;
+  padding: 50px 20px;
+  text-align: center;
+  color: $slate;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 16px;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: $mist;
+  display: grid;
+  place-items: center;
+  margin-bottom: 22px;
+  color: $slate-2;
+}
+
+.emptyTitle {
+  font-size: 1.3rem;
+  color: $ink;
+  margin-bottom: 8px;
+}
+
+.emptyText {
+  color: $slate;
+  margin-bottom: 22px;
+  max-width: 420px;
+}
+
+.emptyFeatures {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  max-width: 800px;
+  margin-top: 30px;
+
+  @media (max-width: 680px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.featureItem {
+  text-align: center;
+}
+
+.featureIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: $r-sm;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 12px;
+
+  &.b1 {
+    background: $amber-bg;
+    color: $gold-deep;
+  }
+  &.b2 {
+    background: rgba(91, 143, 196, 0.14);
+    color: #3b6fb0;
+  }
+  &.b3 {
+    background: $green-bg;
+    color: $green;
+  }
+}
+
+.featureTitle {
+  font-weight: 600;
+  color: $ink;
+  margin-bottom: 4px;
+  font-size: 0.94rem;
+}
+
+.featureText {
+  font-size: 0.84rem;
+  color: $slate;
+}
+
+.noResults {
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  text-align: center;
+  padding: 48px 20px;
+
+  svg {
+    color: $slate-2;
+    margin: 0 auto 16px;
+  }
+
+  h3 {
+    color: $ink;
+    margin-bottom: 8px;
+  }
+  p {
+    color: $slate;
+    margin-bottom: 16px;
+  }
+}
+
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: $ink;
+  color: #e9f0f7;
+  padding: 0.85em 1.3em;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: 0.3s $ease;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  pointer-events: none;
+
+  &.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

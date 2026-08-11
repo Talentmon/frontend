@@ -1,0 +1,35 @@
+/* Plain (non-module) stylesheet — reuses the same fractional star rendering
+   (Stars.jsx) and star classnames as the public company-details page, so the
+   preview modal's stars look pixel-identical to what candidates actually see. */
+.ppStars {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  color: #e6a93c;
+}
+.ppStars svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  overflow: hidden;
+}
+.ppStars.sm svg {
+  width: 13px;
+  height: 13px;
+}
+.ppStars svg.empty {
+  fill: currentColor;
+  stroke: none;
+  color: rgba(207, 214, 221, .7);
+}
+.ppStars .rev-star-partial {
+  position: relative;
+  display: inline-block;
+  line-height: 0;
+}
+.ppStars .rev-star-partial-fill {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: #e6a93c;
+}

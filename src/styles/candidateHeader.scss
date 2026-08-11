@@ -1,0 +1,502 @@
+// Globalne stilove za kandidatski AppBar.
+// Ugnežđeno pod .appbar kako bi se specifičnost (0-2-x) bila viša od
+// page-level reseta kao što je `.cp-page a { color: inherit }` (0-1-1).
+
+.appbar {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: #0B1A2C;
+  border-bottom: 1px solid rgba(255, 255, 255, .07);
+
+  .appbar-in {
+    display: flex;
+    align-items: center;
+    gap: 26px;
+    height: 64px;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 22px;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .55em;
+    font-family: 'Baloo 2', 'Bricolage Grotesque', sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 1.12rem;
+    color: #E9F0F7;
+    text-decoration: none;
+    flex: none;
+    white-space: nowrap;
+
+    .mk {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      flex: none;
+
+      img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    }
+
+    b { color: #E6A93C; }
+  }
+
+  .appnav {
+    display: flex;
+    gap: 4px;
+    margin-left: 8px;
+
+    a {
+      font-size: .9rem;
+      font-weight: 500;
+      color: #9BAEC0;
+      padding: .5em .8em;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: color .2s, background .2s;
+      white-space: nowrap;
+
+      &:hover {
+        color: #E9F0F7;
+        background: rgba(255, 255, 255, .05);
+      }
+
+      &.on {
+        color: #E9F0F7;
+        background: rgba(255, 255, 255, .08);
+      }
+
+      &:focus-visible {
+        outline: 3px solid #E6A93C;
+        outline-offset: 2px;
+      }
+    }
+  }
+
+  .appbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .user {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 6px 5px 12px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .08);
+
+    .un {
+      font-size: .86rem;
+      font-weight: 600;
+      color: #E9F0F7;
+    }
+
+    .ua {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(140deg, #5b8fc4, #2c4d72);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: .8rem;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      flex: none;
+    }
+
+    svg {
+      width: 15px;
+      height: 15px;
+      color: #9BAEC0;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .user .un { display: none; }
+    .appnav a { font-size: .82rem; padding: .45em .6em; }
+  }
+}
+
+// ── Candidate user dropdown ──────────────────────────────────────────────────
+// Sve .cud-* klase su ugnežđene pod .appbar da bi dobile specifičnost (0,2,x)
+// i pobedile page-level button/element resetove poput `.cp-page button { background: none }` (0,1,1).
+.appbar {
+  .cud-root {
+    position: relative;
+  }
+
+  .cud-trigger {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 5px 6px 5px 12px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .08);
+    cursor: pointer;
+    transition: background .2s, border-color .2s;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+    &:hover, &.open {
+      background: rgba(255, 255, 255, .10);
+      border-color: rgba(230, 169, 60, .5);
+    }
+
+    .cud-name {
+      font-size: .86rem;
+      font-weight: 600;
+      color: #E9F0F7;
+      max-width: 140px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cud-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: linear-gradient(140deg, #5b8fc4, #2c4d72);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: .8rem;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      flex: none;
+    }
+
+    .cud-chevron {
+      width: 15px;
+      height: 15px;
+      color: #9BAEC0;
+      transition: transform .2s cubic-bezier(.2,.7,.2,1);
+      flex: none;
+    }
+
+    &.open .cud-chevron {
+      transform: rotate(180deg);
+    }
+  }
+
+  .cud-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    width: 280px;
+    background: #fff;
+    border: 1px solid #E4E7EA;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(11,26,44,.04), 0 24px 50px -20px rgba(11,26,44,.45);
+    z-index: 500;
+    overflow: hidden;
+    animation: cudSlide .22s cubic-bezier(.2,.7,.2,1);
+
+    @keyframes cudSlide {
+      from { opacity: 0; transform: translateY(8px) scale(.97); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    * { box-sizing: border-box; }
+  }
+
+  .cud-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 18px 16px;
+    border-bottom: 1px solid #E4E7EA;
+
+    .cud-hav {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(140deg, #5b8fc4, #2c4d72);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1rem;
+      font-family: 'Bricolage Grotesque', sans-serif;
+      flex: none;
+    }
+
+    .cud-hinfo {
+      strong {
+        display: block;
+        font-size: .93rem;
+        font-weight: 700;
+        color: #0B1A2C;
+        font-family: 'Bricolage Grotesque', sans-serif;
+      }
+      span {
+        font-size: .76rem;
+        color: #8693A0;
+      }
+    }
+  }
+
+  .cud-items {
+    padding: 8px;
+  }
+
+  .cud-item {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #0B1A2C;
+    transition: background .18s;
+    margin-bottom: 2px;
+
+    &:last-child { margin-bottom: 0; }
+
+    &:hover { background: #F6F7F8; }
+
+    &.active { background: #F6F7F8; }
+
+    .cud-item-ic {
+      width: 34px;
+      height: 34px;
+      border-radius: 9px;
+      background: #E8ECF0;
+      display: grid;
+      place-items: center;
+      color: #566776;
+      flex: none;
+
+      svg { width: 16px; height: 16px; }
+    }
+
+    .cud-item-txt {
+      b { display: block; font-size: .88rem; font-weight: 600; color: #0B1A2C; }
+      span { font-size: .76rem; color: #8693A0; }
+    }
+  }
+
+  .cud-footer {
+    padding: 8px;
+    border-top: 1px solid #E4E7EA;
+  }
+
+  .cud-signout {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #cf4b4b;
+    transition: background .18s;
+    text-align: left;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+    &:hover { background: rgba(207,75,75,.08); }
+
+    svg { width: 17px; height: 17px; flex: none; }
+
+    .cud-item-txt {
+      b { display: block; font-size: .88rem; font-weight: 600; color: #cf4b4b; }
+      span { font-size: .76rem; color: #8693A0; }
+    }
+  }
+
+  @media (max-width: 600px) {
+    .cud-trigger .cud-name { display: none; }
+    .cud-menu { width: 260px; }
+  }
+
+  // ── Notification bell ────────────────────────────────────────────────────────
+  .cn-root {
+    position: relative;
+  }
+
+  .cn-trigger {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, .05);
+    border: 1px solid rgba(255, 255, 255, .08);
+    color: #9BAEC0;
+    cursor: pointer;
+    transition: background .2s, border-color .2s, color .2s;
+
+    &:hover, &.open {
+      background: rgba(255, 255, 255, .10);
+      border-color: rgba(230, 169, 60, .5);
+      color: #E9F0F7;
+    }
+  }
+
+  .cn-badge {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    min-width: 17px;
+    height: 17px;
+    padding: 0 4px;
+    border-radius: 99px;
+    background: #E6A93C;
+    color: #1a0e00;
+    font-size: .67rem;
+    font-weight: 700;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    display: grid;
+    place-items: center;
+    line-height: 1;
+    border: 2px solid #0B1A2C;
+  }
+
+  .cn-menu {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 8px);
+    width: 340px;
+    background: #fff;
+    border: 1px solid #E4E7EA;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(11,26,44,.04), 0 24px 50px -20px rgba(11,26,44,.45);
+    z-index: 500;
+    overflow: hidden;
+    animation: cudSlide .22s cubic-bezier(.2,.7,.2,1);
+
+    * { box-sizing: border-box; }
+  }
+
+  .cn-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px 14px;
+    border-bottom: 1px solid #E4E7EA;
+  }
+
+  .cn-title {
+    font-size: .93rem;
+    font-weight: 700;
+    color: #0B1A2C;
+    font-family: 'Bricolage Grotesque', sans-serif;
+  }
+
+  .cn-mark-all {
+    font-size: .75rem;
+    font-weight: 600;
+    color: #C98A1F;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+
+    &:hover { color: #a87018; }
+  }
+
+  .cn-list {
+    max-height: 360px;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .cn-empty {
+    text-align: center;
+    padding: 28px 16px;
+    font-size: .88rem;
+    color: #8693A0;
+  }
+
+  .cn-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background .15s;
+    position: relative;
+
+    &:hover { background: #F6F7F8; }
+
+    &.cn-read {
+      opacity: .7;
+
+      b { font-weight: 500; }
+    }
+  }
+
+  .cn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: grid;
+    place-items: center;
+    flex: none;
+
+    &.cn-icon-unlock {
+      background: #EBF3FF;
+      color: #2c5fa8;
+    }
+
+    &.cn-icon-review {
+      background: #FFF7E6;
+      color: #C98A1F;
+    }
+  }
+
+  .cn-body {
+    flex: 1;
+    min-width: 0;
+
+    b {
+      display: block;
+      font-size: .86rem;
+      font-weight: 600;
+      color: #0B1A2C;
+      margin-bottom: 2px;
+    }
+
+    span {
+      display: block;
+      font-size: .76rem;
+      color: #566776;
+      margin-bottom: 4px;
+    }
+
+    time {
+      font-size: .72rem;
+      color: #9BAEC0;
+    }
+  }
+
+  .cn-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #E6A93C;
+    flex: none;
+    margin-top: 6px;
+  }
+
+  @media (max-width: 600px) {
+    .cn-menu { width: 300px; }
+  }
+}

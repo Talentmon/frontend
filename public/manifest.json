@@ -1,0 +1,15 @@
+{
+  "short_name": "Talentmon",
+  "name": "Talentmon",
+  "icons": [
+    {
+      "src": "assets/images/talentmon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

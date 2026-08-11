@@ -1,0 +1,1141 @@
+// Design tokens — isti kao u ostatku app-a
+$ink: #0b1a2c;
+$ink-2: #10243a;
+$paper: #eef0f2;
+$white: #ffffff;
+$gold: #e6a93c;
+$gold-2: #f2c871;
+$gold-deep: #c98a1f;
+$slate: #566776;
+$slate-2: #8693a0;
+$line: #e4e7ea;
+$mist: #e8ecf0;
+$green: #2f9e69;
+$green-bg: rgba(60, 200, 130, 0.12);
+$green-bd: rgba(60, 200, 130, 0.32);
+$amber-bg: rgba(230, 169, 60, 0.14);
+$amber-bd: rgba(230, 169, 60, 0.4);
+$red: #c4453f;
+$red-bg: rgba(196, 69, 63, 0.1);
+$red-bd: rgba(196, 69, 63, 0.3);
+$star: #e6a93c;
+$star-off: #d7dce1;
+$r-lg: 18px;
+$r-md: 13px;
+$r-sm: 9px;
+$ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+// ===== Page shell =====
+.page {
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  background: $paper;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.main {
+  padding-bottom: 80px;
+}
+
+.inner {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 30px 22px 0;
+}
+
+// ===== Page header =====
+.pageHead {
+  margin-bottom: 20px;
+}
+
+.pageTitle {
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: $ink;
+  line-height: 1.1;
+}
+
+.pageSub {
+  color: $slate;
+  font-size: 0.96rem;
+  margin-top: 3px;
+}
+
+// ===== Stats =====
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.stat {
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-md;
+  padding: 16px 18px;
+  box-shadow: 0 18px 40px -34px rgba(11, 26, 44, 0.4);
+}
+
+.statNum {
+  font-weight: 700;
+  font-size: 1.7rem;
+  color: $ink;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.3em;
+}
+
+.statNumSmall {
+  font-size: 0.9rem;
+  color: $slate-2;
+  font-weight: 600;
+}
+
+.statLabel {
+  font-size: 0.74rem;
+  color: $slate;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-top: 8px;
+}
+
+// ===== Info note =====
+.note {
+  display: flex;
+  gap: 0.7em;
+  align-items: flex-start;
+  background: $white;
+  border: 1px solid $line;
+  border-left: 3px solid $gold;
+  border-radius: $r-md;
+  padding: 13px 16px;
+  font-size: 0.88rem;
+  color: #33424f;
+  margin-bottom: 26px;
+
+  b {
+    color: $ink;
+  }
+}
+
+.noteIcon {
+  flex: none;
+  margin-top: 1px;
+  color: $gold-deep;
+  display: flex;
+}
+
+// ===== Section head =====
+.secHead {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6em;
+  margin: 26px 0 14px;
+  flex-wrap: wrap;
+}
+
+.secTitle {
+  font-size: 1.18rem;
+  font-weight: 700;
+  color: $ink;
+  line-height: 1.1;
+}
+
+.secCount {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.76rem;
+  color: $slate-2;
+}
+
+.secTools {
+  margin-left: auto;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.toolLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.78rem;
+  color: $slate;
+  font-weight: 600;
+}
+
+.toolSelect {
+  border: 1.5px solid $line;
+  border-radius: $r-sm;
+  padding: 0.44em 0.7em;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: $ink;
+  background: $white;
+  cursor: pointer;
+  font-family: inherit;
+  appearance: none;
+  transition: border-color 0.18s;
+
+  &:hover,
+  &:focus {
+    outline: none;
+    border-color: $gold;
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
+  }
+}
+
+// ===== Company logo badge =====
+.logo {
+  width: 44px;
+  height: 44px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.15rem;
+  flex: none;
+  font-family: "Inter", sans-serif;
+  user-select: none;
+}
+
+.logoLg {
+  width: 50px;
+  height: 50px;
+  border-radius: 13px;
+  font-size: 1.3rem;
+}
+
+// ===== Chips =====
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.74rem;
+  font-weight: 600;
+  padding: 0.32em 0.7em;
+  border-radius: 99px;
+}
+
+.chipGreen {
+  color: $green;
+  background: $green-bg;
+  border: 1px solid $green-bd;
+}
+
+// ===== Public score chip =====
+.pubChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.78rem;
+  color: $slate;
+  background: $mist;
+  border: 1px solid $line;
+  border-radius: 99px;
+  padding: 0.3em 0.7em;
+
+  svg {
+    width: 13px;
+    height: 13px;
+    fill: $star;
+    color: $star;
+    flex: none;
+  }
+
+  b {
+    color: $ink;
+    font-weight: 700;
+  }
+}
+
+// ===== Buttons =====
+.btnGold {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 600;
+  font-size: 0.88rem;
+  border-radius: $r-sm;
+  padding: 0.62em 1.05em;
+  background: $gold;
+  color: #241704;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    transform 0.2s $ease;
+  box-shadow: 0 8px 20px -12px rgba(230, 169, 60, 0.7);
+  white-space: nowrap;
+  font-family: inherit;
+
+  &:hover {
+    background: $gold-2;
+    transform: translateY(-1px);
+  }
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none;
+  }
+  &:focus-visible {
+    outline: 3px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 600;
+  font-size: 0.88rem;
+  border-radius: $r-sm;
+  padding: 0.62em 1.05em;
+  background: $white;
+  color: $ink;
+  border: 1.5px solid $line;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    transform 0.2s $ease;
+  font-family: inherit;
+
+  &:hover {
+    border-color: #cdd3d8;
+    transform: translateY(-1px);
+  }
+  &:focus-visible {
+    outline: 3px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+.btnSm {
+  font-size: 0.84rem;
+  padding: 0.5em 0.9em;
+}
+
+// ===== Icon buttons =====
+.iconBtn {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: $slate;
+  cursor: pointer;
+  background: none;
+  border: none;
+  transition:
+    background 0.18s,
+    color 0.18s;
+  font-family: inherit;
+
+  &:hover {
+    background: $mist;
+    color: $ink;
+  }
+  &:focus-visible {
+    outline: 3px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+.iconBtnDanger {
+  &:hover {
+    background: $red-bg;
+    color: $red;
+  }
+}
+
+// ===== Pending cards =====
+.pendingList {
+  display: grid;
+  gap: 10px;
+}
+
+.pendingCard {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-md;
+  padding: 14px 16px;
+  box-shadow: 0 18px 40px -36px rgba(11, 26, 44, 0.4);
+}
+
+.pendingMain {
+  min-width: 0;
+  flex: 1;
+}
+
+.pendingName {
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: $ink;
+}
+
+.pendingMeta {
+  font-size: 0.82rem;
+  color: $slate;
+  margin-top: 2px;
+}
+
+.pendingBottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+// ===== Rated list =====
+.ratedList {
+  display: grid;
+  gap: 14px;
+}
+
+.ratedCard {
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  padding: 20px;
+  box-shadow: 0 18px 44px -34px rgba(11, 26, 44, 0.42);
+  transition:
+    box-shadow 0.2s $ease,
+    transform 0.2s $ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 24px 50px -32px rgba(11, 26, 44, 0.5);
+  }
+}
+
+.rcTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.rcId {
+  min-width: 0;
+  flex: 1;
+}
+
+.rcName {
+  font-weight: 700;
+  font-size: 1.12rem;
+  color: $ink;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  flex-wrap: wrap;
+}
+
+.rcMeta {
+  font-size: 0.84rem;
+  color: $slate;
+  margin-top: 2px;
+}
+
+.rcPubRow {
+  margin-top: 7px;
+}
+
+.rcOverall {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex: none;
+}
+
+.rcOverallLabel {
+  font-size: 0.68rem;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: $slate-2;
+}
+
+.rcOverallScore {
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: $ink;
+  line-height: 1;
+}
+
+// ===== Category grid on rated card =====
+.rcCats {
+  display: flex;
+  align-items: stretch;
+  margin: 16px 0;
+  padding: 14px 6px;
+  background: $paper;
+  border-radius: $r-sm;
+}
+
+.rcCat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  padding: 0 10px;
+  font-size: 0.86rem;
+  border-left: 1px dashed rgba($ink, 0.1);
+
+  &:first-child {
+    border-left: none;
+  }
+}
+
+.rcCatLabel {
+  color: $slate;
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
+// ===== Min pay row on card =====
+.minPayRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.86rem;
+  margin: 14px 0 2px;
+  flex-wrap: wrap;
+  color: #2c3a47;
+}
+
+.minPayIcon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 50%;
+  padding: 2px;
+  color: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.minPayIconOk {
+  background: $green;
+}
+.minPayIconBad {
+  background: $red;
+}
+
+.minPayCap {
+  font-style: normal;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $gold-deep;
+  background: $amber-bg;
+  border: 1px solid $amber-bd;
+  border-radius: 99px;
+  padding: 0.15em 0.6em;
+}
+
+// ===== Review text =====
+.rcReview {
+  font-size: 0.92rem;
+  color: #33424f;
+  white-space: pre-line;
+  margin-top: 10px;
+}
+
+// ===== Card footer =====
+.rcFoot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.rcDate {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.76rem;
+  color: $slate-2;
+}
+
+.rcActions {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.rec {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45em;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.recYes {
+  color: $green;
+}
+.recNo {
+  color: $slate;
+}
+
+// ===== Stars (display only) =====
+.stars {
+  display: inline-flex;
+  gap: 2px;
+  align-items: center;
+  line-height: 0;
+
+  svg {
+    fill: currentColor;
+    stroke: none;
+  }
+}
+
+.starGold {
+  display: inline-flex;
+  color: $star;
+}
+.starGrey {
+  display: inline-flex;
+  color: $star-off;
+}
+
+.starsSm svg {
+  width: 14px;
+  height: 14px;
+}
+.starsMd svg {
+  width: 17px;
+  height: 17px;
+}
+.starsLg svg {
+  width: 22px;
+  height: 22px;
+}
+
+// ===== Star input (interactive) =====
+.starInput {
+  display: inline-flex;
+  gap: 3px;
+
+  button {
+    line-height: 0;
+    padding: 2px;
+    border-radius: 5px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: $star-off;
+    transition:
+      color 0.12s,
+      transform 0.12s;
+    font-family: inherit;
+
+    svg {
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
+      stroke: none;
+    }
+
+    &:hover {
+      transform: scale(1.12);
+    }
+    &:focus-visible {
+      outline: 3px solid $gold;
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+  }
+}
+
+.starInputOn {
+  color: $star !important;
+}
+
+// ===== Empty states =====
+.empty {
+  background: $white;
+  border: 1px dashed $line;
+  border-radius: $r-lg;
+  padding: 46px 24px;
+  text-align: center;
+}
+
+.emptyIcon {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: $mist;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+  color: $gold-deep;
+}
+
+.emptyTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $ink;
+  margin-bottom: 5px;
+}
+
+.emptyText {
+  color: $slate;
+  font-size: 0.9rem;
+  max-width: 380px;
+  margin: 0 auto 16px;
+}
+
+// ===== Modal =====
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  background: rgba(11, 26, 44, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 42px 18px;
+  overflow: auto;
+  animation: moFadeIn 0.2s $ease;
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  background: $white;
+  border-radius: $r-lg;
+  box-shadow: 0 40px 90px -30px rgba(11, 26, 44, 0.7);
+  padding: 28px;
+  animation: moRise 0.25s $ease;
+}
+
+.modalClose {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: $slate;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.18s,
+    color 0.18s;
+  font-family: inherit;
+
+  &:hover {
+    background: $mist;
+    color: $ink;
+  }
+  &:focus-visible {
+    outline: 3px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+.modalHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.modalTitle {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: $ink;
+  line-height: 1.1;
+}
+
+.modalSub {
+  font-size: 0.84rem;
+  color: $slate;
+  margin-bottom: 18px;
+}
+
+// ===== Rating rows inside modal =====
+.rateRows {
+  display: grid;
+  gap: 0;
+  margin-bottom: 18px;
+}
+
+.rateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px dashed $line;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.rateLabel {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: $ink;
+
+  span {
+    display: block;
+    font-weight: 400;
+    font-size: 0.76rem;
+    color: $slate;
+    margin-top: 2px;
+  }
+}
+
+// ===== Min pay question in modal =====
+.minPayQ {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px;
+  margin-top: 4px;
+  background: $amber-bg;
+  border: 1px solid $amber-bd;
+  border-radius: $r-md;
+}
+
+.minPayQLabel {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: $ink;
+
+  span {
+    display: block;
+    font-weight: 400;
+    font-size: 0.76rem;
+    color: $slate;
+    margin-top: 2px;
+  }
+}
+
+.minPayToggle {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+
+.minPayBtn {
+  min-width: 52px;
+  font-weight: 700;
+  font-size: 0.86rem;
+  padding: 0.5em 0.9em;
+  border-radius: $r-sm;
+  border: 1.5px solid $line;
+  color: $slate;
+  background: $white;
+  cursor: pointer;
+  transition:
+    border-color 0.16s,
+    background 0.16s,
+    color 0.16s;
+  font-family: inherit;
+
+  &:focus-visible {
+    outline: 3px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+.minPayBtnYesOn {
+  border-color: $green-bd !important;
+  background: $green-bg !important;
+  color: $green !important;
+}
+.minPayBtnNoOn {
+  border-color: $red-bd !important;
+  background: $red-bg !important;
+  color: $red !important;
+}
+
+// ===== Overall live display =====
+.overallLive {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.84rem;
+  color: $slate;
+  margin-top: 10px;
+
+  strong {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: $ink;
+    font-family: "Inter", sans-serif;
+  }
+}
+
+.overallCapped {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: $red;
+  background: $red-bg;
+  border: 1px solid $red-bd;
+  border-radius: 99px;
+  padding: 0.3em 0.7em;
+}
+
+// ===== Comment textarea =====
+.field {
+  margin-top: 16px;
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: $ink;
+  }
+
+  textarea {
+    width: 100%;
+    border: 1.5px solid $line;
+    border-radius: $r-sm;
+    padding: 0.7em 0.8em;
+    font-size: 0.92rem;
+    min-height: 90px;
+    resize: vertical;
+    line-height: 1.55;
+    font-family: inherit;
+    color: $ink;
+
+    &:focus {
+      outline: none;
+      border-color: $gold;
+      box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
+    }
+  }
+}
+
+// ===== Recommend toggle in modal =====
+.recToggle {
+  display: flex;
+  gap: 8px;
+  margin: 16px 0 4px;
+}
+
+.recBtn {
+  flex: 1;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.88rem;
+  padding: 0.7em 2em 0.7em 0.7em;
+  border-radius: $r-sm;
+  border: 1.5px solid $line;
+  color: $slate;
+  background: $white;
+  cursor: pointer;
+  transition:
+    border-color 0.18s,
+    background 0.18s,
+    color 0.18s;
+  font-family: inherit;
+
+  &:focus-visible {
+    outline: 3px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+.recBtnFace {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  pointer-events: none;
+}
+
+.recBtnX {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(11, 26, 44, 0.08);
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(11, 26, 44, 0.18);
+  }
+}
+
+.recBtnYesOn {
+  border-color: $green-bd;
+  background: $green-bg;
+  color: $green;
+}
+.recBtnNoOn {
+  border-color: $red-bd;
+  background: $red-bg;
+  color: $red;
+}
+
+.recNote {
+  font-size: 0.78rem;
+  color: $slate-2;
+  margin-top: 8px;
+}
+
+// ===== Modal footer =====
+.modalFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modalFootActions {
+  display: flex;
+  gap: 10px;
+  flex: none;
+}
+
+.anonNote {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.78rem;
+  color: $gold-deep;
+}
+
+// ===== Toast =====
+.toastHost {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  z-index: 1300;
+  pointer-events: none;
+  padding: 0 16px;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: $ink;
+  color: #e9f0f7;
+  border-radius: $r-md;
+  padding: 12px 14px 12px 18px;
+  box-shadow: 0 20px 40px -16px rgba(11, 26, 44, 0.6);
+  font-size: 0.9rem;
+  transform: translateY(12px);
+  opacity: 0;
+  transition:
+    transform 0.25s $ease,
+    opacity 0.25s $ease;
+}
+
+.toastIn {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.toastAction {
+  font-weight: 700;
+  color: $gold-2;
+  font-size: 0.88rem;
+  padding: 0.3em 0.6em;
+  border-radius: 7px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  &:focus-visible {
+    outline: 2px solid $gold-2;
+    outline-offset: 2px;
+  }
+}
+
+// ===== Keyframes =====
+@keyframes moFadeIn {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes moRise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+
+// ===== Reduced motion =====
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+// ===== Responsive =====
+@media (max-width: 680px) {
+  .stats {
+    grid-template-columns: 1fr;
+  }
+  .rcCats {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
+  .rcCat {
+    flex: 1 1 45%;
+    border-left: none;
+  }
+  .rcCat:nth-child(odd) {
+    border-right: 1px dashed rgba($ink, 0.14);
+  }
+  .pageTitle {
+    font-size: 1.45rem;
+  }
+  .pendingCard {
+    flex-wrap: wrap;
+  }
+  .secHead {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .secTools {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+}

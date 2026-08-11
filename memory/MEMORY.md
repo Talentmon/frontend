@@ -1,0 +1,1 @@
+- [Project overview](project_overview.md) — alpha UI prototype, no backend/auth/state wiring, mock data everywhere

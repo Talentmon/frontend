@@ -1,0 +1,1415 @@
+$ink: #0b1a2c;
+$ink-2: #10243a;
+$paper: #eceef1;
+$paper-2: #f6f7f8;
+$white: #ffffff;
+$gold: #e6a93c;
+$gold-2: #f2c871;
+$gold-deep: #c98a1f;
+$amber-bg: rgba(230, 169, 60, 0.14);
+$slate: #566776;
+$slate-2: #8693a0;
+$line: #e5e8ec;
+$line-soft: #edeff2;
+$mist: #eaeef2;
+$green: #2f9e69;
+$green-bg: rgba(60, 200, 130, 0.13);
+$green-bd: rgba(60, 200, 130, 0.34);
+$red: #cf4b4b;
+$r-lg: 18px;
+$r-md: 13px;
+$r-sm: 9px;
+$ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+$sh-card:
+  0 1px 2px rgba(11, 26, 44, 0.04),
+  0 18px 40px -30px rgba(11, 26, 44, 0.45);
+$sh-card-h:
+  0 1px 2px rgba(11, 26, 44, 0.05),
+  0 26px 54px -28px rgba(11, 26, 44, 0.5);
+
+// ── Page shell ───────────────────────────────────────────────────────────────
+.page {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      1100px 460px at 78% -8%,
+      rgba(230, 169, 60, 0.07),
+      transparent 60%
+    ),
+    radial-gradient(
+      900px 480px at 8% 4%,
+      rgba(33, 64, 94, 0.06),
+      transparent 58%
+    ),
+    $paper;
+  background-attachment: fixed;
+  padding: 0 0 80px;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+  color: $ink;
+  -webkit-font-smoothing: antialiased;
+}
+
+.wrap {
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 28px 22px 0;
+}
+
+// ── Page header ──────────────────────────────────────────────────────────────
+.phead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 26px;
+  flex-wrap: wrap;
+
+  h1 {
+    font-size: 1.75rem;
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    color: $ink;
+    line-height: 1.12;
+  }
+
+  p {
+    color: $slate;
+    font-size: 0.93rem;
+    margin-top: 5px;
+  }
+}
+
+.btnPrimary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  background: linear-gradient(135deg, $gold-2, $gold);
+  color: #241704;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-radius: $r-sm;
+  padding: 0.74em 1.25em;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 10px 24px -12px rgba(230, 169, 60, 0.85);
+  transition:
+    transform 0.2s $ease,
+    box-shadow 0.2s,
+    filter 0.2s;
+  font-family: inherit;
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px -12px rgba(230, 169, 60, 0.95);
+    filter: brightness(1.03);
+  }
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// ── Layout ───────────────────────────────────────────────────────────────────
+.layout {
+  display: grid;
+  grid-template-columns: 258px 1fr;
+  gap: 22px;
+  align-items: start;
+}
+
+// ── Sidenav ──────────────────────────────────────────────────────────────────
+.sidenav {
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  padding: 10px;
+  position: sticky;
+  top: 82px;
+  box-shadow: $sh-card;
+  max-height: calc(100vh - 102px);
+  overflow-y: auto;
+}
+
+.snavSearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  margin: 0 0 8px;
+  border: 1.5px solid $line;
+  border-radius: $r-sm;
+  background: $paper-2;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    color: $slate-2;
+    flex: none;
+  }
+
+  input {
+    border: none;
+    background: none;
+    font-size: 0.83rem;
+    width: 100%;
+    color: $ink;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+    }
+    &::placeholder {
+      color: $slate-2;
+    }
+  }
+}
+
+.snav {
+  position: relative;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: $r-md;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 3px;
+  overflow: hidden;
+  transition: background-color 0.18s;
+  font-family: inherit;
+
+  &:hover {
+    background: $paper-2;
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #13283f, #0c1d30);
+    color: #e9f0f7;
+    box-shadow: 0 16px 34px -22px rgba(11, 26, 44, 0.7);
+
+    .snavIc {
+      background: rgba(230, 169, 60, 0.16);
+      color: $gold;
+    }
+
+    .snavSub {
+      color: #9baec0;
+    }
+  }
+}
+
+.snavIc {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: $mist;
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: $slate;
+  transition:
+    background-color 0.18s,
+    color 0.18s;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.snavLabel {
+  b {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    font-family: "Bricolage Grotesque", sans-serif;
+    letter-spacing: -0.01em;
+    color: $ink;
+  }
+}
+
+.active .snavLabel b {
+  color: #e9f0f7;
+}
+
+.snavSub {
+  font-size: 0.76rem;
+  color: $slate;
+  line-height: 1.3;
+}
+
+// ── Cards ────────────────────────────────────────────────────────────────────
+.card {
+  position: relative;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  padding: 24px;
+  box-shadow: $sh-card;
+  margin-bottom: 18px;
+  transition: box-shadow 0.25s;
+
+  &:hover {
+    box-shadow: $sh-card-h;
+  }
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  h3 {
+    font-size: 1.08rem;
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+    color: $ink;
+
+    &::before {
+      content: "";
+      width: 4px;
+      height: 1em;
+      border-radius: 3px;
+      background: linear-gradient(180deg, $gold-2, $gold-deep);
+      flex: none;
+    }
+  }
+}
+
+.csub {
+  font-size: 0.83rem;
+  color: $slate;
+  margin: 3px 0 18px 14px;
+}
+
+// ── Form grid ────────────────────────────────────────────────────────────────
+.form2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field {
+  margin-bottom: 0;
+}
+
+.full {
+  grid-column: 1 / -1;
+}
+
+.flabel {
+  display: block;
+  font-size: 0.79rem;
+  font-weight: 600;
+  margin-bottom: 7px;
+  color: #2c3a47;
+  letter-spacing: 0.01em;
+
+  .req {
+    color: $red;
+  }
+}
+
+.finput,
+.fselect,
+.ftext {
+  width: 100%;
+  border: 1.5px solid $line;
+  background: $paper-2;
+  border-radius: $r-sm;
+  padding: 0.72em 0.88em;
+  font-size: 0.89rem;
+  color: $ink;
+  font-family: inherit;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s,
+    background-color 0.18s;
+
+  &:hover,
+  &:focus {
+    outline: none;
+    border-color: $gold;
+    background: $white;
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
+  }
+}
+
+.ftext {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.55;
+}
+
+.fselect {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238693A0' stroke-width='2'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8em center;
+  background-color: $paper-2;
+  cursor: pointer;
+  padding-right: 2.2em;
+}
+
+.fhint {
+  font-size: 0.77rem;
+  color: $slate-2;
+  margin-top: 6px;
+}
+
+// ── Connected accounts ───────────────────────────────────────────────────────
+.connRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 13px 0;
+  border-top: 1px solid $line-soft;
+
+  &:first-of-type {
+    border-top: none;
+  }
+}
+
+.connL {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.connIc {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: $mist;
+  display: grid;
+  place-items: center;
+  color: $slate;
+  flex: none;
+
+  svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.connT {
+  b {
+    display: block;
+    font-size: 0.88rem;
+  }
+  span {
+    font-size: 0.77rem;
+    color: $slate;
+  }
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.71rem;
+  font-weight: 700;
+  font-family: "JetBrains Mono", monospace;
+  padding: 0.3em 0.7em;
+  border-radius: 99px;
+}
+
+.pillOn {
+  background: $green-bg;
+  color: $green;
+  border: 1px solid $green-bd;
+}
+
+.pillOff {
+  background: $mist;
+  color: $slate;
+}
+
+// ── Availability status cards ────────────────────────────────────────────────
+.statusCards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.statCard {
+  position: relative;
+  border: 1.5px solid $line;
+  border-radius: $r-md;
+  padding: 16px;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s,
+    transform 0.2s $ease;
+  user-select: none;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+  }
+
+  b {
+    display: block;
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+  }
+  span {
+    font-size: 0.77rem;
+    color: $slate;
+    line-height: 1.4;
+  }
+
+  .ck {
+    position: absolute;
+    top: 13px;
+    right: 13px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, $gold-2, $gold);
+    display: grid;
+    place-items: center;
+    color: #241704;
+    opacity: 0;
+    transition: opacity 0.2s;
+
+    svg {
+      width: 11px;
+      height: 11px;
+    }
+  }
+
+  &.checked {
+    border-color: $gold;
+    background: $amber-bg;
+    box-shadow: 0 10px 26px -18px rgba(230, 169, 60, 0.7);
+
+    .ck {
+      opacity: 1;
+    }
+  }
+}
+
+.dotGreen {
+  background: $green;
+}
+.dotGold {
+  background: $gold;
+}
+.dotSlate {
+  background: $slate-2;
+}
+
+// ── Note info box ────────────────────────────────────────────────────────────
+.note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: $paper-2;
+  border: 1px solid $line;
+  border-radius: $r-md;
+  padding: 12px 14px;
+  font-size: 0.82rem;
+  color: #3a4b5a;
+  margin-top: 16px;
+  line-height: 1.5;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    color: $gold-deep;
+    flex: none;
+    margin-top: 1px;
+  }
+}
+
+// ── Toggle rows ──────────────────────────────────────────────────────────────
+.toggleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 15px 0;
+  border-top: 1px solid $line-soft;
+
+  &:first-of-type {
+    border-top: none;
+    padding-top: 0;
+  }
+}
+
+.toggle {
+  position: relative;
+  width: 44px;
+  height: 25px;
+  flex: none;
+  cursor: pointer;
+  margin-top: 1px;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .tk {
+    position: absolute;
+    inset: 0;
+    background: $mist;
+    border-radius: 99px;
+    transition: background-color 0.2s;
+    box-shadow: inset 0 1px 2px rgba(11, 26, 44, 0.12);
+
+    &::before {
+      content: "";
+      position: absolute;
+      width: 19px;
+      height: 19px;
+      border-radius: 50%;
+      background: #fff;
+      top: 3px;
+      left: 3px;
+      transition: transform 0.2s $ease;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
+    }
+  }
+
+  input:checked + .tk {
+    background: linear-gradient(135deg, $gold-2, $gold);
+
+    &::before {
+      transform: translateX(19px);
+    }
+  }
+
+  input:disabled + .tk {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.trTxt {
+  flex: 1;
+  b {
+    display: block;
+    font-size: 0.9rem;
+  }
+  span {
+    font-size: 0.81rem;
+    color: $slate;
+  }
+}
+
+// ── Company chips / blocklist ─────────────────────────────────────────────────
+.chipRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  background: $paper-2;
+  border: 1px solid $line;
+  border-radius: 99px;
+  padding: 0.44em 0.5em 0.44em 0.88em;
+  font-size: 0.82rem;
+}
+
+.chipRm {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: $mist;
+  display: grid;
+  place-items: center;
+  color: $slate;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+
+  &:hover {
+    background: $red;
+    color: #fff;
+  }
+
+  svg {
+    width: 10px;
+    height: 10px;
+  }
+}
+
+.chipAdd {
+  display: flex;
+  gap: 8px;
+  margin-top: 13px;
+
+  input {
+    flex: 1;
+  }
+}
+
+.employerList {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.employerRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: $paper-2;
+  border: 1px solid $line;
+  border-radius: $r-sm;
+  padding: 0.58em 0.88em;
+
+  input {
+    flex: 1;
+    border: none;
+    background: none;
+    font-size: 0.87rem;
+    color: $ink;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+.employerRm {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: $slate-2;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s;
+  flex: none;
+
+  &:hover {
+    background: rgba(207, 75, 75, 0.1);
+    color: $red;
+  }
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+.btnSm {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.56em 1em;
+  border: 1.5px solid $line;
+  border-radius: $r-sm;
+  font-weight: 600;
+  font-size: 0.83rem;
+  background: $white;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    transform 0.2s $ease;
+  font-family: inherit;
+  white-space: nowrap;
+
+  &:hover {
+    border-color: $ink;
+    transform: translateY(-1px);
+  }
+
+  svg {
+    width: 13px;
+    height: 13px;
+  }
+}
+
+.btnRed {
+  border-color: $red;
+  color: $white;
+  background: $red;
+
+  &:hover {
+    background: #b83e3e;
+    border-color: #b83e3e;
+    transform: translateY(-1px);
+  }
+}
+
+// ── Notification matrix ───────────────────────────────────────────────────────
+.notifGrp {
+  margin-bottom: 20px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.notifGrpHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.73rem;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: $gold-deep;
+  margin-bottom: 10px;
+
+  select {
+    font-size: 0.76rem;
+    border: 1px solid $line;
+    border-radius: 99px;
+    padding: 0.3em 0.8em;
+    background: $white;
+    color: $slate;
+    appearance: none;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    text-transform: none;
+    letter-spacing: 0;
+    cursor: pointer;
+    transition: border-color 0.18s, box-shadow 0.18s;
+
+    &:hover,
+    &:focus {
+      outline: none;
+      border-color: $gold;
+      box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
+    }
+  }
+}
+
+.notifRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: 0.87rem;
+  border-top: 1px solid $line-soft;
+
+  &:first-of-type {
+    border-top: none;
+  }
+}
+
+.notifCh {
+  display: flex;
+  gap: 14px;
+  flex: none;
+}
+
+.ncheck {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.79rem;
+  color: $slate;
+  cursor: pointer;
+  user-select: none;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+
+  .bx {
+    width: 17px;
+    height: 17px;
+    border-radius: 5px;
+    border: 1.5px solid $line;
+    display: grid;
+    place-items: center;
+    transition:
+      background-color 0.15s,
+      border-color 0.15s;
+    background: $white;
+    flex: none;
+
+    svg {
+      width: 10px;
+      height: 10px;
+      color: #fff;
+      opacity: 0;
+    }
+  }
+
+  input:checked + .bx {
+    background: linear-gradient(135deg, $gold-2, $gold);
+    border-color: $gold;
+
+    svg {
+      opacity: 1;
+    }
+  }
+}
+
+.quietRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.quietTime {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.84rem;
+  color: $slate;
+
+  input[type="time"] {
+    border: 1.5px solid $line;
+    background: $paper-2;
+    border-radius: $r-sm;
+    padding: 0.48em 0.7em;
+    font-size: 0.84rem;
+    color: $ink;
+    font-family: inherit;
+
+    &:focus {
+      outline: none;
+      border-color: $gold;
+      box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
+    }
+  }
+}
+
+// ── Session rows ──────────────────────────────────────────────────────────────
+.sessionRow {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 13px 0;
+  border-top: 1px solid $line-soft;
+
+  &:first-of-type {
+    border-top: none;
+  }
+}
+
+.sessionIc {
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: $mist;
+  display: grid;
+  place-items: center;
+  color: $slate;
+  flex: none;
+
+  svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.sessionT {
+  flex: 1;
+  b {
+    display: block;
+    font-size: 0.88rem;
+  }
+  span {
+    font-size: 0.77rem;
+    color: $slate;
+  }
+  .now {
+    color: $green;
+    font-weight: 600;
+  }
+}
+
+.logRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 0.84rem;
+  border-top: 1px solid $line-soft;
+
+  &:first-of-type {
+    border-top: none;
+  }
+}
+
+.logT {
+  b {
+    font-weight: 600;
+  }
+  span {
+    display: block;
+    color: $slate;
+    font-size: 0.77rem;
+    margin-top: 1px;
+  }
+}
+
+.logTime {
+  font-size: 0.75rem;
+  color: $slate-2;
+  font-family: "JetBrains Mono", monospace;
+  white-space: nowrap;
+}
+
+// ── Danger zone ───────────────────────────────────────────────────────────────
+.dangerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 15px 0;
+  border-top: 1px solid $line-soft;
+
+  &:first-of-type {
+    border-top: none;
+  }
+
+  b {
+    display: block;
+    font-size: 0.9rem;
+  }
+  span {
+    font-size: 0.81rem;
+    color: $slate;
+  }
+}
+
+.dangerDel {
+  margin-top: 4px;
+  padding: 15px;
+  border-radius: $r-md;
+  background: rgba(207, 75, 75, 0.05);
+  border: 1px solid rgba(207, 75, 75, 0.22);
+  border-top: 1px solid rgba(207, 75, 75, 0.22) !important;
+
+  b {
+    color: $red;
+  }
+}
+
+// ── Appearance ────────────────────────────────────────────────────────────────
+.seg {
+  display: inline-flex;
+  background: $paper-2;
+  border: 1px solid $line;
+  border-radius: $r-sm;
+  padding: 4px;
+  gap: 4px;
+
+  button {
+    padding: 0.58em 1.05em;
+    border-radius: 7px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: $slate;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition:
+      background 0.2s,
+      color 0.2s,
+      box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.45em;
+    font-family: inherit;
+
+    svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    &.on {
+      background: $white;
+      color: $ink;
+      box-shadow: 0 4px 10px -4px rgba(11, 26, 44, 0.25);
+    }
+  }
+}
+
+.rangeRow {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px;
+
+  input[type="range"] {
+    flex: 1;
+    accent-color: $gold;
+  }
+
+  .rv {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.79rem;
+    color: $slate;
+    width: 36px;
+    text-align: right;
+  }
+}
+
+// ── Help / legal link rows ────────────────────────────────────────────────────
+.linkRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 0;
+  border-top: 1px solid $line-soft;
+  font-size: 0.89rem;
+  cursor: pointer;
+
+  &:first-of-type {
+    border-top: none;
+  }
+
+  &:hover .linkGo {
+    color: $ink;
+    background: $paper-2;
+  }
+}
+
+.linkL {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+
+  svg {
+    width: 15px;
+    height: 15px;
+    color: $gold-deep;
+  }
+}
+
+.linkGo {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: $slate-2;
+  transition:
+    color 0.2s,
+    background 0.2s;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+// ── Delete modal ──────────────────────────────────────────────────────────────
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 17, 28, 0.62);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 400;
+  padding: 44px 20px;
+  overflow-y: auto;
+  animation: fadeIn 0.3s $ease;
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+.modal {
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 50px 110px -34px rgba(0, 0, 0, 0.6);
+  overflow: hidden;
+  animation: modalPop 0.35s $ease;
+
+  @keyframes modalPop {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.985);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+}
+
+.modalHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 22px 24px;
+  border-bottom: 1px solid $line;
+
+  h3 {
+    font-size: 1.12rem;
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-weight: 700;
+
+    &::before {
+      display: none;
+    }
+  }
+
+  p {
+    font-size: 0.83rem;
+    color: $slate;
+    margin-top: 3px;
+  }
+}
+
+.modalClose {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: $slate;
+  border: 1px solid transparent;
+  background: none;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    color 0.2s,
+    border-color 0.2s;
+  flex: none;
+
+  &:hover {
+    background: $paper-2;
+    color: $ink;
+    border-color: $line;
+  }
+
+  svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+.modalBody {
+  padding: 22px 24px 26px;
+
+  p {
+    font-size: 0.87rem;
+    color: #3a4b5a;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+}
+
+.warnBox {
+  background: rgba(207, 75, 75, 0.06);
+  border: 1px solid rgba(207, 75, 75, 0.2);
+  border-radius: $r-md;
+  padding: 13px 15px;
+  font-size: 0.82rem;
+  color: #8a2f2f;
+  margin-bottom: 16px;
+  line-height: 1.55;
+}
+
+.modalFoot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.unlockList {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.unlockRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  transition: background .15s;
+
+  &:hover { background: #F6F7F8; }
+}
+
+.unlockAvatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(140deg, #e8f0fb, #c5d8f5);
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: .95rem;
+  color: #2c5fa8;
+  flex: none;
+  font-family: 'Bricolage Grotesque', sans-serif;
+}
+
+.unlockInfo {
+  flex: 1;
+  min-width: 0;
+
+  b {
+    display: block;
+    font-size: .88rem;
+    font-weight: 600;
+    color: $ink;
+  }
+
+  span {
+    font-size: .76rem;
+    color: $slate;
+  }
+}
+
+.unlockDate {
+  font-size: .76rem;
+  color: $slate;
+  white-space: nowrap;
+  flex: none;
+}
+
+.btnGhost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.72em 1.15em;
+  border: 1.5px solid $line;
+  border-radius: $r-sm;
+  font-weight: 600;
+  font-size: 0.88rem;
+  background: $white;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    transform 0.2s $ease;
+  font-family: inherit;
+
+  &:hover {
+    border-color: $ink;
+    transform: translateY(-1px);
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: $ink;
+  color: #e9f0f7;
+  padding: 0.82em 1.3em;
+  border-radius: 99px;
+  font-size: 0.89rem;
+  font-weight: 500;
+  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition:
+    opacity 0.3s $ease,
+    transform 0.3s $ease;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  pointer-events: none;
+
+  &.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  svg {
+    color: $gold;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────────
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .sidenav {
+    position: static;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    max-height: none;
+    padding: 8px;
+  }
+
+  .snavSearch {
+    display: none;
+  }
+
+  .snav {
+    flex: none;
+    width: auto;
+    margin: 0;
+
+    .snavSub {
+      display: none;
+    }
+  }
+
+  .form2 {
+    grid-template-columns: 1fr;
+  }
+
+  .statusCards {
+    grid-template-columns: 1fr;
+  }
+}

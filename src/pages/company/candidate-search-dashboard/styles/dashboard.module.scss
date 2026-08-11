@@ -1,0 +1,2113 @@
+// Gold/ink theme for the candidate search dashboard.
+// Scoped via CSS Modules so it can't leak into the rest of the Tailwind-based app.
+$ink: #0b1a2c;
+$ink-2: #192c41;
+$gold: #e6a93c;
+$gold-2: #f2c871;
+$gold-deep: #c98a1f;
+$slate: #566776;
+$slate-2: #8693a0;
+$line: #e4e7ea;
+$mist: #e8ecf0;
+$redact: #33485b;
+$white: #ffffff;
+$green: #2f9e69;
+$green-bg: rgba(60, 200, 130, 0.12);
+$green-bd: rgba(60, 200, 130, 0.32);
+$r-lg: 18px;
+$r-md: 13px;
+$r-sm: 9px;
+$ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+$drawer-w: 45vw;
+// Push mode (drawer squeezes the page instead of floating over it) needs the
+// filter sidebar (310px) + the 450px card floor to fit in the remaining 55%
+// of the page: 0.55 * $push-bp >= 22+310+22+450+22, so anything narrower
+// falls back to overlay mode instead of clipping the card behind the drawer.
+$push-bp: 1520px;
+
+// ===== Page shell =====
+.page {
+  background: #eef0f2;
+  min-height: 100vh;
+  padding-top: 64px;
+  transition: padding-right 0.34s $ease;
+
+  // Wide screens: the CV preview drawer pushes the page content left instead
+  // of overlaying it, so the results list and the drawer are visible together.
+  // List view skips this — list rows are already full-width, so squeezing
+  // them for the drawer defeats the point; it stays overlay+scrim instead.
+  @media (min-width: $push-bp) {
+    &.previewOpen:not(.listMode) {
+      padding-right: $drawer-w;
+    }
+  }
+}
+
+.body {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 22px 70px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 22px;
+  align-items: start;
+
+  @media (max-width: 1023px) {
+    grid-template-columns: 1fr;
+  }
+
+  // Wide screens with the CV drawer open (push mode): shrink the results
+  // column itself to 450px (instead of 1fr, which would otherwise gobble up
+  // any leftover space) and pack both columns against the right edge of the
+  // (still full-width) grid container — .body's own width:auto means
+  // margin:auto can't center/right-align the box itself, so justify-content
+  // does the packing instead. Leftover space lands on the far left of the
+  // page, not between the filter and the cards or between the cards and the
+  // drawer.
+  &.previewOpen {
+    @media (min-width: $push-bp) {
+      grid-template-columns: auto 450px;
+      justify-content: end;
+    }
+  }
+}
+
+// List view: never shrink the results column for the drawer — it stays
+// overlay+scrim at every width, so undo the grid-view push behavior above.
+.page.listMode .body.previewOpen {
+  @media (min-width: $push-bp) {
+    grid-template-columns: auto 1fr;
+    justify-content: normal;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.results {
+  min-width: 0;
+}
+
+.scrim {
+  display: none;
+
+  @media (max-width: 1023px) {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(11, 26, 44, 0.4);
+    z-index: 85;
+    display: none;
+
+    &.show {
+      display: block;
+    }
+  }
+}
+
+// ===== Filter sidebar =====
+.filters {
+  width: 310px;
+  flex: none;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  padding: 20px;
+  align-self: start;
+  position: sticky;
+  top: 84px;
+  box-shadow: 0 18px 40px -32px rgba(11, 26, 44, 0.4);
+  transition: width 0.2s $ease;
+
+  &.collapsed {
+    width: 56px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 0;
+  }
+
+  @media (max-width: 1023px) {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    bottom: 0;
+    width: 300px;
+    max-width: 86vw;
+    z-index: 90;
+    border-radius: 0;
+    align-self: auto;
+    transform: translateX(0);
+    transition: transform 0.3s $ease;
+    overflow-y: auto;
+    box-shadow: 0 0 80px rgba(0, 0, 0, 0.3);
+
+    &.collapsed {
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 20px;
+      transform: translateX(-100%);
+    }
+  }
+}
+
+.filtersHead {
+  margin-bottom: 18px;
+
+  &Row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &Title {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    font-weight: 700;
+    font-size: 1.02rem;
+    color: $ink;
+
+    svg {
+      color: $gold-deep;
+    }
+  }
+
+  &Badge {
+    width: 20px;
+    height: 20px;
+    border-radius: 999px;
+    background: $gold;
+    color: #241704;
+    display: grid;
+    place-items: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  &Collapse {
+    padding: 6px;
+    border-radius: $r-sm;
+    color: $slate-2;
+    transition: 0.2s;
+
+    &:hover {
+      background: $mist;
+      color: $ink;
+    }
+  }
+
+  &Actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+}
+
+.filtersClear {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: $gold-deep;
+  padding: 0;
+  background: none;
+  border: none;
+  transition: color 0.18s;
+
+  &:hover {
+    color: $gold;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+}
+
+.savedFilters {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid $line;
+}
+
+.savedFiltersTitle {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 600;
+  color: $slate-2;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.savedFiltersList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.savedFilterChip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  border-radius: 999px;
+  background: $mist;
+  border: 1px solid $line;
+  transition: 0.18s;
+
+  &Active {
+    background: rgba(230, 169, 60, 0.14);
+    border-color: $gold;
+  }
+}
+
+.savedFilterChipLabel {
+  padding: 0.4em 0.3em 0.4em 0.85em;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: $ink;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .savedFilterChipActive & {
+    color: $gold-deep;
+  }
+}
+
+.savedFilterChipDelete {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-right: 4px;
+  border-radius: 999px;
+  color: $slate-2;
+  flex-shrink: 0;
+  transition: 0.15s;
+
+  &:hover {
+    background: rgba(200, 40, 40, 0.12);
+    color: #c82828;
+  }
+}
+
+.filtersBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.fgroup {
+  padding: 16px 0;
+  border-top: 1px solid $line;
+
+  &:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  &Title {
+    display: block;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 600;
+    color: $slate-2;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 11px;
+  }
+
+  &Body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+.salaryRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.languageLevelRows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.languageLevelRow {
+  display: grid;
+  grid-template-columns: 1fr 132px auto;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 7px;
+  background: rgba(230, 169, 60, 0.06);
+  border: 1px solid $line;
+}
+
+.languageLevelName {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: $ink;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.languageLevelRemove {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: $slate;
+  flex-shrink: 0;
+  transition: 0.15s;
+
+  &:hover {
+    background: rgba(230, 169, 60, 0.18);
+    color: $gold-deep;
+  }
+}
+
+.languageLevelSelect {
+  min-width: 0;
+}
+
+.saveFilterBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  width: 100%;
+  padding: 0.7em;
+  border-radius: $r-sm;
+  background: $gold;
+  color: #241704;
+  font-weight: 700;
+  font-size: 0.85rem;
+  transition: 0.18s;
+
+  &:hover:not(:disabled) {
+    background: $gold-deep;
+    color: $white;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+}
+
+.saveFilterRow {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+
+  > div {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.saveFilterConfirm,
+.saveFilterCancel {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: $r-sm;
+  transition: 0.15s;
+}
+
+.saveFilterConfirm {
+  background: $gold;
+  color: #241704;
+
+  &:hover:not(:disabled) {
+    background: $gold-deep;
+    color: $white;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    pointer-events: none;
+  }
+}
+
+.saveFilterCancel {
+  background: $mist;
+  color: $slate-2;
+
+  &:hover {
+    background: rgba(200, 40, 40, 0.12);
+    color: #c82828;
+  }
+}
+
+.collapsedBadge {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: $gold;
+  color: #241704;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  margin-top: 10px;
+}
+
+// ===== Search toolbar =====
+.toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+
+.searchbar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  background: $white;
+  border: 1.5px solid $line;
+  border-radius: $r-md;
+  padding: 0 0.9em;
+  box-shadow: 0 14px 30px -28px rgba(11, 26, 44, 0.4);
+  transition: border-color 0.18s, box-shadow 0.18s;
+
+  &:hover,
+  &:focus-within {
+    border-color: $gold;
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
+  }
+
+  svg {
+    color: $slate-2;
+    flex: none;
+  }
+
+  input {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    padding: 0.85em 0;
+    font-size: 0.95rem;
+    color: $ink;
+
+    &::placeholder {
+      color: $slate-2;
+    }
+  }
+}
+
+.searchClear {
+  padding: 4px;
+  border-radius: $r-sm;
+  color: $slate-2;
+  transition: 0.2s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.06);
+    color: $ink;
+  }
+}
+
+.toolbarRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.resultsInfo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.resultsCount {
+  font-size: 0.9rem;
+  color: $slate;
+
+  b {
+    color: $ink;
+    font-weight: 700;
+  }
+}
+
+.queryPill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  background: rgba(230, 169, 60, 0.14);
+  color: $gold-deep;
+  border-radius: 999px;
+  padding: 0.3em 0.4em 0.3em 0.7em;
+
+  button {
+    display: grid;
+    place-items: center;
+    padding: 2px;
+    border-radius: 999px;
+
+    &:hover {
+      background: rgba(230, 169, 60, 0.25);
+    }
+  }
+}
+
+.toolbarControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.filtersToggleBtn {
+  display: none;
+  align-items: center;
+  gap: 0.5em;
+  height: 40px;
+  border: 1.5px solid $line;
+  background: $white;
+  border-radius: $r-sm;
+  padding: 0 0.9em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: $ink;
+  transition: border-color 0.2s;
+
+  svg {
+    color: $gold-deep;
+  }
+
+  &:hover {
+    border-color: $gold;
+  }
+
+  @media (max-width: 1023px) {
+    display: flex;
+  }
+}
+
+.sortDesktop {
+  display: none;
+
+  @media (min-width: 640px) {
+    display: block;
+  }
+}
+
+.sortMobileBtn {
+  display: block;
+
+  @media (min-width: 640px) {
+    display: none;
+  }
+}
+
+.viewToggle {
+  display: flex;
+  background: $white;
+  border: 1.5px solid $line;
+  border-radius: $r-sm;
+  padding: 3px;
+}
+
+.viewToggleBtn {
+  padding: 0.5em 0.6em;
+  border-radius: 7px;
+  color: $slate-2;
+  display: grid;
+  place-items: center;
+  transition: 0.2s;
+
+  &.on {
+    background: $ink;
+    color: $gold;
+  }
+}
+
+.viewToggleListBtn {
+  @media (max-width: 1000px) {
+    display: none;
+  }
+}
+
+// In list view, the filter sidebar collapses to the mobile overlay/button
+// earlier (1300px) than it normally would (1023px), since list rows need
+// more horizontal room than the grid cards do.
+@media (min-width: 1024px) and (max-width: 1300px) {
+  .listMode .body {
+    grid-template-columns: 1fr;
+  }
+
+  .listMode .scrim {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(11, 26, 44, 0.4);
+    z-index: 85;
+    display: none;
+
+    &.show {
+      display: block;
+    }
+  }
+
+  .listMode .filters {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    bottom: 0;
+    width: 300px;
+    max-width: 86vw;
+    z-index: 90;
+    border-radius: 0;
+    align-self: auto;
+    transform: translateX(0);
+    transition: transform 0.3s $ease;
+    overflow-y: auto;
+    box-shadow: 0 0 80px rgba(0, 0, 0, 0.3);
+
+    &.collapsed {
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 20px;
+      transform: translateX(-100%);
+    }
+  }
+
+  .listMode .filtersToggleBtn {
+    display: flex;
+  }
+}
+
+// ===== Candidate grid =====
+.gridWrap {
+  padding: 20px 0 0;
+}
+
+.loadMoreWrap {
+  display: flex;
+  justify-content: center;
+  padding: 28px 0 8px;
+}
+
+.loadMoreBtn {
+  padding: 11px 22px;
+  border-radius: $r-md;
+  border: 1px solid $line;
+  background: $white;
+  color: $ink;
+  font-weight: 600;
+  font-size: 0.88rem;
+  transition: 0.2s;
+
+  &:hover:not(:disabled) {
+    background: $mist;
+    border-color: $slate-2;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  transition: grid-template-columns 0.34s $ease;
+
+  @media (max-width: 760px) {
+    gap: clamp(16px, calc(16px + (100vw - 480px) * 0.05), 30px);
+  }
+
+  @media (min-width: 761px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  @media (min-width: 1081px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 36px;
+  }
+
+  &.filtersCollapsed {
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+  }
+
+  &.list {
+    grid-template-columns: 1fr;
+  }
+
+  // Wide screens with the CV drawer open: collapse to a single column so the
+  // list and the open detail panel can be compared side by side. The 450px
+  // cap itself comes from .main so the toolbar shrinks along with the grid.
+  &.previewOpen {
+    @media (min-width: $push-bp) {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+}
+
+.emptyState {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+
+  &Icon {
+    width: 88px;
+    height: 88px;
+    border-radius: 999px;
+    background: $mist;
+    display: grid;
+    place-items: center;
+    margin: 0 auto 16px;
+  }
+
+  h3 {
+    color: $ink;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: $slate;
+    margin-bottom: 16px;
+  }
+
+  ul {
+    list-style: none;
+    color: $slate;
+    font-size: 0.88rem;
+    text-align: left;
+    display: inline-block;
+
+    li {
+      margin: 2px 0;
+    }
+  }
+}
+
+.skeletonCard {
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  padding: 20px;
+
+  &Pulse {
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.skelAvatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  background: $mist;
+  margin-bottom: 12px;
+}
+.skelLineWide {
+  height: 14px;
+  background: $mist;
+  border-radius: 6px;
+  width: 75%;
+  margin-bottom: 8px;
+}
+.skelLineNarrow {
+  height: 12px;
+  background: $mist;
+  border-radius: 6px;
+  width: 50%;
+  margin-bottom: 16px;
+}
+.skelBody {
+  height: 10px;
+  background: $mist;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  &:last-child {
+    width: 70%;
+  }
+}
+.skelTagRow {
+  display: flex;
+  gap: 6px;
+  margin: 14px 0;
+}
+.skelTag {
+  height: 22px;
+  border-radius: 999px;
+  background: $mist;
+}
+.skelButton {
+  height: 36px;
+  border-radius: $r-sm;
+  background: $mist;
+}
+
+// ===== Candidate card =====
+.card {
+  position: relative;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  transition:
+    transform 0.25s $ease,
+    box-shadow 0.25s,
+    border-color 0.25s;
+  box-shadow: 0 16px 36px -30px rgba(11, 26, 44, 0.4);
+
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 24px 44px -28px rgba(11, 26, 44, 0.45);
+  }
+
+  &.unlocked {
+    border-color: $green-bd;
+    box-shadow:
+      0 0 0 1px $green-bd,
+      0 24px 44px -28px rgba(47, 158, 105, 0.35);
+  }
+
+  &.active {
+    border-color: $gold;
+    box-shadow:
+      0 0 0 1px $gold,
+      0 24px 44px -28px rgba(230, 169, 60, 0.35);
+  }
+
+  &.list {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    gap: 24px;
+    padding: 22px 24px;
+
+    @media (max-width: 680px) {
+      flex-direction: column;
+      gap: 16px;
+    }
+  }
+}
+
+.cardTop {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 32px;
+}
+
+.cardBookmark {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1.5px solid $line;
+  background: $white;
+  display: grid;
+  place-items: center;
+  color: $slate-2;
+  transition: 0.2s;
+  z-index: 2;
+  flex: none;
+
+  &:hover {
+    border-color: $gold;
+    color: $gold-deep;
+  }
+
+  &.on {
+    background: rgba(230, 169, 60, 0.14);
+    border-color: $gold;
+    color: $ink;
+  }
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  background: $green-bg;
+  border: 1px solid $green-bd;
+  color: $green;
+  padding: 0.3em 0.7em;
+  border-radius: 999px;
+  margin-left: auto;
+  flex: none;
+}
+
+.statusTitle {
+  font-size: 0.65rem;
+  letter-spacing: 0.05rem;
+  font-weight: 700;
+}
+
+.statusOpen {
+  background: rgba(230, 169, 60, 0.14);
+  border-color: rgba(230, 169, 60, 0.38);
+  color: $gold-deep;
+
+  .pulse {
+    background: $gold-deep;
+  }
+}
+
+.statusOff {
+  background: rgba(86, 103, 118, 0.1);
+  border-color: rgba(86, 103, 118, 0.3);
+  color: $slate;
+
+  .pulse {
+    background: $slate;
+  }
+}
+
+.pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3cc882;
+  animation: cardPulse 2s infinite;
+  flex: none;
+}
+
+@keyframes cardPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(60, 200, 130, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 7px rgba(60, 200, 130, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(60, 200, 130, 0);
+  }
+}
+
+.divider {
+  height: 1px;
+  background: $line;
+  margin: 14px 0;
+}
+
+.factsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 14px;
+}
+
+.fact {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.factsGrid .fact {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.factIcon {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  background: $mist;
+  color: $slate;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.factText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.factK {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $slate-2;
+}
+
+.factV {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: $ink;
+}
+
+.factVGold {
+  color: $gold-deep;
+}
+
+.cardHead {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.avatar {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 15px;
+  flex: none;
+  overflow: hidden;
+  background: $mist;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.avatarLocked {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: $ink-2;
+}
+
+.avatarLockedImg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  object-fit: cover;
+  image-rendering: pixelated;
+  filter: blur(7px);
+  transform: translate(-50%, -50%);
+}
+
+.avatarLockedTint {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    150deg,
+    rgba(11, 26, 44, 0.55),
+    rgba(25, 44, 65, 0.72)
+  );
+}
+
+.avatarLockedIcon {
+  position: relative;
+  z-index: 1;
+}
+
+.name {
+  font-weight: 700;
+  font-size: 1.02rem;
+  color: $ink;
+  line-height: 1.2;
+  display: block;
+}
+
+.redactedName {
+  display: block;
+  width: 132px;
+  height: 25px;
+  border-radius: 6px;
+  background: repeating-linear-gradient(-45deg, $ink-2 0 6px, $ink 6px 12px);
+}
+
+.role {
+  font-size: 0.92rem;
+  letter-spacing: 0.05rem;
+  color: #c98a1f;
+  font-weight: 700;
+  margin-top: 5px;
+  display: block;
+}
+
+.redactedRole {
+  display: inline-block;
+  width: 90px;
+  height: 11px;
+  border-radius: 5px;
+  background: $mist;
+  vertical-align: middle;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 0.82rem;
+  color: $slate;
+  margin-bottom: 11px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 0.4em;
+  }
+}
+
+.metaText {
+  font-size: 0.82rem;
+  color: $slate;
+}
+
+.salary {
+  display: flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $green;
+  margin-bottom: 11px;
+}
+
+.desc {
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: #445261;
+  margin-bottom: 12px;
+  text-align: justify;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.tag {
+  font-size: 0.73rem;
+  font-weight: 500;
+  color: #33424f;
+  background: $mist;
+  border: 1px solid $line;
+  padding: 0.26em 0.58em;
+  border-radius: 6px;
+}
+
+.moreTag {
+  font-size: 0.73rem;
+  font-weight: 600;
+  color: $slate-2;
+  padding: 0.26em 0.3em;
+}
+
+.match {
+  margin-bottom: 14px;
+}
+
+.matchTop {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.76rem;
+  margin-bottom: 5px;
+
+  .ml {
+    color: $slate;
+    font-family: "JetBrains Mono", monospace;
+    letter-spacing: 0.04em;
+  }
+  .mv {
+    font-weight: 700;
+    color: $gold-deep;
+  }
+}
+
+.matchBar {
+  height: 7px;
+  border-radius: 4px;
+  background: $mist;
+  overflow: hidden;
+
+  i {
+    display: block;
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, $gold-deep, $gold);
+  }
+}
+
+.cardActions {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+
+  .unlockBtn {
+    flex: 3;
+  }
+
+  .previewBtn,
+  .cardBookmark {
+    flex: 1;
+    width: auto;
+    height: auto;
+    border-radius: $r-sm;
+  }
+}
+
+// ===== List row layout =====
+.listContent {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  grid-template-areas:
+    "avatar head"
+    "avatar facts"
+    "skills skills"
+    "desc   desc";
+  align-items: start;
+  gap: 13px 22px;
+}
+
+.listAvatar {
+  grid-area: avatar;
+}
+
+.listHead {
+  grid-area: head;
+  align-self: center;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  flex-wrap: wrap;
+}
+
+.listFacts {
+  grid-area: facts;
+  align-self: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 11px 26px;
+}
+
+.listSkills {
+  grid-area: skills;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  gap: 6px;
+}
+
+.listDesc {
+  grid-area: desc;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #445261;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.listActions {
+  flex: none;
+  width: 175px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-evenly;
+  border-left: 1px solid $line;
+  padding-left: 20px;
+
+  @media (max-width: 680px) {
+    width: 100%;
+    border-left: none;
+    border-top: 1px solid $line;
+    padding-left: 0;
+    padding-top: 16px;
+  }
+
+  .statusBadge {
+    align-self: center;
+    margin-left: 0;
+  }
+
+  .unlockBtn {
+    flex: none;
+    width: 100%;
+    height: 44px;
+  }
+}
+
+.listMatch {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.4em;
+}
+
+.matchDot {
+  color: $gold-deep;
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+.listActionsRow {
+  display: flex;
+  gap: 8px;
+
+  .cardBookmark,
+  .previewBtn {
+    flex: 1;
+    width: auto;
+    height: 44px;
+    border-radius: $r-sm;
+  }
+
+  .previewBtn {
+    padding: 0;
+  }
+}
+
+.unlockBtn {
+  flex: 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  background: linear-gradient(135deg, $gold-2, $gold-deep);
+  color: #241704;
+  font-weight: 700;
+  font-size: 0.88rem;
+  border-radius: $r-sm;
+  padding: 0.8em 1.1em;
+  box-shadow: 0 12px 24px -12px rgba(201, 138, 31, 0.65);
+  transition:
+    filter 0.2s,
+    transform 0.2s $ease,
+    box-shadow 0.2s;
+
+  &:hover {
+    filter: brightness(1.06);
+    transform: translateY(-1px);
+    box-shadow: 0 16px 28px -12px rgba(201, 138, 31, 0.75);
+  }
+
+  &.done {
+    background: $green-bg;
+    color: $green;
+    border: 1px solid $green-bd;
+    box-shadow: none;
+
+    &:hover {
+      background: rgba(60, 200, 130, 0.2);
+      transform: none;
+    }
+  }
+
+  &:disabled {
+    background: $mist;
+    color: $slate-2;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+  }
+}
+
+.previewBtn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  border: 1.5px solid rgba(230, 169, 60, 0.5);
+  border-radius: $r-sm;
+  padding: 0.8em 1em;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: $gold-deep;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+
+  &:hover {
+    border-color: $gold-deep;
+    background: rgba(230, 169, 60, 0.1);
+  }
+
+  &.active {
+    background: $ink;
+    border-color: $ink;
+    color: $gold;
+  }
+}
+
+// ===== Unlock confirm modal (dark, matches navbar "Buy credits" style) =====
+.unlockOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(6, 13, 22, 0.72);
+  backdrop-filter: blur(8px);
+  animation: unlockFade 0.3s $ease;
+}
+
+@keyframes unlockFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.unlockModal {
+  position: relative;
+  width: 100%;
+  max-width: 450px;
+  background: linear-gradient(180deg, #15293f, #0e2034);
+  border: 1px solid #21405e;
+  border-radius: $r-lg;
+  padding: 28px 26px 24px;
+  box-shadow:
+    0 0 0 1px rgba(230, 169, 60, 0.1),
+    0 50px 100px -30px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  animation: unlockPop 0.45s $ease;
+}
+
+@keyframes unlockPop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.unlockClose {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  color: #9baec0;
+  border: 1px solid transparent;
+  transition: 0.2s $ease;
+
+  &:hover {
+    color: #e9f0f7;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.unlockHead {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 14px;
+  padding-right: 30px;
+}
+
+.unlockIconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: linear-gradient(
+    135deg,
+    rgba(242, 200, 113, 0.18),
+    rgba(201, 138, 31, 0.1)
+  );
+  border: 1px solid rgba(230, 169, 60, 0.3);
+  display: grid;
+  place-items: center;
+  color: $gold-2;
+  flex: none;
+}
+
+.unlockEyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: $gold;
+  margin-bottom: 5px;
+}
+
+.unlockTitle {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  font-size: 1.28rem;
+  line-height: 1.2;
+  color: #e9f0f7;
+}
+
+.unlockSub {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #9baec0;
+  margin-bottom: 20px;
+}
+
+.unlockRows {
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid #21405e;
+  border-radius: $r-md;
+  padding: 4px 16px;
+  margin-bottom: 24px;
+}
+
+.unlockRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  font-size: 0.88rem;
+  border-top: 1px solid #21405e;
+
+  &:first-child {
+    border-top: none;
+  }
+
+  .k {
+    color: #9baec0;
+  }
+  .v {
+    font-weight: 600;
+    color: #e9f0f7;
+  }
+  .vGold {
+    color: $gold-2;
+    font-family: "JetBrains Mono", monospace;
+  }
+}
+
+.unlockNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: rgba(230, 169, 60, 0.07);
+  border: 1px solid rgba(230, 169, 60, 0.25);
+  border-radius: $r-md;
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+
+.unlockNoteIcon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(230, 169, 60, 0.15);
+  border: 1px solid rgba(230, 169, 60, 0.35);
+  color: $gold;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.unlockNoteText {
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: #9baec0;
+
+  b {
+    color: $gold-2;
+    font-weight: 700;
+  }
+}
+
+.unlockActions {
+  display: flex;
+  gap: 10px;
+}
+
+.unlockBtnGo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  background: $gold;
+  color: #241704;
+  font-weight: 700;
+  font-size: 0.94rem;
+  padding: 0.9em 1em;
+  border-radius: $r-sm;
+  box-shadow: 0 10px 26px -12px rgba(230, 169, 60, 0.85);
+  transition:
+    background-color 0.25s,
+    transform 0.25s $ease,
+    box-shadow 0.25s;
+
+  &:hover {
+    background: $gold-2;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px -12px rgba(230, 169, 60, 0.9);
+  }
+}
+
+.unlockBtnX {
+  padding: 0.9em 1.3em;
+  border: 1px solid #21405e;
+  border-radius: $r-sm;
+  font-weight: 600;
+  color: #9baec0;
+  transition: 0.2s $ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.25);
+    color: #e9f0f7;
+    background: rgba(255, 255, 255, 0.04);
+  }
+}
+
+// ----- Unlock confirm modal: success ("unlocked") state -----
+.unlockDoneHead {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-right: 30px;
+}
+
+.unlockDoneAvatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  overflow: hidden;
+  flex: none;
+  border: 2px solid $green-bd;
+  box-shadow: 0 0 0 4px rgba(60, 200, 130, 0.12);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.unlockDoneName {
+  display: block;
+  font-weight: 700;
+  font-size: 1.14rem;
+  color: #e9f0f7;
+  line-height: 1.25;
+}
+
+.unlockDoneRole {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $gold-2;
+  margin-top: 4px;
+}
+
+.unlockDoneSub {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: #9baec0;
+  margin-bottom: 24px;
+
+  b {
+    color: #e9f0f7;
+  }
+}
+
+.unlockBtnDone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $green-bg;
+  border: 1.5px solid $green-bd;
+  color: #6fd39a;
+  font-weight: 700;
+  font-size: 0.94rem;
+  padding: 0.9em 1em;
+  border-radius: $r-sm;
+  cursor: default;
+}
+
+.unlockBtnPurchased {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  background: $gold;
+  color: #241704;
+  font-weight: 700;
+  font-size: 0.94rem;
+  padding: 0.9em 1em;
+  border-radius: $r-sm;
+  box-shadow: 0 10px 26px -12px rgba(230, 169, 60, 0.85);
+  transition:
+    background-color 0.25s,
+    transform 0.25s $ease,
+    box-shadow 0.25s;
+
+  &:hover {
+    background: $gold-2;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px -12px rgba(230, 169, 60, 0.9);
+  }
+}
+
+@media (max-width: 460px) {
+  .unlockModal {
+    padding: 24px 20px 20px;
+  }
+  .unlockTitle {
+    font-size: 1.15rem;
+  }
+}
+
+// ===== Buy credits modal =====
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 26, 44, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1300;
+  padding: 20px;
+}
+
+.modal {
+  position: relative;
+  background: $white;
+  border-radius: $r-lg;
+  width: 100%;
+  max-width: 420px;
+  padding: 28px;
+  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.5);
+  animation: pop 0.25s $ease;
+
+  &.buy {
+    max-width: 440px;
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.modalClose {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: $slate-2;
+
+  &:hover {
+    background: $mist;
+    color: $ink;
+  }
+}
+
+.modalIcon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(230, 169, 60, 0.14);
+  display: grid;
+  place-items: center;
+  margin-bottom: 16px;
+  color: $gold-deep;
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  color: $ink;
+  margin-bottom: 6px;
+}
+
+.modalSub {
+  font-size: 0.92rem;
+  color: $slate;
+  margin-bottom: 18px;
+}
+
+.modalRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 11px 0;
+  font-size: 0.92rem;
+  border-top: 1px solid $line;
+
+  &:first-of-type {
+    border-top: none;
+  }
+
+  .k {
+    color: $slate;
+  }
+  .v {
+    font-weight: 600;
+    color: $ink;
+  }
+  .vGold {
+    color: $gold-deep;
+    font-family: "JetBrains Mono", monospace;
+  }
+}
+
+.modalActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.btnGo {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  background: $gold;
+  color: #241704;
+  font-weight: 700;
+  font-size: 0.94rem;
+  border-radius: $r-sm;
+  padding: 0.85em 1em;
+  transition:
+    background-color 0.2s,
+    transform 0.2s $ease;
+
+  &:hover {
+    background: $gold-2;
+    transform: translateY(-1px);
+  }
+}
+
+.btnX {
+  padding: 0.85em 1.3em;
+  border: 1.5px solid $line;
+  border-radius: $r-sm;
+  font-weight: 600;
+  color: $slate;
+
+  &:hover {
+    border-color: $ink;
+    color: $ink;
+  }
+}
+
+.buyBal {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.86rem;
+  color: $slate;
+  margin-bottom: 18px;
+
+  b {
+    color: $gold-deep;
+  }
+}
+
+.pkgs {
+  display: grid;
+  gap: 10px;
+}
+
+.pkg {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1.5px solid $line;
+  border-radius: $r-md;
+  padding: 15px 16px;
+  cursor: pointer;
+  transition: 0.18s;
+  width: 100%;
+  text-align: left;
+  background: $white;
+
+  &:hover {
+    border-color: #cdd3d8;
+  }
+
+  &.pop {
+    border-color: $gold;
+    box-shadow: 0 0 0 1px $gold;
+  }
+}
+
+.pkgLeft b {
+  font-size: 1.02rem;
+  color: $ink;
+}
+
+.pkgBadge {
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: #241704;
+  background: $gold;
+  padding: 0.2em 0.5em;
+  border-radius: 999px;
+  margin-left: 0.5em;
+  vertical-align: middle;
+}
+
+.pkgUnit {
+  display: block;
+  font-size: 0.78rem;
+  color: $slate;
+  font-family: "JetBrains Mono", monospace;
+  margin-top: 2px;
+}
+
+.pkgRight {
+  text-align: right;
+
+  b {
+    font-size: 1.18rem;
+    color: $ink;
+  }
+
+  span {
+    display: block;
+    font-size: 0.72rem;
+    color: $gold-deep;
+    font-family: "JetBrains Mono", monospace;
+  }
+}
+
+.buyNote {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+  font-size: 0.78rem;
+  color: $slate-2;
+  margin-top: 16px;
+  justify-content: center;
+}
+
+.buyConfirmActions {
+  display: flex;
+  margin-top: 18px;
+}
+
+.buyBtnGhost {
+  flex: 1;
+  text-align: center;
+  padding: 0.9em 1.2em;
+  border: 1px solid $line;
+  border-radius: $r-sm;
+  font-weight: 600;
+  color: $slate;
+  transition: 0.2s;
+
+  &:hover {
+    border-color: $slate-2;
+    color: $ink;
+  }
+}
+
+.checkoutError {
+  font-size: .82rem;
+  color: #d64545;
+  margin: -6px 0 14px;
+}
+
+// ===== Toast =====
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: $ink;
+  color: #e9f0f7;
+  padding: 0.85em 1.3em;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: 0.3s $ease;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  pointer-events: none;
+
+  &.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  svg {
+    color: $gold;
+  }
+}

@@ -1226,10 +1226,9 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 }
 
 .pmCardArt {
-  flex: 0 0 33%;
-  width: 33%;
-  max-width: 300px;
+  width: 168px;
   height: auto;
+  flex: none;
   margin: -6px -6px 0 0;
 
   @media (max-width: 880px) {

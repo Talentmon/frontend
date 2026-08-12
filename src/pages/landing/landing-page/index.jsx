@@ -461,27 +461,35 @@ const LandingPage = () => {
           </div>
           <div className="steps">
             <div className="step fx">
-              <span className="step-num">01</span>
-              <div className="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg></div>
-              <h3>Search</h3>
+              <div className="step-head">
+                <div className="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" /></svg></div>
+                <h3>Search</h3>
+                <span className="step-num">01</span>
+              </div>
               <p>Filter the pool by skills, seniority, expected salary, location, availability and other — instantly.</p>
             </div>
             <div className="step fx">
-              <span className="step-num">02</span>
-              <div className="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z" /></svg></div>
-              <h3>Shortlist</h3>
+              <div className="step-head">
+                <div className="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M6 4h12a1 1 0 0 1 1 1v15l-7-4-7 4V5a1 1 0 0 1 1-1z" /></svg></div>
+                <h3>Shortlist</h3>
+                <span className="step-num">02</span>
+              </div>
               <p>Bookmark up to 10 promising candidates, add notes, and compare them side by side before you commit a credit.</p>
             </div>
             <div className="step fx">
-              <span className="step-num">03</span>
-              <div className="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7a4 4 0 0 1 7.5-2" /></svg></div>
-              <h3>Unlock</h3>
+              <div className="step-head">
+                <div className="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7a4 4 0 0 1 7.5-2" /></svg></div>
+                <h3>Unlock</h3>
+                <span className="step-num">03</span>
+              </div>
               <p>Spend one credit to reveal name, email, phone, LinkedIn, past employers and the full CV for printing. You decide who's worth it.</p>
             </div>
             <div className="step fx">
-              <span className="step-num">04</span>
-              <div className="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h5v14H4zM10 5h4v9h-4zM15 5h5v6h-5z" /></svg></div>
-              <h3>Track</h3>
+              <div className="step-head">
+                <div className="step-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h5v14H4zM10 5h4v9h-4zM15 5h5v6h-5z" /></svg></div>
+                <h3>Track</h3>
+                <span className="step-num">04</span>
+              </div>
               <p>Move each candidate through your pipeline — contacted, interview, offer, hired — in one view.</p>
             </div>
           </div>

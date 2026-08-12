@@ -304,9 +304,10 @@
   .step {
     position: relative; background: var(--lp-white); border: 1px solid var(--lp-line); border-radius: var(--lp-r-md); padding: 26px 22px 24px; transition: transform .3s var(--lp-ease), box-shadow .3s;
     &:hover { transform: translateY(-4px); box-shadow: 0 22px 40px -26px rgba(11, 26, 44, .4); }
-    .step-num { font-family: 'JetBrains Mono', monospace; font-size: .74rem; color: var(--lp-gold-deep); letter-spacing: .1em; font-weight: 600; }
-    .step-ic { width: 46px; height: 46px; border-radius: 12px; background: var(--lp-mist); display: grid; place-items: center; margin: 16px 0 16px; color: var(--lp-ink); svg { width: 23px; height: 23px; } }
-    h3 { font-size: 1.16rem; margin-bottom: 8px; }
+    .step-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+    .step-num { font-family: 'JetBrains Mono', monospace; font-size: .74rem; color: var(--lp-gold-deep); letter-spacing: .1em; font-weight: 600; margin-left: auto; }
+    .step-ic { flex: none; width: 46px; height: 46px; border-radius: 12px; background: var(--lp-mist); display: grid; place-items: center; color: var(--lp-ink); svg { width: 23px; height: 23px; } }
+    h3 { font-size: 1.16rem; }
     p { font-size: .92rem; color: var(--lp-slate); line-height: 1.55; }
   }
 

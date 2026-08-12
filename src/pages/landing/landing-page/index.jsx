@@ -859,9 +859,9 @@ const LandingPage = () => {
             </div>
             <div className="foot-col">
               <h4>Legal</h4>
-              <a href="#">Privacy policy</a>
-              <a href="#">Terms of service</a>
-              <a href="#">Candidate data</a>
+              <a href="/privacy-policy">Privacy policy</a>
+              <a href="/terms-of-service">Terms of service</a>
+              <a href="/refund-policy">Refund policy</a>
             </div>
           </div>
           <div className="foot-bottom">

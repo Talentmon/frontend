@@ -96,7 +96,6 @@ const CreditPackages = ({ onPurchase }) => {
       <div className={styles.paynote}>
         <div><Icon name="ShieldCheck" size={15} /><span>Prices include 20% VAT</span></div>
         <div><Icon name="Clock" size={15} /><span>Credits never expire</span></div>
-        <div><Icon name="FileText" size={15} /><span>Corporate invoicing available</span></div>
         <div><Icon name="CreditCard" size={15} /><span>Secure card payment</span></div>
       </div>
     </div>

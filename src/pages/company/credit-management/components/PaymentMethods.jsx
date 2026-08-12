@@ -45,10 +45,6 @@ const PaymentMethods = ({ onNotify = () => {} }) => {
     }
   };
 
-  const handleContactSales = () => {
-    window.location.href = 'mailto:sales@talentmon.rs?subject=Corporate invoicing';
-  };
-
   return (
     <div>
       <div className={styles.settingsCard} style={{ marginBottom: 18 }}>
@@ -93,30 +89,15 @@ const PaymentMethods = ({ onNotify = () => {} }) => {
         </button>
       </div>
 
-      <div className={styles.grid2} style={{ marginBottom: 0 }}>
-        <div className={styles.settingsCard}>
-          <div className={styles.corpBox} style={{ background: 'transparent', padding: 0 }}>
-            <Icon name="Building2" size={20} />
-            <div>
-              <b>Corporate invoicing</b>
-              <p>For larger companies, we offer corporate invoicing with deferred payment and special discounts.</p>
-              <button className={styles.btnGhost} onClick={handleContactSales}>
-                <Icon name="Mail" size={15} />Contact sales
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className={`${styles.settingsCard} ${styles.secure}`}>
-          <div className={styles.cardTitle}>Payment security</div>
-          <div className={styles.cardSub}>Your data is protected</div>
-          <ul>
-            <li><Icon name="Check" size={15} />All payments are protected with SSL encryption</li>
-            <li><Icon name="Check" size={15} />Card details are not stored on our servers</li>
-            <li><Icon name="Check" size={15} />We are compliant with PCI DSS standards</li>
-            <li><Icon name="Check" size={15} />We support 3D Secure verification</li>
-          </ul>
-        </div>
+      <div className={`${styles.settingsCard} ${styles.secure}`} style={{ marginBottom: 0 }}>
+        <div className={styles.cardTitle}>Payment security</div>
+        <div className={styles.cardSub}>Your data is protected</div>
+        <ul>
+          <li><Icon name="Check" size={15} />All payments are protected with SSL encryption</li>
+          <li><Icon name="Check" size={15} />Card details are not stored on our servers</li>
+          <li><Icon name="Check" size={15} />We are compliant with PCI DSS standards</li>
+          <li><Icon name="Check" size={15} />We support 3D Secure verification</li>
+        </ul>
       </div>
     </div>
   );

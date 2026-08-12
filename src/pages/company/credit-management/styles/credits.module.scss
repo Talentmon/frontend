@@ -1213,28 +1213,106 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   }
 }
 
-.corpBox {
-  background: rgba(230, 169, 60, .08);
-  border-radius: $r-md;
-  padding: 16px;
-
+.pmCardRow {
   display: flex;
   align-items: flex-start;
-  gap: .8em;
+  justify-content: space-between;
+  gap: 20px;
+}
 
-  svg { color: $gold-deep; flex: none; margin-top: 2px; }
+.pmCardMain {
+  flex: 1;
+  min-width: 0;
+}
 
-  b {
-    display: block;
-    color: $ink;
-    margin-bottom: 4px;
+.pmCardArt {
+  width: 168px;
+  height: auto;
+  flex: none;
+  margin: -6px -6px 0 0;
+
+  @media (max-width: 880px) {
+    display: none;
   }
+}
 
-  p {
-    font-size: .86rem;
-    color: $slate;
-    margin-bottom: 12px;
+.iconBadge {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+
+  &.peach { background: $amber-bg; color: $gold-deep; }
+  &.green { background: $green-bg; color: $green; }
+}
+
+.infoBox {
+  display: flex;
+  align-items: flex-start;
+  gap: .7em;
+  background: $blue-bg;
+  border-radius: $r-md;
+  padding: 14px 16px;
+  font-size: .86rem;
+  color: $ink;
+  margin-bottom: 14px;
+
+  svg { color: $blue; flex: none; margin-top: 2px; }
+}
+
+.addCardBox {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5em;
+  width: 100%;
+  padding: 14px;
+  border: 1.5px dashed $line;
+  border-radius: $r-md;
+  font-weight: 600;
+  color: $ink;
+  font-size: .92rem;
+  transition: .18s;
+
+  svg { color: $gold-deep; }
+
+  &:hover { border-color: $gold; background: rgba(230, 169, 60, .05); }
+  &:disabled { opacity: .6; cursor: default; }
+}
+
+.secureGrid {
+  grid-template-columns: 1fr 1fr !important;
+
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr !important;
   }
+}
+
+.securityFooter {
+  display: flex;
+  align-items: center;
+  gap: .7em;
+  background: $blue-bg;
+  border-radius: $r-md;
+  padding: 14px 20px;
+  margin-top: 18px;
+  font-size: .86rem;
+  color: $ink;
+  flex-wrap: wrap;
+
+  > svg { color: $blue; flex: none; }
+}
+
+.securityFooterLink {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: .4em;
+  font-weight: 600;
+  color: $blue;
+  white-space: nowrap;
 }
 
 // ===== Purchase confirmation modal =====

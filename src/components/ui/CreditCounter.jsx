@@ -1,45 +1,27 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from '../AppIcon';
 import Button from './Button';
-import styles from './styles/creditCounter.module.scss';
-
-const PACKAGES = [
-  { id: 'buy1', name: 'BUY 1', credits: 1, price: 20, pricePerCredit: 20.00, popular: false },
-  { id: 'starter', name: 'STARTER', credits: 10, price: 119, pricePerCredit: 11.90, popular: false },
-  { id: 'growth', name: 'GROWTH', credits: 30, price: 339, pricePerCredit: 11.30, popular: true },
-  { id: 'scale', name: 'SCALE', credits: 50, price: 569, pricePerCredit: 11.38, popular: false },
-  { id: 'agency', name: 'AGENCY', credits: 100, price: 1099, pricePerCredit: 10.99, popular: false }
-];
+import BuyCreditsModal from 'pages/company/candidate-search-dashboard/components/BuyCreditsModal';
+import { getBalance, listPackages, packageToFrontend } from 'pages/company/credit-management/creditsApi';
 
 const CreditCounter = () => {
-  const [creditBalance, setCreditBalance] = useState(125);
+  const [creditBalance, setCreditBalance] = useState(0);
+  const [packages, setPackages] = useState([]);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
-  const [selectedId, setSelectedId] = useState('growth');
-  const [purchasing, setPurchasing] = useState(false);
-  const [flashing, setFlashing] = useState(false);
+
+  useEffect(() => {
+    getBalance().then((r) => setCreditBalance(r.balance)).catch(() => {});
+  }, []);
 
   const isLowBalance = creditBalance < 50;
-  const selectedPackage = PACKAGES?.find((pkg) => pkg?.id === selectedId);
 
   const handlePurchaseClick = () => {
     setShowPurchaseModal(true);
-  };
-
-  const handleClosePurchaseModal = () => {
-    if (purchasing) return;
-    setShowPurchaseModal(false);
-  };
-
-  const handleConfirmPurchase = () => {
-    if (purchasing || !selectedPackage) return;
-    setPurchasing(true);
-    setFlashing(true);
-    setTimeout(() => setFlashing(false), 800);
-    setTimeout(() => {
-      setCreditBalance((prev) => prev + selectedPackage?.credits);
-      setShowPurchaseModal(false);
-      setPurchasing(false);
-    }, 1200);
+    if (packages.length === 0) {
+      listPackages()
+        .then((rows) => setPackages(rows.map(packageToFrontend)))
+        .catch(() => {});
+    }
   };
 
   return (
@@ -82,80 +64,15 @@ const CreditCounter = () => {
         </button>
       </div>
 
-      {/* Purchase Modal */}
       {showPurchaseModal && (
-        <div className={styles.overlay} onClick={handleClosePurchaseModal}>
-          <div
-            className={styles.modal}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="creditCounterModalTitle"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <span className={`${styles.flash} ${flashing ? styles.flashing : ''}`} />
-
-            <div className={styles.head}>
-              <div>
-                <p className={styles.eyebrow}>Top up credits</p>
-                <h2 className={styles.title} id="creditCounterModalTitle">Choose a package</h2>
-              </div>
-              <button className={styles.close} onClick={handleClosePurchaseModal} aria-label="Close">
-                <Icon name="X" size={18} />
-              </button>
-            </div>
-
-            <div className={styles.balance}>
-              <span className={styles.coin} />
-              Current balance: <b>{creditBalance} Credits</b>
-            </div>
-
-            <div className={styles.packs}>
-              {PACKAGES?.map((pkg) => (
-                <button
-                  key={pkg?.id}
-                  className={`${styles.pack} ${pkg?.id === selectedId ? styles.sel : ''}`}
-                  onClick={() => !purchasing && setSelectedId(pkg?.id)}
-                  disabled={purchasing}
-                >
-                  <span className={styles.radio} />
-                  <div className={styles.packMain}>
-                    <div className={styles.packName}>
-                      {pkg?.name}
-                      {pkg?.popular && <span className={styles.packTag}>Most popular</span>}
-                    </div>
-                    <div className={styles.packSub}>{pkg?.credits} credits · €{pkg?.pricePerCredit?.toFixed(2)} / credit</div>
-                  </div>
-                  <div className={styles.packPrice}>
-                    <div className={styles.amt}>€{pkg?.price?.toLocaleString('en-US')}</div>
-                    <div className={styles.per}>+{pkg?.credits}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              className={`${styles.cta} ${purchasing ? styles.done : ''}`}
-              onClick={handleConfirmPurchase}
-              disabled={purchasing}
-            >
-              {purchasing ? (
-                <>
-                  <Icon name="Check" size={18} />
-                  Purchased · +{selectedPackage?.credits} credits
-                </>
-              ) : (
-                <>
-                  <Icon name="CreditCard" size={18} />
-                  Buy {selectedPackage?.credits} credits · €{selectedPackage?.price}
-                </>
-              )}
-            </button>
-
-            <div className={styles.foot}>
-              <span><Icon name="Shield" size={13} />Secure payment processing</span>
-            </div>
-          </div>
-        </div>
+        <BuyCreditsModal
+          balance={creditBalance}
+          packages={packages}
+          onClose={() => setShowPurchaseModal(false)}
+          onPurchased={({ balance }) => {
+            if (balance != null) setCreditBalance(balance);
+          }}
+        />
       )}
     </>
   );

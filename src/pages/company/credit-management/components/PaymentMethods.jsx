@@ -36,11 +36,19 @@ const PaymentMethods = ({ onNotify = () => {} }) => {
   };
 
   const handleAddCard = async () => {
+    // Open the tab synchronously, inside the click handler, so browsers don't
+    // treat it as a popup — then point it at the portal URL once we have it.
+    const portalWindow = window.open('', '_blank');
     setOpeningPortal(true);
     try {
       const { url } = await createPaymentMethodPortalSession();
-      window.open(url, '_blank', 'noopener,noreferrer');
+      if (portalWindow) {
+        portalWindow.location.href = url;
+      } else {
+        onNotify('Please allow pop-ups for this site, then try again.');
+      }
     } catch {
+      portalWindow?.close();
       onNotify('Could not open the payment portal — please try again.');
     } finally {
       setOpeningPortal(false);

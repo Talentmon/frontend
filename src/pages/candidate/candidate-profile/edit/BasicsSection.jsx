@@ -44,8 +44,8 @@ const BasicsSection = ({ basics, open, onToggleOpen, onChangeField, onPhotoUploa
           <div className="photo-acts">
             <div className="ptitle">Photo</div>
             <div className="row">
-              <button type="button" className="linkbtn" disabled={photoBusy} onClick={() => fileRef.current?.click()}>
-                {photoBusy ? 'Uploading…' : 'Upload photo'}
+              <button type="button" className="linkbtn" disabled title="Photo upload is temporarily unavailable">
+                Upload unavailable
               </button>
               <button type="button" className="linkbtn muted" disabled={photoBusy || !b.photo} onClick={onPhotoRemove}>
                 Remove

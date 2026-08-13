@@ -101,10 +101,10 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
               <button
                 type="button"
                 className={styles.upBtn}
-                onClick={() => document.getElementById('logo-upload')?.click()}
-                disabled={isUploading}
+                disabled
+                title="Logo upload is temporarily unavailable"
               >
-                <Icon name="Upload" size={15} />{isUploading ? 'Uploading...' : 'Choose file'}
+                <Icon name="Upload" size={15} />Upload unavailable
               </button>
             </div>
             <p className={styles.logoHint}>

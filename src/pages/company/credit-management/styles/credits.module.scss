@@ -1208,28 +1208,34 @@ $ease: cubic-bezier(.2, .7, .2, 1);
     display: flex;
     gap: .6em;
     align-items: center;
+    white-space: nowrap;
 
     svg { color: $green; flex: none; }
   }
 }
 
 .pmCardRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
   align-items: flex-start;
-  justify-content: space-between;
   gap: 20px;
+
+  @media (max-width: 880px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .pmCardMain {
-  flex: 1;
   min-width: 0;
 }
 
 .pmCardArt {
-  width: 168px;
+  width: 75%;
   height: auto;
-  flex: none;
+  justify-self: center;
   margin: -6px -6px 0 0;
+
+  &.artSmall { width: 56%; }
 
   @media (max-width: 880px) {
     display: none;
@@ -1250,7 +1256,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 
 .infoBox {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: .7em;
   background: $blue-bg;
   border-radius: $r-md;
@@ -1259,7 +1265,13 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   color: $ink;
   margin-bottom: 14px;
 
-  svg { color: $blue; flex: none; margin-top: 2px; }
+  svg { color: $blue; flex: none; }
+
+  span { white-space: nowrap; }
+
+  @media (max-width: 880px) {
+    span { white-space: normal; }
+  }
 }
 
 .addCardBox {
@@ -1284,9 +1296,12 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 
 .secureGrid {
   grid-template-columns: 1fr 1fr !important;
+  column-gap: 60px !important;
+  row-gap: 22px !important;
 
   @media (max-width: 560px) {
     grid-template-columns: 1fr !important;
+    column-gap: 9px !important;
   }
 }
 

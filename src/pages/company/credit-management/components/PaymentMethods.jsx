@@ -116,7 +116,7 @@ const PaymentMethods = ({ onNotify = () => {} }) => {
             </ul>
           </div>
 
-          <img src={shieldLockArt} alt="" className={styles.pmCardArt} />
+          <img src={shieldLockArt} alt="" className={`${styles.pmCardArt} ${styles.artSmall}`} />
         </div>
       </div>
 

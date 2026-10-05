@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import CandidateHeader from 'components/ui/CandidateHeader';
@@ -125,6 +125,34 @@ const CandidateProfile = () => {
 
   const roleLine = [basics.role, basics.years && `${basics.years} years`].filter(Boolean).join(' · ');
   const userInitials = initials(basics.name);
+
+  // Mirrors backend calculateProfileStrength's buckets exactly (candidates.service.ts)
+  // so each checklist item reflects the same criteria that produced the percentage —
+  // photo is deliberately not one of them, it no longer contributes to the score.
+  const strengthItems = useMemo(() => {
+    if (!candidate) return [];
+    const experiences = candidate.experiences || [];
+    const education = candidate.education || [];
+    const skills = candidate.skills || [];
+    const languages = candidate.languages || [];
+    const summary = (candidate.customSections || []).find((s) => s.type === 'summary');
+    const summaryLength = (summary?.textContent || '').replace(/<[^>]*>/g, '').length;
+
+    return [
+      {
+        key: 'basics',
+        label: 'Basics added',
+        done: !!(candidate.name && candidate.roleTitle && candidate.location && candidate.phone),
+      },
+      { key: 'experience', label: 'Work experience added', done: experiences.length >= 1 },
+      { key: 'experience3', label: '3+ work experiences', done: experiences.length >= 3 },
+      { key: 'education', label: 'Education added', done: education.length >= 1 },
+      { key: 'skills', label: '3+ skills added', done: skills.length >= 3 },
+      { key: 'languages', label: 'Languages added', done: languages.length >= 1 },
+      { key: 'summary', label: 'Summary (200+ characters)', done: summaryLength >= 200 },
+    ];
+  }, [candidate]);
+  const strengthPct = candidate?.profileStrength ?? 0;
 
   return (
     <div className="cp-page">
@@ -698,14 +726,24 @@ const CandidateProfile = () => {
               {/* STRENGTH */}
               <div className="card scard">
                 <h3>Profile strength</h3>
-                <div className="str-bar"><i style={{ width: '88%' }} /></div>
-                <div className="str-pct">88% complete</div>
+                <div className="str-bar"><i style={{ width: `${strengthPct}%` }} /></div>
+                <div className="str-pct">{strengthPct}% complete</div>
                 <div className="str-list">
-                  <div className="str-item done"><span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg></span>Photo &amp; basics added</div>
-                  <div className="str-item done"><span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg></span>3 work experiences</div>
-                  <div className="str-item done"><span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg></span>Skills &amp; languages</div>
-                  <div className="str-item todo"><span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M5 12h14" strokeLinecap="round" /></svg></span>Add a portfolio link<a href="#">Add</a></div>
-                  <div className="str-item todo"><span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M5 12h14" strokeLinecap="round" /></svg></span>Add 2 more skills<a href="#">Add</a></div>
+                  {strengthItems.map((item) => (
+                    <div className={`str-item ${item.done ? 'done' : 'todo'}`} key={item.key}>
+                      <span className="ic">
+                        {item.done ? (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M20 6 9 17l-5-5" /></svg>
+                        ) : (
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 5v14M5 12h14" strokeLinecap="round" /></svg>
+                        )}
+                      </span>
+                      {item.label}
+                      {!item.done && (
+                        <a href="/candidate-profile/edit" onClick={(e) => { e.preventDefault(); navigate('/candidate-profile/edit'); }}>Add</a>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </aside>

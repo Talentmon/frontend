@@ -1,4 +1,5 @@
 import apiClient from 'lib/apiClient';
+import { ACCEPTED_IMAGE_TYPES, resizeImageToWebp } from 'utils/resizeImage';
 
 export const COMPANY_SIZE_OPTIONS = [
   { value: 'SMALL', label: '1–50 employees' },
@@ -74,20 +75,29 @@ export function companyToPayload(companyData) {
   };
 }
 
-// ---- Logo (R2 presign -> PUT -> confirm, same shape as candidate photo upload) ----
-const LOGO_EXTENSION_BY_CONTENT_TYPE = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/svg+xml': 'svg', 'image/webp': 'webp' };
-
+// ---- Logo (multipart upload through the backend, same shape as candidate photo upload) ----
+// SVG is deliberately not in ACCEPTED_IMAGE_TYPES: it's an XML document a
+// browser can execute (<script>, event-handler attributes, <foreignObject>,
+// external <use href>), not just pixels — a stored-XSS vector if ever
+// served/rendered as a document rather than an <img>. Magic-byte sniffing
+// can't close this (a file starting with '<svg>' followed by a script tag
+// still "looks like" valid SVG), so the only real fix is not accepting the
+// format at all.
 export async function uploadCompanyLogo(file) {
-  const fileExtension = LOGO_EXTENSION_BY_CONTENT_TYPE[file.type];
-  if (!fileExtension) {
-    throw new Error('Please upload a JPG, PNG, SVG, or WEBP image.');
+  if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+    throw new Error('Please upload a JPG, PNG, or WEBP image.');
   }
-  const { data: presign } = await apiClient.post('/companies/me/logo/presign', { contentType: file.type, fileExtension });
-  const putResponse = await fetch(presign.uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
-  if (!putResponse.ok) {
-    throw new Error('Upload to storage failed — please try again.');
+
+  let uploadFile;
+  try {
+    uploadFile = await resizeImageToWebp(file);
+  } catch {
+    throw new Error('Could not process this image — please try a different one.');
   }
-  const { data: company } = await apiClient.post('/companies/me/logo/confirm', { key: presign.key });
+
+  const form = new FormData();
+  form.append('file', uploadFile);
+  const { data: company } = await apiClient.post('/companies/me/logo', form);
   return company.logoUrl;
 }
 

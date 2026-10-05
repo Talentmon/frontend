@@ -1,4 +1,5 @@
 import apiClient from '../../../lib/apiClient';
+import { ACCEPTED_IMAGE_TYPES, resizeImageToWebp } from '../../../utils/resizeImage';
 import { DEFAULT_PHONE_CODE } from './edit/data';
 import { endMonthYearToIso, isoToMonthYear, isoToYear, monthYearToIso } from './dateUtils';
 
@@ -46,13 +47,10 @@ export function removeMyCandidateLink(linkId) {
   return apiClient.delete(`/candidates/me/links/${linkId}`).then((r) => r.data);
 }
 
-const PHOTO_EXTENSION_BY_CONTENT_TYPE = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
-
-function presignMyCandidateFile(payload) {
-  return apiClient.post('/candidates/me/files/presign', payload).then((r) => r.data);
-}
-function confirmMyCandidateFile(payload) {
-  return apiClient.post('/candidates/me/files', payload).then((r) => r.data);
+function uploadMyCandidatePhotoFile(file) {
+  const form = new FormData();
+  form.append('file', file);
+  return apiClient.post('/candidates/me/files/photo', form).then((r) => r.data);
 }
 function listMyCandidateFiles() {
   return apiClient.get('/candidates/me/files').then((r) => r.data);
@@ -62,22 +60,23 @@ function removeMyCandidateFile(id) {
 }
 
 /**
- * Uploads a profile photo straight to R2 (presign -> PUT the raw bytes -> confirm)
- * and returns the resulting public URL. The confirm step also sets
- * `candidate.photoUrl` server-side, so this persists immediately — it does not
- * wait for "Save and view" like the rest of the basics fields.
+ * Uploads a profile photo through the backend (which validates the bytes and
+ * writes them to storage — the browser never talks to R2 directly) and
+ * returns the resulting public URL. The backend also sets `candidate.photoUrl`,
+ * so this persists immediately — it does not wait for "Save and view" like
+ * the rest of the basics fields.
  */
 export async function uploadCandidatePhoto(file) {
-  const fileExtension = PHOTO_EXTENSION_BY_CONTENT_TYPE[file.type];
-  if (!fileExtension) {
+  if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
     throw new Error('Please upload a JPG, PNG, or WEBP image.');
   }
-  const { uploadUrl, key } = await presignMyCandidateFile({ kind: 'PHOTO', contentType: file.type, fileExtension });
-  const putResponse = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': file.type }, body: file });
-  if (!putResponse.ok) {
-    throw new Error('Upload to storage failed — please try again.');
+  let resized;
+  try {
+    resized = await resizeImageToWebp(file);
+  } catch {
+    throw new Error('Could not process this image — please try a different one.');
   }
-  const record = await confirmMyCandidateFile({ kind: 'PHOTO', key });
+  const record = await uploadMyCandidatePhotoFile(resized);
   return record.url;
 }
 

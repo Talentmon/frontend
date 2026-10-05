@@ -381,7 +381,7 @@ const CandidateProfileEdit = () => {
         draft.basics.photo = draft.basics.photoHidden ? null : url;
       });
     } catch (err) {
-      pushToast(err?.message || 'Could not upload photo — please try again.');
+      pushToast(err?.response?.data?.message || err?.message || 'Could not upload photo — please try again.');
       updateState((draft) => {
         draft.basics.photo = draft.basics.photoUrl || null;
       });

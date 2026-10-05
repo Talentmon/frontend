@@ -3,6 +3,7 @@ import SectionShell from './SectionShell';
 import { I } from './icons';
 import { initials, PHONE_CODES, DEFAULT_PHONE_CODE } from './data';
 import FlagSelect from './FlagSelect';
+import { ACCEPTED_IMAGE_TYPES } from 'utils/resizeImage';
 
 const BasicsSection = ({ basics, open, onToggleOpen, onChangeField, onPhotoUpload, onPhotoRemove, photoBusy, onChangeLink, onAddLink, onRemoveLink, photoHidden, onTogglePhotoHidden }) => {
   const fileRef = useRef(null);
@@ -54,7 +55,7 @@ const BasicsSection = ({ basics, open, onToggleOpen, onChangeField, onPhotoUploa
             <input
               ref={fileRef}
               type="file"
-              accept="image/*"
+              accept={ACCEPTED_IMAGE_TYPES.join(',')}
               className="sr"
               onChange={(e) => {
                 const file = e.target.files && e.target.files[0];

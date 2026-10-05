@@ -4,6 +4,7 @@ import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
 import { COMPANY_SIZE_OPTIONS, WORK_MODE_OPTIONS, uploadCompanyLogo } from '../companyApi';
 import styles from '../styles/company.module.scss';
+import { ACCEPTED_IMAGE_TYPES } from 'utils/resizeImage';
 
 const BENEFITS_LIST = [
   'Private health insurance',
@@ -66,7 +67,7 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
       handleInputChange('logo', logoUrl);
     } catch (err) {
       setLogoPreview(companyData?.logo || null);
-      fireToast?.(err?.message || 'Could not upload logo — please try again.');
+      fireToast?.(err?.response?.data?.message || err?.message || 'Could not upload logo — please try again.');
     } finally {
       setIsUploading(false);
     }
@@ -91,7 +92,7 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
           <div>
             <input
               type="file"
-              accept="image/*"
+              accept={ACCEPTED_IMAGE_TYPES.join(',')}
               onChange={handleLogoUpload}
               className="hidden"
               id="logo-upload"
@@ -108,7 +109,7 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
               </button>
             </div>
             <p className={styles.logoHint}>
-              Recommended dimensions: 200×200px · Maximum size: 2MB · JPG, PNG, SVG, WEBP
+              Recommended dimensions: 200×200px · JPG, PNG, WEBP — resized automatically
             </p>
           </div>
         </div>

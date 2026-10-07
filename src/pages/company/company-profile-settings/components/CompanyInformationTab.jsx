@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
-import { COMPANY_SIZE_OPTIONS, WORK_MODE_OPTIONS, uploadCompanyLogo } from '../companyApi';
+import { COMPANY_SIZE_OPTIONS, INDUSTRY_OPTIONS, WORK_MODE_OPTIONS, uploadCompanyLogo } from '../companyApi';
 import styles from '../styles/company.module.scss';
 import { ACCEPTED_IMAGE_TYPES } from 'utils/resizeImage';
 
@@ -19,7 +19,7 @@ const BENEFITS_LIST = [
   'Extra days off',
 ];
 
-const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fireToast }) => {
+const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fireToast, errors = {} }) => {
   const [logoPreview, setLogoPreview] = useState(companyData?.logo);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -40,8 +40,17 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
   }, [benefitsOpen]);
 
   const handleInputChange = (field, value) => {
-    onDataChange({ ...companyData, [field]: value });
+    onDataChange({ ...companyData, [field]: value }, field);
   };
+
+  // Required-field error plumbing — `data-invalid` is what the page scrolls to on a blocked save.
+  const fieldProps = (field) => ({
+    className: styles.field,
+    'data-invalid': errors[field] ? 'true' : undefined,
+  });
+  const inputClass = (field, base = styles.finput) => (errors[field] ? `${base} ${styles.finvalid}` : base);
+  const fieldError = (field) => (errors[field] ? <span className={styles.ferr}>{errors[field]}</span> : null);
+  const requiredMark = <span className={styles.req}>*</span>;
 
   const toggleBenefit = (benefit) => {
     const current = companyData?.benefits || [];
@@ -121,86 +130,102 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
         <div className={styles.cardSub}>Key details that candidates will see</div>
 
         <div className={styles.form2}>
-          <div className={styles.field}>
-            <label className={styles.flabel}>Company name <span className={styles.req}>*</span></label>
+          <div {...fieldProps('name')}>
+            <label className={styles.flabel}>Company name {requiredMark}</label>
             <input
-              className={styles.finput}
+              className={inputClass('name')}
               type="text"
               placeholder="Enter company name"
               value={companyData?.name}
               onChange={(e) => handleInputChange('name', e?.target?.value)}
               required
             />
+            {fieldError('name')}
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.flabel}>Year founded</label>
+          <div {...fieldProps('foundedYear')}>
+            <label className={styles.flabel}>Year founded {requiredMark}</label>
             <input
-              className={styles.finput}
+              className={inputClass('foundedYear')}
               type="number"
+              min={1800}
+              max={new Date().getFullYear()}
               placeholder="2010"
               value={companyData?.foundedYear}
               onChange={(e) => handleInputChange('foundedYear', e?.target?.value)}
+              required
             />
+            {fieldError('foundedYear')}
           </div>
 
           <div className={styles.field}>
-            <label className={styles.flabel}>Company email</label>
+            <label className={styles.flabel}>Company email {requiredMark}</label>
             <input className={styles.finput} type="email" value={companyData?.email || ''} disabled />
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.flabel}>Website</label>
-            <input
-              className={styles.finput}
-              type="url"
-              placeholder="https://www.yoursite.com"
-              value={companyData?.website}
-              onChange={(e) => handleInputChange('website', e?.target?.value)}
-            />
+          <div {...fieldProps('industry')}>
+            <label className={styles.flabel}>Industry {requiredMark}</label>
+            <div className={errors.industry ? styles.selectInvalid : undefined}>
+              <Select
+                value={companyData?.industry || ''}
+                onChange={(v) => handleInputChange('industry', v)}
+                options={INDUSTRY_OPTIONS}
+                placeholder="Select industry…"
+              />
+            </div>
+            {fieldError('industry')}
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.flabel}>Industry</label>
-            <input
-              className={styles.finput}
-              type="text"
-              placeholder="Information Technology"
-              value={companyData?.industry}
-              onChange={(e) => handleInputChange('industry', e?.target?.value)}
-            />
+          <div {...fieldProps('size')}>
+            <label className={styles.flabel}>Company size {requiredMark}</label>
+            <div className={errors.size ? styles.selectInvalid : undefined}>
+              <Select
+                value={companyData?.size || ''}
+                onChange={(v) => handleInputChange('size', v)}
+                options={COMPANY_SIZE_OPTIONS}
+                placeholder="Select size…"
+              />
+            </div>
+            {fieldError('size')}
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.flabel}>Company size</label>
-            <Select
-              value={companyData?.size || ''}
-              onChange={(v) => handleInputChange('size', v)}
-              options={COMPANY_SIZE_OPTIONS}
-              placeholder="Select size…"
-            />
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.flabel}>City</label>
+          <div {...fieldProps('location')}>
+            <label className={styles.flabel}>City {requiredMark}</label>
             <input
-              className={styles.finput}
+              className={inputClass('location')}
               type="text"
               placeholder="Belgrade"
               value={companyData?.location}
               onChange={(e) => handleInputChange('location', e?.target?.value)}
+              required
             />
+            {fieldError('location')}
           </div>
 
-          <div className={styles.field}>
-            <label className={styles.flabel}>Country</label>
+          <div {...fieldProps('country')}>
+            <label className={styles.flabel}>Country {requiredMark}</label>
             <input
-              className={styles.finput}
+              className={inputClass('country')}
               type="text"
               placeholder="Serbia"
               value={companyData?.country || ''}
               onChange={(e) => handleInputChange('country', e?.target?.value)}
+              required
             />
+            {fieldError('country')}
+          </div>
+
+          <div {...fieldProps('address')}>
+            <label className={styles.flabel}>Address {requiredMark}</label>
+            <input
+              className={inputClass('address')}
+              type="text"
+              placeholder="Knez Mihailova 12, Belgrade"
+              value={companyData?.address}
+              onChange={(e) => handleInputChange('address', e?.target?.value)}
+              required
+            />
+            {fieldError('address')}
           </div>
 
           <div className={styles.field}>
@@ -232,17 +257,21 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
         <div className={styles.cardTitle}>Company description</div>
         <div className={styles.cardSub}>Tell candidates who you are</div>
 
-        <div className={styles.field} style={{ marginBottom: 16 }}>
-          <label className={styles.flabel}>Short description</label>
+        <div {...fieldProps('shortDescription')} style={{ marginBottom: 16 }}>
+          <label className={styles.flabel}>Short description {requiredMark}</label>
           <textarea
             rows={4}
             maxLength={200}
             placeholder="Describe your company in a few sentences..."
             value={companyData?.shortDescription}
             onChange={(e) => handleInputChange('shortDescription', e?.target?.value)}
-            className={styles.ftext}
+            className={inputClass('shortDescription', styles.ftext)}
+            required
           />
-          <div className={styles.counter}>{companyData?.shortDescription?.length || 0}/200 characters</div>
+          <div className={styles.counterRow}>
+            {fieldError('shortDescription')}
+            <div className={styles.counter}>{companyData?.shortDescription?.length || 0}/200 characters</div>
+          </div>
         </div>
 
         <div className={styles.field}>
@@ -299,13 +328,13 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
           </div>
 
           <div className={styles.field}>
-            <label className={styles.flabel}>Address</label>
+            <label className={styles.flabel}>Website</label>
             <input
               className={styles.finput}
-              type="text"
-              placeholder="Knez Mihailova 12, Belgrade"
-              value={companyData?.address}
-              onChange={(e) => handleInputChange('address', e?.target?.value)}
+              type="url"
+              placeholder="https://www.yoursite.com"
+              value={companyData?.website}
+              onChange={(e) => handleInputChange('website', e?.target?.value)}
             />
           </div>
         </div>

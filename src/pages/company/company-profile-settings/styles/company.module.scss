@@ -339,6 +339,98 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
   line-height: 1.55;
 }
 
+// Required field left empty on a blocked save — after .finput/.ftext so it wins on hover/focus too.
+.finvalid {
+  border-color: $red;
+  background: $white;
+
+  &:hover,
+  &:focus {
+    border-color: $red;
+    box-shadow: 0 0 0 3px rgba(207, 75, 75, .14);
+  }
+}
+
+// Same red border for the shared <Select> trigger, which can't take .finvalid directly.
+.selectInvalid button[aria-haspopup="listbox"] {
+  border-color: $red;
+}
+
+.ferr {
+  display: block;
+  font-size: .76rem;
+  font-weight: 600;
+  color: $red;
+  margin-top: 5px;
+}
+
+.counterRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+
+  .counter { margin-left: auto; }
+}
+
+// ===== Onboarding gate banner =====
+.onboard {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+  padding: 16px 18px;
+  background: $amber-bg;
+  border: 1px solid rgba(230, 169, 60, .4);
+  border-radius: $r-md;
+  animation: fade .3s $ease;
+}
+
+.onboardIcon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: $gold;
+  color: $ink;
+}
+
+.onboardTitle {
+  font-family: 'Bricolage Grotesque', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  color: $ink;
+  margin-bottom: 3px;
+}
+
+.onboardText {
+  font-size: .86rem;
+  color: $slate;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.onboardMissing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  font-size: .78rem;
+  color: $slate;
+}
+
+.onboardChip {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: $white;
+  border: 1px solid $line;
+  font-weight: 600;
+  color: $ink;
+}
+
 .fselect {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238693A0' stroke-width='2'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");

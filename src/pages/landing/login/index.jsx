@@ -3,14 +3,8 @@ import { Helmet } from 'react-helmet';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignIn, useSignUp } from '@clerk/clerk-react';
 import apiClient from '../../../lib/apiClient';
-import { useCurrentUser } from '../../../lib/CurrentUserContext';
+import { homePathFor, useCurrentUser } from '../../../lib/CurrentUserContext';
 import './styles.scss';
-
-const ROLE_HOME = {
-  CANDIDATE: '/candidate-profile',
-  COMPANY: '/candidate-search-dashboard',
-  ADMIN: '/admin',
-};
 
 function firstClerkError(err, fallback) {
   return err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || fallback;
@@ -21,7 +15,7 @@ const Login = () => {
   const [searchParams] = useSearchParams();
   const { signIn, isLoaded: signInLoaded, setActive: setActiveSignIn } = useSignIn();
   const { signUp, isLoaded: signUpLoaded, setActive: setActiveSignUp } = useSignUp();
-  const { isSignedIn, loading: currentUserLoading, role, refetch } = useCurrentUser();
+  const { isSignedIn, loading: currentUserLoading, role, company, refetch } = useCurrentUser();
 
   const [uiRole, setRole] = useState('hr'); // 'hr' | 'candidate' — matches existing UI naming
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
@@ -33,6 +27,8 @@ const Login = () => {
   const [submitting, setSubmitting] = useState(false);
   const [verifyCode, setVerifyCode] = useState('');
   const [pendingRole, setPendingRole] = useState(null); // role picked at signup, applied after verification
+  const [pendingCompanyName, setPendingCompanyName] = useState(''); // company signups only, sent with the role
+  const [almostCompanyName, setAlmostCompanyName] = useState(''); // "Almost there" screen's own Company name input
 
   useEffect(() => {
     const t = searchParams?.get('tab');
@@ -44,9 +40,9 @@ const Login = () => {
   // Already signed in with a completed profile — no reason to see the login form.
   useEffect(() => {
     if (!currentUserLoading && isSignedIn && role) {
-      navigate(ROLE_HOME[role] || '/', { replace: true });
+      navigate(homePathFor(role, company), { replace: true });
     }
-  }, [currentUserLoading, isSignedIn, role, navigate]);
+  }, [currentUserLoading, isSignedIn, role, company, navigate]);
 
   const switchMode = (m) => {
     setMode(m);
@@ -63,16 +59,21 @@ const Login = () => {
     setErrors({});
   };
 
-  const finishWithRole = async (chosenRole) => {
+  const finishWithRole = async (chosenRole, companyName) => {
     try {
-      await apiClient.post('/auth/complete-profile', { role: chosenRole });
+      await apiClient.post('/auth/complete-profile', {
+        role: chosenRole,
+        ...(chosenRole === 'COMPANY' ? { companyName } : {}),
+      });
     } catch (err) {
       // 409 = role was already set by an earlier attempt (e.g. a retry after
       // the "already signed in" race below) — treat as already-done, not an error.
       if (err?.response?.status !== 409) throw err;
     }
     await refetch();
-    navigate(ROLE_HOME[chosenRole] || '/');
+    // A brand-new company profile is never complete yet, so this sends a
+    // company straight to its profile settings.
+    navigate(homePathFor(chosenRole, null));
   };
 
   function isAlreadySignedInError(err) {
@@ -98,10 +99,19 @@ const Login = () => {
     }
   };
 
-  const handleSignupSubmit = async (fullName, email, password) => {
+  // `name` is the candidate's full name, or the company name for a company
+  // signup — a company account is the company itself, not a person, so no
+  // personal name goes to Clerk for it (the company name goes to our backend
+  // with the role instead, after verification).
+  const handleSignupSubmit = async (name, email, password) => {
     if (!signUpLoaded) throw new Error('Still loading — please try again in a moment.');
-    const [firstName, ...rest] = fullName.split(' ');
-    await signUp.create({ emailAddress: email, password, firstName, lastName: rest.join(' ') || undefined });
+    if (uiRole === 'hr') {
+      await signUp.create({ emailAddress: email, password });
+      setPendingCompanyName(name);
+    } else {
+      const [firstName, ...rest] = name.split(' ');
+      await signUp.create({ emailAddress: email, password, firstName, lastName: rest.join(' ') || undefined });
+    }
     await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
     setPendingRole(uiRole === 'hr' ? 'COMPANY' : 'CANDIDATE');
     setStep('verify');
@@ -133,12 +143,13 @@ const Login = () => {
     }
 
     // ---- signup ----
-    const fullName = els.fullName?.value?.trim() || '';
+    const nameField = uiRole === 'hr' ? 'companyName' : 'fullName';
+    const name = els[nameField]?.value?.trim() || '';
     const confirmPassword = els.confirmPassword?.value || '';
     const termsAccepted = !!els.terms?.checked;
 
     const nextErrors = {};
-    if (!fullName) nextErrors.fullName = 'This field is required.';
+    if (!name) nextErrors[nameField] = 'This field is required.';
     if (!email) nextErrors.email = 'This field is required.';
     else if (!email.includes('@')) nextErrors.email = 'Enter a valid email.';
     if (!password) nextErrors.password = 'This field is required.';
@@ -155,7 +166,7 @@ const Login = () => {
 
     setSubmitting(true);
     try {
-      await handleSignupSubmit(fullName, email, password);
+      await handleSignupSubmit(name, email, password);
     } catch (err) {
       setNote(firstClerkError(err, 'Could not create your account.'));
     } finally {
@@ -184,7 +195,7 @@ const Login = () => {
           if (!isAlreadySignedInError(activateErr)) throw activateErr;
         }
       }
-      await finishWithRole(pendingRole);
+      await finishWithRole(pendingRole, pendingCompanyName);
     } catch (err) {
       setNote(firstClerkError(err, 'That code did not work — check it and try again.'));
     } finally {
@@ -221,14 +232,38 @@ const Login = () => {
                 <button type="button" className={`tab${uiRole === 'candidate' ? ' on' : ''}`} role="tab" onClick={() => setRole('candidate')}>Candidate</button>
                 <button type="button" className={`tab${uiRole === 'hr' ? ' on' : ''}`} role="tab" onClick={() => setRole('hr')}>Company</button>
               </div>
+              {uiRole === 'hr' && (
+                <div className={`field${errors.almostCompanyName ? ' invalid' : ''}`}>
+                  <label htmlFor="almostCompanyName">Company name</label>
+                  <div className="ctrl">
+                    <input
+                      id="almostCompanyName"
+                      type="text"
+                      autoComplete="organization"
+                      placeholder="Acme d.o.o."
+                      value={almostCompanyName}
+                      onChange={(e) => {
+                        setAlmostCompanyName(e.target.value);
+                        setErrors((prev) => ({ ...prev, almostCompanyName: undefined }));
+                      }}
+                    />
+                  </div>
+                  {errors.almostCompanyName && <span className="field-hint error">{errors.almostCompanyName}</span>}
+                </div>
+              )}
               <button
                 type="button"
                 className="btn-submit"
                 disabled={submitting}
                 onClick={async () => {
+                  const companyName = almostCompanyName.trim();
+                  if (uiRole === 'hr' && !companyName) {
+                    setErrors((prev) => ({ ...prev, almostCompanyName: 'This field is required.' }));
+                    return;
+                  }
                   setSubmitting(true);
                   try {
-                    await finishWithRole(uiRole === 'hr' ? 'COMPANY' : 'CANDIDATE');
+                    await finishWithRole(uiRole === 'hr' ? 'COMPANY' : 'CANDIDATE', companyName);
                   } catch (err) {
                     setNote(firstClerkError(err, 'Something went wrong.'));
                   } finally {
@@ -401,11 +436,21 @@ const Login = () => {
 
                 {/* FORM */}
                 <form onSubmit={handleSubmit} noValidate>
-                  {mode === 'signup' && (
+                  {mode === 'signup' && uiRole === 'hr' && (
+                    <div className={`field${errors.companyName ? ' invalid' : ''}`}>
+                      <label htmlFor="companyName">Company name</label>
+                      <div className="ctrl">
+                        <input key="companyName" id="companyName" name="companyName" type="text" autoComplete="organization" placeholder="Acme d.o.o." required />
+                      </div>
+                      {errors.companyName && <span className="field-hint error">{errors.companyName}</span>}
+                    </div>
+                  )}
+
+                  {mode === 'signup' && uiRole === 'candidate' && (
                     <div className={`field${errors.fullName ? ' invalid' : ''}`}>
                       <label htmlFor="fullName">Full name</label>
                       <div className="ctrl">
-                        <input id="fullName" name="fullName" type="text" autoComplete="name" placeholder="Jovana Kovacevic" required />
+                        <input key="fullName" id="fullName" name="fullName" type="text" autoComplete="name" placeholder="Jovana Kovacevic" required />
                       </div>
                       {errors.fullName && <span className="field-hint error">{errors.fullName}</span>}
                     </div>

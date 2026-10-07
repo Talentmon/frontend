@@ -5,6 +5,22 @@ import { setTokenGetter } from './authToken';
 
 const CurrentUserContext = createContext(null);
 
+const ROLE_HOME = {
+  CANDIDATE: '/candidate-profile',
+  COMPANY: '/candidate-search-dashboard',
+  ADMIN: '/admin',
+};
+
+/**
+ * Where a signed-in user lands. A company whose profile isn't complete yet
+ * (backend `company.profileComplete`) goes to its profile settings instead —
+ * everything else is locked until the required fields are saved.
+ */
+export function homePathFor(role, company) {
+  if (role === 'COMPANY' && !company?.profileComplete) return '/company-profile-settings';
+  return ROLE_HOME[role] || '/';
+}
+
 /**
  * Bridges the Clerk session into apiClient (token getter) and loads our own
  * `/auth/me` (Clerk owns identity, our DB owns role/candidate/company — see
@@ -25,12 +41,16 @@ export function CurrentUserProvider({ children }) {
     setTokenGetter(getToken);
   }, [getToken]);
 
-  const refetch = useCallback(async () => {
+  // `silent` skips the loading flag — RequireAuth renders nothing while
+  // loading, so a normal refetch from inside a protected page would unmount
+  // and remount that page (losing its state) just to refresh e.g. the
+  // company's name in the header after a profile save.
+  const refetch = useCallback(async ({ silent = false } = {}) => {
     if (!isSignedIn) {
       setState({ loading: false, user: null, candidate: null, company: null, adminProfile: null });
       return;
     }
-    setState((prev) => ({ ...prev, loading: true }));
+    if (!silent) setState((prev) => ({ ...prev, loading: true }));
     const { data } = await apiClient.get('/auth/me');
     setState({ loading: false, user: data.user, candidate: data.candidate, company: data.company, adminProfile: data.adminProfile });
   }, [isSignedIn]);
@@ -53,6 +73,8 @@ export function CurrentUserProvider({ children }) {
         company: state.company,
         adminProfile: state.adminProfile,
         role,
+        // Always true for non-company roles, so callers can gate on it without checking role first.
+        companyProfileComplete: role !== 'COMPANY' || !!state.company?.profileComplete,
         refetch,
       }}
     >

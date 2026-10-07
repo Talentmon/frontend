@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useClerk } from '@clerk/clerk-react';
 import Icon from '../AppIcon';
-import { companyData } from '../../utils/companyData';
+import { useCurrentUser } from '../../lib/CurrentUserContext';
 
 const UserProfileDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,6 +10,8 @@ const UserProfileDropdown = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useClerk();
+  const { company } = useCurrentUser();
+  const companyName = company?.name || '';
 
   const menuItems = [
     {
@@ -71,14 +73,13 @@ const UserProfileDropdown = () => {
       >
         <div className="w-8 h-8 bg-[#E6A93C] rounded-full flex items-center justify-center">
           <span className="text-sm font-medium text-[#0B1A2C]">
-            {companyData?.name?.charAt(0)}
+            {companyName.charAt(0).toUpperCase()}
           </span>
         </div>
         <div className="hidden lg:block text-left">
           <div className="text-sm font-medium text-white truncate max-w-32">
-            {companyData?.name}
+            {companyName}
           </div>
-          <div className="text-xs text-white/60">{companyData?.plan}</div>
         </div>
         <Icon
           name="ChevronDown"
@@ -94,19 +95,15 @@ const UserProfileDropdown = () => {
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-[#E6A93C] rounded-full flex items-center justify-center">
                 <span className="text-lg font-medium text-[#0B1A2C]">
-                  {companyData?.name?.charAt(0)}
+                  {companyName.charAt(0).toUpperCase()}
                 </span>
               </div>
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-popover-foreground truncate">
-                  {companyData?.name}
+                  {companyName}
                 </div>
                 <div className="text-sm text-muted-foreground truncate">
-                  {companyData?.email}
-                </div>
-                <div className="flex items-center space-x-1 mt-1">
-                  <div className="w-2 h-2 bg-success rounded-full"></div>
-                  <span className="text-xs text-muted-foreground">{companyData?.plan} Plan</span>
+                  {company?.email}
                 </div>
               </div>
             </div>

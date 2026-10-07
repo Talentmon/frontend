@@ -2,9 +2,14 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useCurrentUser } from '../../lib/CurrentUserContext';
 
-/** Wrap a route element to require a signed-in Clerk session and (optionally) one of `roles`. */
-const RequireAuth = ({ roles, children }) => {
-  const { clerkLoaded, isSignedIn, loading, role } = useCurrentUser();
+/**
+ * Wrap a route element to require a signed-in Clerk session and (optionally)
+ * one of `roles`. `requireCompleteProfile` additionally keeps a company with
+ * an unfinished profile on its profile settings (the backend enforces the
+ * same gate on the APIs these pages call).
+ */
+const RequireAuth = ({ roles, requireCompleteProfile = false, children }) => {
+  const { clerkLoaded, isSignedIn, loading, role, companyProfileComplete } = useCurrentUser();
   const location = useLocation();
 
   if (!clerkLoaded || loading) {
@@ -23,6 +28,10 @@ const RequireAuth = ({ roles, children }) => {
 
   if (roles && !roles.includes(role)) {
     return <Navigate to="/" replace />;
+  }
+
+  if (requireCompleteProfile && !companyProfileComplete) {
+    return <Navigate to="/company-profile-settings" replace />;
   }
 
   return children;

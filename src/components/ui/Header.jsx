@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
+import { useCurrentUser } from '../../lib/CurrentUserContext';
 import CreditCounter from './CreditCounter';
 import CompanyNotifications from './CompanyNotifications';
 import UserProfileDropdown from './UserProfileDropdown';
@@ -8,6 +9,12 @@ import UserProfileDropdown from './UserProfileDropdown';
 const Header = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  // Until the company profile is complete, every page except profile
+  // settings is locked (RequireAuth + backend gate) — the nav shows that
+  // instead of linking somewhere that would just bounce back.
+  const { companyProfileComplete } = useCurrentUser();
+  const navLocked = !companyProfileComplete;
+  const lockedTitle = 'Complete your company profile to unlock';
 
   const navigationItems = [
     {
@@ -59,7 +66,17 @@ const Header = () => {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8">
-          {navigationItems?.map((item) => (
+          {navigationItems?.map((item) => navLocked ? (
+            <span
+              key={item?.path}
+              title={lockedTitle}
+              aria-disabled="true"
+              className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-white/35 cursor-not-allowed select-none"
+            >
+              <Icon name="Lock" size={16} />
+              <span>{item?.name}</span>
+            </span>
+          ) : (
             <a
               key={item?.path}
               href={item?.path}
@@ -77,7 +94,7 @@ const Header = () => {
 
         {/* Right Section */}
         <div className="flex items-center space-x-4">
-          <CreditCounter />
+          {!navLocked && <CreditCounter />}
           <CompanyNotifications />
           <UserProfileDropdown />
 
@@ -95,7 +112,17 @@ const Header = () => {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-[#0B1A2C] border-t border-[#10243A] animate-slide-up">
           <nav className="px-6 py-4 space-y-2">
-            {navigationItems?.map((item) => (
+            {navigationItems?.map((item) => navLocked ? (
+              <span
+                key={item?.path}
+                title={lockedTitle}
+                aria-disabled="true"
+                className="flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium text-white/35 cursor-not-allowed select-none"
+              >
+                <Icon name="Lock" size={16} />
+                <span>{item?.name}</span>
+              </span>
+            ) : (
               <a
                 key={item?.path}
                 href={item?.path}

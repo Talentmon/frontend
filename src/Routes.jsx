@@ -53,10 +53,10 @@ const Routes = () => {
         <Route path="/admin/settings" element={<RequireAuth roles={['ADMIN']}><AdminSettings /></RequireAuth>} />
 
         {/* Company-facing */}
-        <Route path="/bookmarked-candidates" element={<RequireAuth roles={['COMPANY']}><BookmarkedCandidatesPage /></RequireAuth>} />
-        <Route path="/credit-management" element={<RequireAuth roles={['COMPANY']}><CreditManagement /></RequireAuth>} />
-        <Route path="/candidate-search-dashboard" element={<RequireAuth roles={['COMPANY']}><CandidateSearchDashboard /></RequireAuth>} />
-        <Route path="/purchased-profiles" element={<RequireAuth roles={['COMPANY']}><PurchasedProfiles /></RequireAuth>} />
+        <Route path="/bookmarked-candidates" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><BookmarkedCandidatesPage /></RequireAuth>} />
+        <Route path="/credit-management" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CreditManagement /></RequireAuth>} />
+        <Route path="/candidate-search-dashboard" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CandidateSearchDashboard /></RequireAuth>} />
+        <Route path="/purchased-profiles" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><PurchasedProfiles /></RequireAuth>} />
         <Route path="/company-profile-settings" element={<RequireAuth roles={['COMPANY']}><CompanyProfileSettings /></RequireAuth>} />
 
         {/* Candidate-facing */}

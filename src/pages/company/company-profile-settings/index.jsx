@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useClerk } from '@clerk/clerk-react';
 import Header from 'components/ui/Header';
 import Icon from 'components/AppIcon';
+import { useCurrentUser } from 'lib/CurrentUserContext';
 import CompanyInformationTab from './components/CompanyInformationTab';
 import TeamManagementTab from './components/TeamManagementTab';
 import ReputationManagementTab from './components/ReputationManagementTab';
@@ -21,13 +22,17 @@ import {
   companyPreferencesToFrontend,
   companyPreferencesToPayload,
   deleteCompanyAccount,
+  validateCompany,
+  REQUIRED_COMPANY_FIELD_LABELS,
 } from './companyApi';
 import styles from './styles/company.module.scss';
 
 const CompanyProfileSettings = () => {
   const navigate = useNavigate();
   const clerk = useClerk();
+  const { refetch: refetchCurrentUser } = useCurrentUser();
   const [activeTab, setActiveTab] = useState('company');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isSavingPrefs, setIsSavingPrefs] = useState(false);
@@ -95,10 +100,30 @@ const CompanyProfileSettings = () => {
   ];
 
   const handleSaveCompany = async () => {
+    const errors = validateCompany(companyData);
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      // The toast is success-styled, so point at the first bad field instead.
+      setActiveTab('company');
+      setTimeout(() => {
+        document.querySelector('[data-invalid="true"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 0);
+      return;
+    }
+
+    const wasComplete = companyData.profileComplete;
     setIsSaving(true);
     try {
       const saved = await updateCompany(companyToPayload(companyData));
       setCompanyData((prev) => ({ ...prev, ...companyToFrontend(saved) }));
+      // Silent: refreshes the header's company name and the nav/route gate
+      // without RequireAuth unmounting this page mid-save.
+      await refetchCurrentUser({ silent: true }).catch(() => {});
+      if (!wasComplete && saved.profileComplete) {
+        fireToast("Your profile is complete — taking you to candidate search…");
+        setTimeout(() => navigate('/candidate-search-dashboard'), 1500);
+        return;
+      }
       fireToast('Company information saved');
     } catch (err) {
       fireToast(err?.response?.data?.message || 'Could not save — please try again.');
@@ -120,8 +145,15 @@ const CompanyProfileSettings = () => {
     }
   };
 
-  const handleCompanyDataChange = (newData) => {
+  const handleCompanyDataChange = (newData, changedField) => {
     setCompanyData(newData);
+    if (changedField && fieldErrors[changedField]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[changedField];
+        return next;
+      });
+    }
   };
 
   const handlePreferencesChange = (newPreferences) => {
@@ -150,6 +182,7 @@ const CompanyProfileSettings = () => {
             onSave={handleSaveCompany}
             isSaving={isSaving}
             fireToast={fireToast}
+            errors={fieldErrors}
           />
         );
       case 'team':
@@ -207,6 +240,32 @@ const CompanyProfileSettings = () => {
             </button>
           </div>
         </div>
+
+        {/* Onboarding gate — driven by the last *saved* state from the backend, not the live form */}
+        {companyData && !companyData.profileComplete && (
+          <div className={styles.onboard}>
+            <span className={styles.onboardIcon}>
+              <Icon name="Lock" size={18} />
+            </span>
+            <div>
+              <div className={styles.onboardTitle}>Complete your company profile</div>
+              <p className={styles.onboardText}>
+                Fill in the required fields marked with <span className={styles.req}>*</span> and save.
+                Search, Bookmarked, Purchased and Credits unlock as soon as your profile is complete.
+              </p>
+              {companyData.missingFields.length > 0 && (
+                <div className={styles.onboardMissing}>
+                  <span>Still missing:</span>
+                  {companyData.missingFields.map((field) => (
+                    <span key={field} className={styles.onboardChip}>
+                      {REQUIRED_COMPANY_FIELD_LABELS[field] || field}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Success/error message */}
         {toastMsg && (

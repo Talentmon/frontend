@@ -1,5 +1,42 @@
 import apiClient from 'lib/apiClient';
 import { ACCEPTED_IMAGE_TYPES, resizeImageToWebp } from 'utils/resizeImage';
+import { INDUSTRY_NAMES } from 'utils/industries';
+
+export const INDUSTRY_OPTIONS = INDUSTRY_NAMES.map((name) => ({ value: name, label: name }));
+
+/**
+ * Fields that must be filled in (and saved) before the company can use
+ * search, bookmarks, purchases and credits. Mirrors REQUIRED_COMPANY_FIELDS
+ * in the backend's company-profile.ts, which is what actually enforces it —
+ * this copy only drives the asterisks, inline errors and the banner labels.
+ */
+export const REQUIRED_COMPANY_FIELD_LABELS = {
+  name: 'Company name',
+  foundedYear: 'Year founded',
+  email: 'Company email',
+  industry: 'Industry',
+  size: 'Company size',
+  location: 'City',
+  country: 'Country',
+  address: 'Address',
+  shortDescription: 'Short description',
+};
+
+const MIN_FOUNDED_YEAR = 1800;
+
+/** Inline validation before saving — returns `{ [field]: message }`, empty when the form can be saved. */
+export function validateCompany(companyData) {
+  const errors = {};
+  for (const field of Object.keys(REQUIRED_COMPANY_FIELD_LABELS)) {
+    if (!String(companyData?.[field] ?? '').trim()) errors[field] = 'This field is required.';
+  }
+  const currentYear = new Date().getFullYear();
+  const year = Number(companyData?.foundedYear);
+  if (!errors.foundedYear && (!Number.isInteger(year) || year < MIN_FOUNDED_YEAR || year > currentYear)) {
+    errors.foundedYear = `Enter a year between ${MIN_FOUNDED_YEAR} and ${currentYear}.`;
+  }
+  return errors;
+}
 
 export const COMPANY_SIZE_OPTIONS = [
   { value: 'SMALL', label: '1–50 employees' },
@@ -29,7 +66,9 @@ export function companyToFrontend(c) {
     name: c.name || '',
     email: c.email || '',
     website: c.website || '',
-    industry: c.industry || '',
+    // Industry used to be free text — a value outside the fixed list shows
+    // as unselected, so it has to be re-picked from the dropdown.
+    industry: INDUSTRY_NAMES.includes(c.industry) ? c.industry : '',
     size: c.size || '',
     location: c.location || '',
     foundedYear: c.foundedYear ? String(c.foundedYear) : '',
@@ -46,6 +85,8 @@ export function companyToFrontend(c) {
     flexibleHours: !!c.flexibleHours,
     benefits: c.benefits || [],
     registrationNumber: c.registrationNumber || '',
+    profileComplete: !!c.profileComplete,
+    missingFields: c.missingFields || [],
   };
 }
 

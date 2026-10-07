@@ -1,7 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { useAuth } from '@clerk/clerk-react';
+import { useAuth, useClerk } from '@clerk/clerk-react';
 import apiClient from './apiClient';
 import { setTokenGetter } from './authToken';
+import { clearRememberLogin, isExpiredSessionOnlyLogin } from './rememberMe';
 
 const CurrentUserContext = createContext(null);
 
@@ -29,6 +30,7 @@ export function homePathFor(role, company) {
  */
 export function CurrentUserProvider({ children }) {
   const { isLoaded, isSignedIn, getToken } = useAuth();
+  const clerk = useClerk();
   const [state, setState] = useState({ loading: true, user: null, candidate: null, company: null, adminProfile: null });
 
   useEffect(() => {
@@ -57,8 +59,16 @@ export function CurrentUserProvider({ children }) {
 
   useEffect(() => {
     if (!isLoaded) return;
+    // Signed in without "Remember me" and the browser has been closed since —
+    // end the session before anything renders as signed in. `loading` stays
+    // true meanwhile; signOut flips isSignedIn, which re-runs this effect.
+    if (isSignedIn && isExpiredSessionOnlyLogin()) {
+      clearRememberLogin();
+      clerk.signOut();
+      return;
+    }
     refetch();
-  }, [isLoaded, isSignedIn, refetch]);
+  }, [isLoaded, isSignedIn, refetch, clerk]);
 
   const role = state.user?.role ?? null;
 

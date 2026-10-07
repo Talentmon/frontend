@@ -4,6 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignIn, useSignUp } from '@clerk/clerk-react';
 import apiClient from '../../../lib/apiClient';
 import { homePathFor, useCurrentUser } from '../../../lib/CurrentUserContext';
+import { setRememberLogin } from '../../../lib/rememberMe';
 import './styles.scss';
 
 function firstClerkError(err, fallback) {
@@ -80,8 +81,10 @@ const Login = () => {
     return /already signed in/i.test(firstClerkError(err, ''));
   }
 
-  const handleLoginSubmit = async (email, password) => {
+  const handleLoginSubmit = async (email, password, remember) => {
     if (!signInLoaded) throw new Error('Still loading — please try again in a moment.');
+    // Before the session goes active — CurrentUserProvider checks it as soon as isSignedIn flips.
+    setRememberLogin(remember);
     try {
       const result = await signIn.create({ identifier: email, password });
       if (result.status !== 'complete') {
@@ -133,7 +136,7 @@ const Login = () => {
 
       setSubmitting(true);
       try {
-        await handleLoginSubmit(email, password);
+        await handleLoginSubmit(email, password, !!els.remember?.checked);
       } catch (err) {
         setNote(firstClerkError(err, 'Invalid email or password.'));
       } finally {
@@ -185,6 +188,8 @@ const Login = () => {
         setNote('That code did not work — check it and try again.');
         return;
       }
+      // The signup form has no "Remember me" — a fresh account stays signed in.
+      setRememberLogin(true);
       if (result.createdSessionId) {
         try {
           await setActiveSignUp({ session: result.createdSessionId });
@@ -524,7 +529,7 @@ const Login = () => {
                   {mode === 'login' && (
                     <div className="row-between">
                       <label className="remember">
-                        <input type="checkbox" />
+                        <input type="checkbox" name="remember" />
                         <span className="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2"><path d="M20 6 9 17l-5-5" /></svg></span>
                         Remember me
                       </label>

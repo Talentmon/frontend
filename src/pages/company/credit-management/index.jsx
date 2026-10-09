@@ -240,6 +240,12 @@ const CreditManagement = () => {
                       </span>
                     </b>
                   </div>
+                  {selectedPackage?.bookmarkBonus > 0 && (
+                    <div className={styles.modalRow}>
+                      <span className={styles.modalRowKey}>Bonus</span>
+                      <b>+{selectedPackage.bookmarkBonus} bookmarks · {selectedPackage.bookmarkBonusMonths} months</b>
+                    </div>
+                  )}
                   <div className={styles.modalRow}>
                     <span className={styles.modalRowKey}>Price</span>
                     <b>€{selectedPackage?.price?.toLocaleString('en-US')}</b>

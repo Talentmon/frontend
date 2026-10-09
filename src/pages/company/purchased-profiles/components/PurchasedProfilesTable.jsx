@@ -176,7 +176,10 @@ const PurchasedProfilesTable = ({
               </td>
               <td>{profile?.experience} years</td>
               <td>{formatSalary(profile?.expectedSalary)}</td>
-              <td className={styles.pcDate}>{formatDate(profile?.unlockedDate)}</td>
+              <td className={styles.pcDate}>
+                {formatDate(profile?.unlockedDate)}
+                {profile?.unlockedBy && <div style={{ fontSize: '.78em', opacity: 0.75 }}>by {profile.unlockedBy}</div>}
+              </td>
               <td>
                 <span className={`${styles.status} ${styles[STATUS_CLASS?.[profile?.recruitmentStatus]]}`}>
                   <select

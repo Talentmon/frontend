@@ -31,7 +31,7 @@ export function homePathFor(role, company) {
 export function CurrentUserProvider({ children }) {
   const { isLoaded, isSignedIn, getToken } = useAuth();
   const clerk = useClerk();
-  const [state, setState] = useState({ loading: true, user: null, candidate: null, company: null, adminProfile: null });
+  const [state, setState] = useState({ loading: true, user: null, candidate: null, company: null, membership: null, adminProfile: null });
 
   useEffect(() => {
     // Register unconditionally, not gated on isSignedIn — that flag lags a
@@ -49,12 +49,19 @@ export function CurrentUserProvider({ children }) {
   // company's name in the header after a profile save.
   const refetch = useCallback(async ({ silent = false } = {}) => {
     if (!isSignedIn) {
-      setState({ loading: false, user: null, candidate: null, company: null, adminProfile: null });
+      setState({ loading: false, user: null, candidate: null, company: null, membership: null, adminProfile: null });
       return;
     }
     if (!silent) setState((prev) => ({ ...prev, loading: true }));
     const { data } = await apiClient.get('/auth/me');
-    setState({ loading: false, user: data.user, candidate: data.candidate, company: data.company, adminProfile: data.adminProfile });
+    setState({
+      loading: false,
+      user: data.user,
+      candidate: data.candidate,
+      company: data.company,
+      membership: data.membership,
+      adminProfile: data.adminProfile,
+    });
   }, [isSignedIn]);
 
   useEffect(() => {
@@ -81,6 +88,9 @@ export function CurrentUserProvider({ children }) {
         user: state.user,
         candidate: state.candidate,
         company: state.company,
+        // The signed-in person's seat in that company — { id, role: OWNER|RECRUITER, name, email }.
+        membership: state.membership,
+        isCompanyOwner: state.membership?.role === 'OWNER',
         adminProfile: state.adminProfile,
         role,
         // Always true for non-company roles, so callers can gate on it without checking role first.

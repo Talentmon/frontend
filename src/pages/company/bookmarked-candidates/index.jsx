@@ -15,6 +15,7 @@ import { buildBaseSalaryRange, filterByBaseSalary } from 'utils/salaryFilterServ
 import { getSkillNamesFor } from 'utils/skills';
 import {
   listBookmarks,
+  getBookmarkLimit,
   bookmarkToFrontend,
   removeBookmark,
   updateBookmarkNotes,
@@ -41,6 +42,8 @@ const BookmarkedCandidatesPage = () => {
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [sortBy, setSortBy] = useState('bookmarked-date-desc');
   const [creditBalance, setCreditBalance] = useState(0);
+  const [bookmarkLimit, setBookmarkLimit] = useState(10);
+  const [personalLimit, setPersonalLimit] = useState(0);
   const [unlockTarget, setUnlockTarget] = useState(null);
   const [previewId, setPreviewId] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
@@ -63,6 +66,12 @@ const BookmarkedCandidatesPage = () => {
       .catch(() => {})
       .finally(() => setLoading(false));
     getCreditsBalance().then(setCreditBalance).catch(() => {});
+    getBookmarkLimit()
+      .then(({ limit, personalLimit: personal }) => {
+        setBookmarkLimit(limit);
+        setPersonalLimit(personal || 0);
+      })
+      .catch(() => {});
   }, []);
 
   // Apply filters and sorting
@@ -181,15 +190,19 @@ const BookmarkedCandidatesPage = () => {
   const handleRemoveBookmark = async (candidateId) => {
     const candidate = allBookmarkedCandidates?.find(c => c?.id === candidateId);
     if (!candidate) return;
+    if (!candidate.canRemove) {
+      showToast(`This is ${candidate.bookmarkedBy || 'a teammate'}'s personal bookmark — only they can remove it.`);
+      return;
+    }
 
     setAllBookmarkedCandidates(prev => prev?.filter(c => c?.id !== candidateId));
     setSelectedCandidates(prev => prev?.filter(id => id !== candidateId));
 
     try {
       await removeBookmark(candidate.bookmarkId);
-    } catch {
+    } catch (err) {
       setAllBookmarkedCandidates(prev => [...prev, candidate]);
-      showToast('Could not remove bookmark — please try again.');
+      showToast(err?.response?.data?.message || 'Could not remove bookmark — please try again.');
     }
   };
 
@@ -285,10 +298,18 @@ const BookmarkedCandidatesPage = () => {
     }
   };
 
-  const handleBulkRemove = async (candidateIds) => {
-    const removed = allBookmarkedCandidates?.filter((c) => candidateIds?.includes(c?.id));
-    setAllBookmarkedCandidates(prev => prev?.filter(c => !candidateIds?.includes(c?.id)));
+  const handleBulkRemove = async (requestedIds) => {
+    // Teammates' personal bookmarks are skipped — only whoever saved them can remove those.
+    const selected = allBookmarkedCandidates?.filter((c) => requestedIds?.includes(c?.id));
+    const removed = selected.filter((c) => c.canRemove);
+    const skipped = selected.length - removed.length;
+    const candidateIds = removed.map((c) => c.id);
     setSelectedCandidates([]);
+    if (removed.length === 0) {
+      showToast("Those are teammates' personal bookmarks — only they can remove them.");
+      return;
+    }
+    setAllBookmarkedCandidates(prev => prev?.filter(c => !candidateIds?.includes(c?.id)));
 
     const results = await Promise.allSettled(removed.map((c) => removeBookmark(c.bookmarkId)));
     const failedCount = results.filter((r) => r.status === 'rejected').length;
@@ -299,7 +320,10 @@ const BookmarkedCandidatesPage = () => {
       setAllBookmarkedCandidates((prev) => [...prev, ...removed.filter((c) => failedIds.includes(c.id))]);
       showToast(`Removed ${candidateIds?.length - failedCount} of ${candidateIds?.length} — some could not be removed.`);
     } else {
-      showToast(`Removed ${candidateIds?.length} candidate${candidateIds?.length === 1 ? '' : 's'} from bookmarks`);
+      showToast(
+        `Removed ${candidateIds?.length} candidate${candidateIds?.length === 1 ? '' : 's'} from bookmarks` +
+          (skipped > 0 ? ` · ${skipped} of teammates' personal bookmarks skipped` : ''),
+      );
     }
   };
 
@@ -413,8 +437,11 @@ const BookmarkedCandidatesPage = () => {
             <div className={`${styles.topRow} ${filtersExpanded ? styles.expanded : ''}`}>
               <div className={styles.topRowLimit}>
                 <BookmarkLimitIndicator
-                  currentCount={allBookmarkedCandidates?.length}
-                  maxCount={10}
+                  currentCount={allBookmarkedCandidates?.filter((c) => c?.pocket !== 'PERSONAL')?.length}
+                  maxCount={bookmarkLimit}
+                  personalUsed={allBookmarkedCandidates?.filter((c) => c?.pocket === 'PERSONAL' && c?.canRemove)?.length}
+                  personalLimit={personalLimit}
+                  totalCount={allBookmarkedCandidates?.length}
                   onManageBookmarks={() => { setReorderMode(false); setSelectionMode(true); }}
                   onSearchCandidates={handleSearchCandidates}
                   stacked={filtersExpanded}

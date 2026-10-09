@@ -330,6 +330,18 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 }
 
+// Personal-slot lines under the limit note (team members only).
+.limitPersonal {
+  font-size: 0.8rem;
+  color: $slate;
+  margin: -4px 0 10px;
+
+  b {
+    color: $ink;
+    font-weight: 600;
+  }
+}
+
 .limitActions {
   display: flex;
   flex-wrap: wrap;
@@ -1038,6 +1050,19 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   &.savedDateShifted {
     margin-left: 32px;
   }
+}
+
+// A bookmark sitting in its saver's personal slots — only they can remove it.
+.personalTag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: 99px;
+  background: $amber-bg;
+  color: $gold-deep;
+  font-size: 0.68rem;
+  font-weight: 600;
+  vertical-align: 1px;
 }
 
 .cardTopRight {

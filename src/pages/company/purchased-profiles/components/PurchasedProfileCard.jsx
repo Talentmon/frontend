@@ -80,7 +80,7 @@ const PurchasedProfileCard = React.forwardRef(({
       <div className={styles.pcHead}>
         <span className={styles.unlockedTag}>
           <Icon name="Unlock" size={14} />
-          Unlocked {formatDate(profile?.unlockedDate)}
+          Unlocked {formatDate(profile?.unlockedDate)}{profile?.unlockedBy ? ` by ${profile.unlockedBy}` : ''}
         </span>
         {profile?.isAvailable ? (
           <span className={styles.availableBadge}>

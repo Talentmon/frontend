@@ -19,7 +19,8 @@ const BENEFITS_LIST = [
   'Extra days off',
 ];
 
-const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fireToast, errors = {} }) => {
+// `readOnly`: recruiters see the company profile but only the owner edits it (the backend enforces the same).
+const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fireToast, errors = {}, readOnly = false }) => {
   const [logoPreview, setLogoPreview] = useState(companyData?.logo);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -83,7 +84,15 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
   };
 
   return (
-    <div className={styles.stack}>
+    // A disabled <fieldset> disables every input, Select trigger and button inside it in one go.
+    <fieldset className={styles.stack} disabled={readOnly} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+      {readOnly && (
+        <div className={styles.readOnlyNote}>
+          <Icon name="Lock" size={15} />
+          Only the account owner can edit the company profile.
+        </div>
+      )}
+
       {/* Company Logo Section */}
       <div className={styles.card}>
         <div className={styles.cardTitle}>Company logo</div>
@@ -184,9 +193,18 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
                 onChange={(v) => handleInputChange('size', v)}
                 options={COMPANY_SIZE_OPTIONS}
                 placeholder="Select size…"
+                disabled={!!companyData?.sizeChangeableFrom}
               />
             </div>
             {fieldError('size')}
+            {/* Size sets how many team accounts the company gets, so it changes at most once a year. */}
+            {companyData?.sizeChangeableFrom ? (
+              <span className={styles.fhint}>
+                Can be changed again on {new Date(companyData.sizeChangeableFrom).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}.
+              </span>
+            ) : companyData?.savedSize ? (
+              <span className={styles.fhint}>Company size can be changed once a year.</span>
+            ) : null}
           </div>
 
           <div {...fieldProps('location')}>
@@ -424,12 +442,14 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
       </div>
 
       {/* Save Button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button className={styles.btnPrimary} onClick={onSave} disabled={isSaving}>
-          <Icon name="Save" size={16} />{isSaving ? 'Saving...' : 'Save changes'}
-        </button>
-      </div>
-    </div>
+      {!readOnly && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <button className={styles.btnPrimary} onClick={onSave} disabled={isSaving}>
+            <Icon name="Save" size={16} />{isSaving ? 'Saving...' : 'Save changes'}
+          </button>
+        </div>
+      )}
+    </fieldset>
   );
 };
 

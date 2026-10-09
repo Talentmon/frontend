@@ -59,6 +59,8 @@ export function purchaseToFrontend(row) {
     notes: row.notes || '',
     unlockedDate: new Date(row.unlockedAt),
     creditsCost: row.creditsSpent,
+    // Team member who spent the credit ("Unlocked by Marko").
+    unlockedBy: row.unlockedBy?.name || '',
     hire: row.hire || null,
   };
 }

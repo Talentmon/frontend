@@ -472,6 +472,23 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   }
 }
 
+// Bonus bookmarks a package adds (depends on company size).
+.pkgBonus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .45em;
+  background: $amber-bg;
+  color: $gold-deep;
+  border-radius: $r-sm;
+  padding: .5em .8em;
+  margin: -4px 0 14px;
+  font-size: .8rem;
+  font-weight: 600;
+
+  svg { flex: none; }
+}
+
 .pkgFeatures {
   list-style: none;
   text-align: left;

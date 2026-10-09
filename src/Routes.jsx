@@ -9,6 +9,7 @@ import RequireAuth from "components/auth/RequireAuth";
 import LandingPage from './pages/landing/landing-page';
 import LandingPageCandidates from './pages/landing/landing-page-candidates';
 import Login from './pages/landing/login';
+import AcceptInvite from './pages/landing/accept-invite';
 import TermsOfService from './pages/landing/legal/TermsOfService';
 import PrivacyPolicy from './pages/landing/legal/PrivacyPolicy';
 import RefundPolicy from './pages/landing/legal/RefundPolicy';
@@ -44,6 +45,7 @@ const Routes = () => {
         <Route path="/landing-page" element={<LandingPage />} />
         <Route path="/landing-page-candidates" element={<LandingPageCandidates />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/accept-invite" element={<AcceptInvite />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />

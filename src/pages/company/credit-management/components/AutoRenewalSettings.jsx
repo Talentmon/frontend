@@ -1,10 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
+import { useCurrentUser } from 'lib/CurrentUserContext';
 import { getAutoRenewal, updateAutoRenewal, listPackages, packageToFrontend } from '../creditsApi';
 import styles from '../styles/credits.module.scss';
 
+// Owner-only to change (it spends money on its own); the rest of the team can see how it's set.
 const AutoRenewalSettings = () => {
+  const { isCompanyOwner } = useCurrentUser();
   const [autoRenewalEnabled, setAutoRenewalEnabled] = useState(false);
   const [thresholdAmount, setThresholdAmount] = useState('10');
   const [selectedPackage, setSelectedPackage] = useState('');
@@ -63,7 +66,15 @@ const AutoRenewalSettings = () => {
         </div>
       </div>
 
-      <div>
+      {/* A disabled <fieldset> locks every toggle, input, Select and button inside it for recruiters. */}
+      <fieldset disabled={!isCompanyOwner} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
+        {!isCompanyOwner && (
+          <div className={styles.noteRow} style={{ marginBottom: 18 }}>
+            <Icon name="Lock" size={20} />
+            <div>Only the account owner can change auto-renewal.</div>
+          </div>
+        )}
+
         {/* Enable Auto Renewal */}
         <div className={styles.toggleRow}>
           <label className={styles.toggle}>
@@ -168,25 +179,27 @@ const AutoRenewalSettings = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className={styles.setActions}>
-          <button className={styles.btnPrimary} onClick={handleSaveSettings} disabled={saving}>
-            <Icon name={saved ? 'Check' : 'Save'} size={16} />{saving ? 'Saving…' : saved ? 'Saved' : 'Save settings'}
-          </button>
+        {isCompanyOwner && (
+          <div className={styles.setActions}>
+            <button className={styles.btnPrimary} onClick={handleSaveSettings} disabled={saving}>
+              <Icon name={saved ? 'Check' : 'Save'} size={16} />{saving ? 'Saving…' : saved ? 'Saved' : 'Save settings'}
+            </button>
 
-          <button
-            className={styles.btnGhost}
-            onClick={() => {
-              setAutoRenewalEnabled(false);
-              setThresholdAmount('10');
-              setSelectedPackage(packages[0]?.id || '');
-              setEmailNotifications(true);
-              setSmsNotifications(false);
-            }}
-          >
-            Reset
-          </button>
-        </div>
-      </div>
+            <button
+              className={styles.btnGhost}
+              onClick={() => {
+                setAutoRenewalEnabled(false);
+                setThresholdAmount('10');
+                setSelectedPackage(packages[0]?.id || '');
+                setEmailNotifications(true);
+                setSmsNotifications(false);
+              }}
+            >
+              Reset
+            </button>
+          </div>
+        )}
+      </fieldset>
     </div>
   );
 };

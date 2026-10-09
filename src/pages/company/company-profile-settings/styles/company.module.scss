@@ -364,6 +364,13 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
   margin-top: 5px;
 }
 
+.fhint {
+  display: block;
+  font-size: .76rem;
+  color: $slate-2;
+  margin-top: 5px;
+}
+
 .counterRow {
   display: flex;
   align-items: baseline;
@@ -1937,18 +1944,64 @@ $red-deep: #b53e3e;
   border: 1px solid $line;
 }
 
-// ===== Team management =====
-.companyIdChip {
-  display: inline-flex;
+// ===== Owner-only notice (recruiter view) =====
+.readOnlyNote {
+  display: flex;
   align-items: center;
   gap: 8px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .82rem;
-  color: $ink;
+  font-size: .86rem;
+  color: $slate;
   background: $paper-2;
   border: 1px solid $line;
   border-radius: $r-sm;
-  padding: .55em .9em;
+  padding: .7em 1em;
+}
+
+// ===== Team management =====
+.youTag {
+  font-size: .72rem;
+  font-weight: 600;
+  color: $slate;
+  margin-left: 6px;
+}
+
+.teamMeta {
+  font-size: .76rem;
+  color: $slate-2;
+  margin-top: 2px;
+
+  &.expired { color: $red; }
+}
+
+// Seat usage line on the owner's invite card.
+.seatInfo {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: .84rem;
+  color: $slate;
+  background: $paper-2;
+  border: 1px solid $line;
+  border-radius: $r-sm;
+  padding: .65em .9em;
+  margin-bottom: 14px;
+
+  svg { flex: none; margin-top: 2px; }
+  b { color: $ink; font-weight: 600; }
+
+  &.full { background: $red-bg; border-color: transparent; color: $red; }
+}
+
+.teamAction {
+  font-size: .8rem;
+  font-weight: 600;
+  color: $gold-deep;
+  padding: 6px 8px;
+  border-radius: 8px;
+  transition: .15s;
+
+  &:hover:not(:disabled) { background: $amber-bg; }
+  &:disabled { opacity: .55; cursor: default; }
 }
 
 .teamRow {
@@ -2021,6 +2074,7 @@ $red-deep: #b53e3e;
 
   &.active { background: $green-bg; color: $green; }
   &.pending { background: $blue-bg; color: $blue; }
+  &.expired { background: $red-bg; color: $red; }
 }
 
 .teamRemove {

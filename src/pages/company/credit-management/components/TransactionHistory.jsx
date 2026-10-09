@@ -95,7 +95,10 @@ const TransactionHistory = () => {
 
                   <div className={styles.hd}>
                     <b>{transaction?.description}</b>
-                    <span>{formatDate(transaction?.date)}</span>
+                    <span>
+                      {formatDate(transaction?.date)}
+                      {transaction?.actor && ` · by ${transaction.actor.name}${transaction.actor.removed ? ' (former member)' : ''}`}
+                    </span>
                   </div>
 
                   <div className={styles.ha}>

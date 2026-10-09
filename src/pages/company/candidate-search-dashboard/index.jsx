@@ -24,7 +24,6 @@ import {
 
 const UNLOCK_COST = 1;
 const PAGE_SIZE = 20;
-const MAX_BOOKMARKS = 10;
 const SEARCH_DEBOUNCE_MS = 350;
 
 const CandidateSearchDashboard = () => {
@@ -139,15 +138,10 @@ const CandidateSearchDashboard = () => {
       try {
         await removeBookmark(existingId);
         showToast('Removed from bookmarks');
-      } catch {
+      } catch (err) {
         setBookmarksById((prev) => ({ ...prev, [candidateId]: existingId }));
-        showToast('Could not remove bookmark — please try again.');
+        showToast(err?.response?.data?.message || 'Could not remove bookmark — please try again.');
       }
-      return;
-    }
-
-    if (bookmarkedCandidates.length >= MAX_BOOKMARKS) {
-      showToast(`You can bookmark a maximum of ${MAX_BOOKMARKS} candidates. Remove some to add new ones.`);
       return;
     }
 
@@ -189,12 +183,7 @@ const CandidateSearchDashboard = () => {
         return next;
       });
 
-      addNotification('company', {
-        type: 'unlock',
-        title: `You unlocked ${revealed?.name || 'a candidate'}`,
-        desc: `The candidate has been notified that you unlocked their profile. Spent: ${UNLOCK_COST} Credit${UNLOCK_COST === 1 ? '' : 's'}.`,
-        time: 'Just now'
-      });
+      // The company's own "unlocked" notification comes from the backend (UnlocksService).
       addNotification('candidate', {
         type: 'unlock',
         title: 'A company unlocked you',

@@ -5,15 +5,24 @@ import styles from '../styles/bookmarked.module.scss';
 
 const LAYOUT_TRANSITION = { duration: 0.4, ease: [0.2, 0.7, 0.2, 1] };
 
+// The ring is the company's shared list (currentCount/maxCount). Team members
+// (not the owner) also have personalLimit slots of their own, which don't
+// count toward the ring — they're what they can still save once it's full.
 const BookmarkLimitIndicator = ({
   currentCount,
   maxCount = 10,
+  personalUsed = 0,
+  personalLimit = 0,
+  totalCount = currentCount,
   onManageBookmarks,
   onSearchCandidates,
   stacked = false
 }) => {
-  const isNearLimit = currentCount >= maxCount * 0.8;
-  const isAtLimit = currentCount >= maxCount;
+  const sharedFree = Math.max(0, maxCount - currentCount);
+  const personalFree = Math.max(0, personalLimit - personalUsed);
+  const freeSlots = sharedFree + personalFree;
+  const isAtLimit = freeSlots === 0;
+  const isNearLimit = !isAtLimit && personalFree === 0 && currentCount >= maxCount * 0.8;
 
   const stateClass = isAtLimit ? 'danger' : isNearLimit ? 'warn' : '';
   const iconColor = isAtLimit ? '#cf4b4b' : isNearLimit ? '#C98A1F' : '#2f9e69';
@@ -67,14 +76,25 @@ const BookmarkLimitIndicator = ({
           <div className={`${styles.limitNote} ${styles.warn}`}>
             <Icon name="AlertTriangle" size={16} />
             <span>
-              You're approaching the limit. You have <b>{maxCount - currentCount}</b> free slots left.
+              You're approaching the limit. You have <b>{freeSlots}</b> free slots left.
             </span>
           </div>
         ) : (
           <div className={styles.limitNote}>
             <Icon name="CheckCircle" size={16} />
-            <span>You can save <b>{maxCount - currentCount}</b> more candidates.</span>
+            <span>You can save <b>{freeSlots}</b> more candidates.</span>
           </div>
+        )}
+
+        {personalLimit > 0 && (
+          <p className={styles.limitPersonal}>
+            Your personal slots: <b>{personalUsed}/{personalLimit}</b> — only you can remove these.
+          </p>
+        )}
+        {totalCount > currentCount && (
+          <p className={styles.limitPersonal}>
+            Bookmarks tagged <b>Personal</b> don&apos;t count toward the company list.
+          </p>
         )}
 
         <div className={styles.limitActions}>

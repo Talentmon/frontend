@@ -65,6 +65,10 @@ const DeleteAccountModal = ({ isVisible, companyName, onClose, onConfirm, busy }
             </li>
             <li className={styles.consItem}>
               <span className={styles.consX}><Icon name="X" size={12} /></span>
+              Every team member loses access, and their logins are deleted too.
+            </li>
+            <li className={styles.consItem}>
+              <span className={styles.consX}><Icon name="X" size={12} /></span>
               This account cannot be recovered after deletion.
             </li>
           </ul>

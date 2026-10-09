@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
+import { useCurrentUser } from 'lib/CurrentUserContext';
 import cardShieldArt from 'data/pictures/card-shild.webp';
 import shieldLockArt from 'data/pictures/shild-lock.webp';
 import {
@@ -10,7 +11,9 @@ import {
 } from '../creditsApi';
 import styles from '../styles/credits.module.scss';
 
+// Cards belong to the company: every team member buys on them, only the owner adds or removes them.
 const PaymentMethods = ({ onNotify = () => {} }) => {
+  const { isCompanyOwner } = useCurrentUser();
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openingPortal, setOpeningPortal] = useState(false);
@@ -79,27 +82,40 @@ const PaymentMethods = ({ onNotify = () => {} }) => {
                       <b>{method?.name}</b>
                       <span>Expires {method?.expiry}</span>
                     </div>
-                    <div className={styles.pmActions}>
-                      <button className={styles.delBtn} onClick={() => handleRemoveMethod(method?.id)} aria-label="Remove card">
-                        <Icon name="Trash2" size={15} />
-                      </button>
-                    </div>
+                    {isCompanyOwner && (
+                      <div className={styles.pmActions}>
+                        <button className={styles.delBtn} onClick={() => handleRemoveMethod(method?.id)} aria-label="Remove card">
+                          <Icon name="Trash2" size={15} />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
 
                 {paymentMethods?.length === 0 && (
                   <div className={styles.infoBox}>
                     <Icon name="Info" size={16} />
-                    <span>You have no saved payment methods yet — one is saved automatically the first time you buy Credits.</span>
+                    <span>
+                      {isCompanyOwner
+                        ? 'You have no saved payment methods yet — one is saved automatically the first time you buy Credits.'
+                        : 'No card saved yet — the account owner adds one with the first purchase. After that, anyone on the team can buy Credits.'}
+                    </span>
                   </div>
                 )}
               </>
             )}
 
-            <button className={styles.addCardBox} onClick={handleAddCard} disabled={openingPortal}>
-              <Icon name={openingPortal ? 'Loader2' : 'Plus'} size={16} />
-              {openingPortal ? 'Opening…' : 'Add / manage cards'}
-            </button>
+            {isCompanyOwner ? (
+              <button className={styles.addCardBox} onClick={handleAddCard} disabled={openingPortal}>
+                <Icon name={openingPortal ? 'Loader2' : 'Plus'} size={16} />
+                {openingPortal ? 'Opening…' : 'Add / manage cards'}
+              </button>
+            ) : (
+              <div className={styles.infoBox}>
+                <Icon name="Lock" size={16} />
+                <span>Credits you buy are charged to the company card. Only the account owner can add or remove cards.</span>
+              </div>
+            )}
           </div>
 
           <img src={cardShieldArt} alt="" className={styles.pmCardArt} />

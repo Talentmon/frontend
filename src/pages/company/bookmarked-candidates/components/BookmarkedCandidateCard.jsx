@@ -100,7 +100,8 @@ const BookmarkedCandidateCard = ({
       {/* Top row: saved date (left) + available badge & remove (right) */}
       <div className={styles.cardTop}>
         <span className={`${styles.savedDate} ${reorderMode ? styles.savedDateShifted : ''}`}>
-          Saved {formatDate(candidate?.bookmarkedDate)}
+          Saved {formatDate(candidate?.bookmarkedDate)}{candidate?.bookmarkedBy ? ` by ${candidate.bookmarkedBy}` : ''}
+          {candidate?.pocket === 'PERSONAL' && <span className={styles.personalTag}>Personal</span>}
         </span>
 
         <div className={styles.cardTopRight}>
@@ -111,14 +112,17 @@ const BookmarkedCandidateCard = ({
             </span>
           )}
 
-          <button
-            onClick={() => onRemoveBookmark(candidate?.id)}
-            className={styles.bcRemove}
-            title="Remove from saved"
-            aria-label="Remove from saved"
-          >
-            <Icon name="X" size={16} />
-          </button>
+          {/* A teammate's personal bookmark: only they can remove it (it can still be unlocked). */}
+          {candidate?.canRemove !== false && (
+            <button
+              onClick={() => onRemoveBookmark(candidate?.id)}
+              className={styles.bcRemove}
+              title="Remove from saved"
+              aria-label="Remove from saved"
+            >
+              <Icon name="X" size={16} />
+            </button>
+          )}
         </div>
       </div>
 

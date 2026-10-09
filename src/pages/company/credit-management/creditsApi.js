@@ -19,6 +19,14 @@ export function packageToFrontend(p) {
   };
 }
 
+/**
+ * Extra bookmarks each package adds for *this* company (depends on company
+ * size) and how many months they last — `{ validMonths, packages: [{ packageId, bookmarks }] }`.
+ */
+export function getPackageBookmarkBonuses() {
+  return apiClient.get('/companies/me/bookmarks/package-bonuses').then((r) => r.data);
+}
+
 // ---- Balance & transactions ----
 export function getBalance() {
   return apiClient.get('/companies/me/credits/balance').then((r) => r.data);
@@ -41,6 +49,8 @@ export function transactionToFrontend(t) {
     date: new Date(t.createdAt),
     status: (t.status || 'completed').toLowerCase(),
     balanceAfter: t.balanceAfter,
+    // { id, name, removed } — the team member who bought/spent, null for system adjustments.
+    actor: t.actor || null,
   };
 }
 

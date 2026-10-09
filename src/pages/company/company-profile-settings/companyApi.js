@@ -62,7 +62,6 @@ export function updateCompany(patch) {
 /** Maps the backend Company (GET /companies/me shape) onto the frontend `companyData` object. */
 export function companyToFrontend(c) {
   return {
-    companyId: c.companyCode || '',
     name: c.name || '',
     email: c.email || '',
     website: c.website || '',
@@ -70,6 +69,9 @@ export function companyToFrontend(c) {
     // as unselected, so it has to be re-picked from the dropdown.
     industry: INDUSTRY_NAMES.includes(c.industry) ? c.industry : '',
     size: c.size || '',
+    // Size can change once a year after the first pick — the backend enforces it, these drive the hint/confirm.
+    savedSize: c.size || '',
+    sizeChangeableFrom: c.sizeChangeableFrom || null,
     location: c.location || '',
     foundedYear: c.foundedYear ? String(c.foundedYear) : '',
     pib: c.pib || '',
@@ -182,6 +184,14 @@ export function listTeam() {
 export function inviteTeamMember(email) {
   return apiClient.post('/companies/me/team', { email }).then((r) => r.data);
 }
+/** `{ used, limit }` team accounts (pending invites included) — `limit` null means no cap. */
+export function getTeamSeats() {
+  return apiClient.get('/companies/me/team/seats').then((r) => r.data);
+}
+/** New link valid for 7 more days — the previous link stops working. */
+export function resendTeamInvite(id) {
+  return apiClient.post(`/companies/me/team/${id}/resend`).then((r) => r.data);
+}
 export function removeTeamMember(id) {
   return apiClient.delete(`/companies/me/team/${id}`).then((r) => r.data);
 }
@@ -190,8 +200,13 @@ export function removeTeamMember(id) {
 export function getCompanyPreferences() {
   return apiClient.get('/companies/me/preferences').then((r) => r.data);
 }
+/** Company-wide profile privacy — Owner-only. */
 export function updateCompanyPreferences(patch) {
   return apiClient.patch('/companies/me/preferences', patch).then((r) => r.data);
+}
+/** The signed-in team member's own settings (language, notifications, security). */
+export function updateMyPreferences(patch) {
+  return apiClient.patch('/companies/me/preferences/personal', patch).then((r) => r.data);
 }
 
 // `notificationPrefs` is a freeform JSON blob with no server-side defaults —
@@ -217,6 +232,8 @@ export const DEFAULT_COMPANY_NOTIFICATIONS = {
 
 export function companyPreferencesToFrontend(data) {
   return {
+    name: data.name || '',
+    email: data.email || '',
     language: data.language,
     timezone: data.timezone,
     currency: data.currency,
@@ -230,15 +247,21 @@ export function companyPreferencesToFrontend(data) {
   };
 }
 
-export function companyPreferencesToPayload(preferences) {
+export function companyPrivacyToPayload(preferences) {
   return {
-    language: preferences.language,
-    timezone: preferences.timezone,
-    currency: preferences.currency,
     profileVisibility: preferences.profileVisibility,
     showEmployeeCount: preferences.showEmployeeCount,
     showContactInfo: preferences.showContactInfo,
     showHiringHistory: preferences.showHiringHistory,
+  };
+}
+
+export function personalPreferencesToPayload(preferences) {
+  return {
+    name: preferences.name,
+    language: preferences.language,
+    timezone: preferences.timezone,
+    currency: preferences.currency,
     notificationPrefs: preferences.notifications,
     twoFactorEnabled: preferences.twoFactorEnabled,
     loginNotifications: preferences.loginNotifications,

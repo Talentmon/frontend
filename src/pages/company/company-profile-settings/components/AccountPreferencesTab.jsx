@@ -4,7 +4,8 @@ import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
 import styles from '../styles/company.module.scss';
 
-const AccountPreferencesTab = ({ preferences, onPreferencesChange, onSave, isSaving, onDeleteAccount, fireToast }) => {
+// Profile privacy and account deletion are company-wide (owner-only); language, notifications and security are each person's own.
+const AccountPreferencesTab = ({ preferences, onPreferencesChange, onSave, isSaving, onDeleteAccount, fireToast, isOwner }) => {
   const clerk = useClerk();
   const [pwCurrent, setPwCurrent] = useState('');
   const [pwNew, setPwNew] = useState('');
@@ -113,10 +114,34 @@ const AccountPreferencesTab = ({ preferences, onPreferencesChange, onSave, isSav
 
   return (
     <div className={styles.stack}>
+      {/* Your profile — the name teammates see on what you unlock, save and buy */}
+      <div className={styles.card}>
+        <div className={styles.cardTitle}>Your profile</div>
+        <div className={styles.cardSub}>Your teammates see this name next to what you unlock, save and buy</div>
+
+        <div className={styles.form2}>
+          <div className={styles.field}>
+            <label className={styles.flabel}>Your name</label>
+            <input
+              className={styles.finput}
+              type="text"
+              maxLength={100}
+              placeholder="e.g. Ana Jovanović"
+              value={preferences?.name || ''}
+              onChange={(e) => handlePreferenceChange('name', e.target.value)}
+            />
+          </div>
+          <div className={styles.field}>
+            <label className={styles.flabel}>Login email</label>
+            <input className={styles.finput} type="email" value={preferences?.email || ''} disabled />
+          </div>
+        </div>
+      </div>
+
       {/* Language & Region */}
       <div className={styles.card}>
         <div className={styles.cardTitle}>Language & region</div>
-        <div className={styles.cardSub}>How the platform is displayed to your team</div>
+        <div className={styles.cardSub}>How the platform is displayed to you</div>
 
         <div className={styles.form2}>
           <div className={styles.field}>
@@ -149,55 +174,57 @@ const AccountPreferencesTab = ({ preferences, onPreferencesChange, onSave, isSav
       </div>
 
       {/* Privacy Settings */}
-      <div className={styles.card}>
-        <div className={styles.cardTitle}>Profile privacy</div>
-        <div className={styles.cardSub}>Control who can see your company profile</div>
+      {isOwner && (
+        <div className={styles.card}>
+          <div className={styles.cardTitle}>Profile privacy</div>
+          <div className={styles.cardSub}>Control who can see your company profile</div>
 
-        <div className={styles.toggleRow} style={{ marginTop: 10 }}>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences?.showEmployeeCount}
-              onChange={(e) => handlePreferenceChange('showEmployeeCount', e?.target?.checked)}
-            />
-            <span className={styles.toggleTrack}></span>
-          </label>
-          <div className={styles.toggleTxt}>
-            <b>Show employee count</b>
-            <span>Allow candidates to see the size of your company</span>
+          <div className={styles.toggleRow} style={{ marginTop: 10 }}>
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                checked={preferences?.showEmployeeCount}
+                onChange={(e) => handlePreferenceChange('showEmployeeCount', e?.target?.checked)}
+              />
+              <span className={styles.toggleTrack}></span>
+            </label>
+            <div className={styles.toggleTxt}>
+              <b>Show employee count</b>
+              <span>Allow candidates to see the size of your company</span>
+            </div>
+          </div>
+
+          <div className={styles.toggleRow}>
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                checked={preferences?.showContactInfo}
+                onChange={(e) => handlePreferenceChange('showContactInfo', e?.target?.checked)}
+              />
+              <span className={styles.toggleTrack}></span>
+            </label>
+            <div className={styles.toggleTxt}>
+              <b>Show contact information</b>
+              <span>Allow candidates to see your contact details</span>
+            </div>
+          </div>
+
+          <div className={styles.toggleRow}>
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                checked={preferences?.showHiringHistory}
+                onChange={(e) => handlePreferenceChange('showHiringHistory', e?.target?.checked)}
+              />
+              <span className={styles.toggleTrack}></span>
+            </label>
+            <div className={styles.toggleTxt}>
+              <b>Show hiring history</b>
+              <span>Allow candidates to see your hiring history</span>
+            </div>
           </div>
         </div>
-
-        <div className={styles.toggleRow}>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences?.showContactInfo}
-              onChange={(e) => handlePreferenceChange('showContactInfo', e?.target?.checked)}
-            />
-            <span className={styles.toggleTrack}></span>
-          </label>
-          <div className={styles.toggleTxt}>
-            <b>Show contact information</b>
-            <span>Allow candidates to see your contact details</span>
-          </div>
-        </div>
-
-        <div className={styles.toggleRow}>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences?.showHiringHistory}
-              onChange={(e) => handlePreferenceChange('showHiringHistory', e?.target?.checked)}
-            />
-            <span className={styles.toggleTrack}></span>
-          </label>
-          <div className={styles.toggleTxt}>
-            <b>Show hiring history</b>
-            <span>Allow candidates to see your hiring history</span>
-          </div>
-        </div>
-      </div>
+      )}
 
       {/* Notification Preferences */}
       <div className={styles.card}>
@@ -299,15 +326,17 @@ const AccountPreferencesTab = ({ preferences, onPreferencesChange, onSave, isSav
           </div>
         </div>
 
-        <div className={`${styles.dangerRow} ${styles.dangerRowDel}`}>
-          <div className={`${styles.dangerTxt} ${styles.del}`}>
-            <b>Delete account</b>
-            <span>Permanently delete your account and all associated data</span>
+        {isOwner && (
+          <div className={`${styles.dangerRow} ${styles.dangerRowDel}`}>
+            <div className={`${styles.dangerTxt} ${styles.del}`}>
+              <b>Delete account</b>
+              <span>Permanently delete the company account and all associated data — the whole team loses access</span>
+            </div>
+            <button className={`${styles.btnSm} ${styles.btnSmRed}`} onClick={onDeleteAccount}>
+              <Icon name="Trash2" size={14} />Delete account
+            </button>
           </div>
-          <button className={`${styles.btnSm} ${styles.btnSmRed}`} onClick={onDeleteAccount}>
-            <Icon name="Trash2" size={14} />Delete account
-          </button>
-        </div>
+        )}
       </div>
 
       {/* Save Button */}

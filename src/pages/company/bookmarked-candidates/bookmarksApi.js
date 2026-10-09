@@ -10,6 +10,11 @@ export function listBookmarks() {
   return apiClient.get('/companies/me/bookmarks').then((r) => r.data);
 }
 
+/** `{ limit, count }` — the company-wide bookmark allowance (it varies per company; only the number is shown). */
+export function getBookmarkLimit() {
+  return apiClient.get('/companies/me/bookmarks/limit').then((r) => r.data);
+}
+
 export function bookmarkToFrontend(row) {
   return {
     ...candidateToFrontend(row.candidate),
@@ -17,6 +22,11 @@ export function bookmarkToFrontend(row) {
     unlockCost: UNLOCK_COST,
     notes: row.notes || '',
     bookmarkedDate: new Date(row.bookmarkedAt),
+    // Team member who saved it ("Saved by Marko").
+    bookmarkedBy: row.bookmarkedBy?.name || '',
+    // PERSONAL bookmarks sit in their bookmarker's own slots — only they can remove them (`canRemove`).
+    pocket: row.pocket,
+    canRemove: row.canRemove !== false,
     sortIndex: row.sortIndex,
   };
 }

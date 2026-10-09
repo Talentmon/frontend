@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
-import { listPackages, packageToFrontend } from '../creditsApi';
+import { getPackageBookmarkBonuses, listPackages, packageToFrontend } from '../creditsApi';
 import styles from '../styles/credits.module.scss';
 
 const commonFeatures = [
@@ -12,12 +12,9 @@ const commonFeatures = [
   'Email alerts'
 ];
 
-// Multi-user workspace is called out for the two largest packages — a cosmetic
-// grouping, not backend-tracked (the package row itself has no such flag).
 const buildFeatures = (credits) => [
   `Unlock ${credits} profile${credits > 1 ? 's' : ''}`,
   ...commonFeatures,
-  ...(credits >= 50 ? ['Multi-user workspace'] : [])
 ];
 
 const CreditPackages = ({ onPurchase }) => {
@@ -25,8 +22,18 @@ const CreditPackages = ({ onPurchase }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    listPackages()
-      .then((rows) => setPackages(rows.map(packageToFrontend)))
+    // Bonuses are optional decoration — packages still render if that call fails.
+    Promise.all([listPackages(), getPackageBookmarkBonuses().catch(() => null)])
+      .then(([rows, bonuses]) => {
+        const bonusById = new Map((bonuses?.packages || []).map((b) => [b.packageId, b.bookmarks]));
+        setPackages(
+          rows.map((row) => ({
+            ...packageToFrontend(row),
+            bookmarkBonus: bonusById.get(row.id) || 0,
+            bookmarkBonusMonths: bonuses?.validMonths || 0,
+          })),
+        );
+      })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
@@ -73,6 +80,13 @@ const CreditPackages = ({ onPurchase }) => {
               <b>{pkg?.credits}</b>
               <span>Credits</span>
             </div>
+
+            {pkg?.bookmarkBonus > 0 && (
+              <div className={styles.pkgBonus}>
+                <Icon name="Bookmark" size={15} />
+                <span>+{pkg.bookmarkBonus} extra bookmarks for {pkg.bookmarkBonusMonths} months</span>
+              </div>
+            )}
 
             <ul className={styles.pkgFeatures}>
               {buildFeatures(pkg?.credits)?.map((feature, index) => (

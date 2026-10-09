@@ -19,8 +19,10 @@ import {
   reviewsToReputationData,
   getCompanyPreferences,
   updateCompanyPreferences,
+  updateMyPreferences,
   companyPreferencesToFrontend,
-  companyPreferencesToPayload,
+  companyPrivacyToPayload,
+  personalPreferencesToPayload,
   deleteCompanyAccount,
   validateCompany,
   REQUIRED_COMPANY_FIELD_LABELS,
@@ -30,7 +32,7 @@ import styles from './styles/company.module.scss';
 const CompanyProfileSettings = () => {
   const navigate = useNavigate();
   const clerk = useClerk();
-  const { refetch: refetchCurrentUser } = useCurrentUser();
+  const { refetch: refetchCurrentUser, isCompanyOwner } = useCurrentUser();
   const [activeTab, setActiveTab] = useState('company');
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(true);
@@ -111,6 +113,16 @@ const CompanyProfileSettings = () => {
       return;
     }
 
+    // The first pick is free; every later change locks size for a year (backend: sizeChangeableFrom).
+    if (companyData.savedSize && companyData.size !== companyData.savedSize) {
+      const nextChange = new Date();
+      nextChange.setFullYear(nextChange.getFullYear() + 1);
+      const confirmed = window.confirm(
+        `Company size can only be changed once a year. After this change, the next one is possible on ${nextChange.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}.\n\nSave the new size?`,
+      );
+      if (!confirmed) return;
+    }
+
     const wasComplete = companyData.profileComplete;
     setIsSaving(true);
     try {
@@ -135,8 +147,12 @@ const CompanyProfileSettings = () => {
   const handleSavePreferences = async () => {
     setIsSavingPrefs(true);
     try {
-      const saved = await updateCompanyPreferences(companyPreferencesToPayload(preferences));
+      // Profile privacy is company-wide (owner-only); everything else on the tab is the signed-in member's own.
+      if (isCompanyOwner) await updateCompanyPreferences(companyPrivacyToPayload(preferences));
+      const saved = await updateMyPreferences(personalPreferencesToPayload(preferences));
       setPreferences(companyPreferencesToFrontend(saved));
+      // Silent: picks up a changed display name without unmounting this page.
+      refetchCurrentUser({ silent: true }).catch(() => {});
       fireToast('Account settings saved');
     } catch (err) {
       fireToast(err?.response?.data?.message || 'Could not save — please try again.');
@@ -183,10 +199,11 @@ const CompanyProfileSettings = () => {
             isSaving={isSaving}
             fireToast={fireToast}
             errors={fieldErrors}
+            readOnly={!isCompanyOwner}
           />
         );
       case 'team':
-        return <TeamManagementTab companyData={companyData} fireToast={fireToast} />;
+        return <TeamManagementTab fireToast={fireToast} />;
       case 'reputation':
         return <ReputationManagementTab reputationData={reputationData} />;
       case 'preferences':
@@ -198,6 +215,7 @@ const CompanyProfileSettings = () => {
             isSaving={isSavingPrefs}
             onDeleteAccount={() => setShowDeleteModal(true)}
             fireToast={fireToast}
+            isOwner={isCompanyOwner}
           />
         );
       default:
@@ -231,13 +249,16 @@ const CompanyProfileSettings = () => {
             <button className={styles.btnGhost} onClick={() => setShowPreview(true)}>
               <Icon name="Eye" size={16} />Preview profile
             </button>
-            <button
-              className={styles.btnPrimary}
-              onClick={activeTab === 'preferences' ? handleSavePreferences : handleSaveCompany}
-              disabled={isSaving || isSavingPrefs}
-            >
-              <Icon name="Save" size={16} />{(isSaving || isSavingPrefs) ? 'Saving...' : 'Save'}
-            </button>
+            {/* Recruiters can only save their own settings — the company profile is owner-only. */}
+            {(isCompanyOwner || activeTab === 'preferences') && (
+              <button
+                className={styles.btnPrimary}
+                onClick={activeTab === 'preferences' ? handleSavePreferences : handleSaveCompany}
+                disabled={isSaving || isSavingPrefs}
+              >
+                <Icon name="Save" size={16} />{(isSaving || isSavingPrefs) ? 'Saving...' : 'Save'}
+              </button>
+            )}
           </div>
         </div>
 

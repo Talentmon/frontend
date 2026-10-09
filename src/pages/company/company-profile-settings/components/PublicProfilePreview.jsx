@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import Stars from '../../../candidate/company-details/Stars';
+import { COMPANY_SIZE_OPTIONS } from '../companyApi';
 import styles from '../styles/company.module.scss';
 import './previewStars.css';
 
@@ -113,7 +114,10 @@ const PublicProfilePreview = ({ companyData, reputationData, isVisible, onClose 
               {/* Stats */}
               <div className={`${styles.dStats} ${styles.five}`}>
                 <div className={styles.dStat}>
-                  <div className={styles.dStatN}>{(companyData?.size || '—')?.replace(/\s*employees\s*$/i, '')}</div>
+                  {/* size is the enum (SMALL/MID/…) — show its range, same as the public company page. */}
+                  <div className={styles.dStatN}>
+                    {(COMPANY_SIZE_OPTIONS.find((o) => o.value === companyData?.size)?.label || '—').replace(/\s*employees\s*$/i, '')}
+                  </div>
                   <span className={styles.dStatL}>Employees</span>
                 </div>
                 <div className={styles.dStat}>

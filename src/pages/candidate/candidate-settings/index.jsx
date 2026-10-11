@@ -5,6 +5,7 @@ import { useClerk } from '@clerk/clerk-react';
 import CandidateHeader from 'components/ui/CandidateHeader';
 import Select from 'components/ui/Select';
 import apiClient from 'lib/apiClient';
+import { getTimezoneOptions } from 'utils/timezones';
 import { useCurrentUser } from 'lib/CurrentUserContext';
 import { useMyCandidateProfile } from 'hooks/useMyCandidateProfile';
 import {
@@ -118,12 +119,6 @@ const TABS = [
 ];
 
 // ── ACCOUNT TAB ───────────────────────────────────────────────────────────────
-const TIMEZONE_OPTIONS = [
-  { value: 'Europe/Belgrade', label: 'Belgrade (UTC+1)' },
-  { value: 'Europe/London', label: 'London (UTC+0)' },
-  { value: 'Europe/Berlin', label: 'Berlin (UTC+1)' },
-];
-
 const AccountTab = ({ prefs, onSavePrefs, fireToast }) => {
   const { user } = useCurrentUser();
   const { candidate, refetch: refetchCandidate } = useMyCandidateProfile();
@@ -233,7 +228,8 @@ const AccountTab = ({ prefs, onSavePrefs, fireToast }) => {
             <Select
               value={prefs?.timezone || 'Europe/Belgrade'}
               onChange={v => onSavePrefs({ timezone: v })}
-              options={TIMEZONE_OPTIONS}
+              options={getTimezoneOptions(prefs?.timezone)}
+              searchable
             />
           </div>
         </div>

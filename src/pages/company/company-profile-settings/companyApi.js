@@ -244,13 +244,22 @@ export const DEFAULT_COMPANY_NOTIFICATIONS = {
   },
 };
 
+// Interface is English-only; currency is one of these four (the backend enforces both).
+export const PERSONAL_CURRENCY_OPTIONS = [
+  { value: 'EUR', label: 'Euro (EUR)' },
+  { value: 'USD', label: 'US dollar (USD)' },
+  { value: 'GBP', label: 'British pound (GBP)' },
+  { value: 'CNY', label: 'Chinese yuan (CNY)' },
+];
+
 export function companyPreferencesToFrontend(data) {
   return {
     name: data.name || '',
     email: data.email || '',
-    language: data.language,
+    language: 'en',
     timezone: data.timezone,
-    currency: data.currency,
+    // Older accounts may still hold RSD from before the list was narrowed.
+    currency: PERSONAL_CURRENCY_OPTIONS.some((option) => option.value === data.currency) ? data.currency : 'EUR',
     profileVisibility: data.profileVisibility,
     showEmployeeCount: data.showEmployeeCount,
     showContactInfo: data.showContactInfo,
@@ -273,7 +282,7 @@ export function companyPrivacyToPayload(preferences) {
 export function personalPreferencesToPayload(preferences) {
   return {
     name: preferences.name,
-    language: preferences.language,
+    language: 'en',
     timezone: preferences.timezone,
     currency: preferences.currency,
     notificationPrefs: preferences.notifications,

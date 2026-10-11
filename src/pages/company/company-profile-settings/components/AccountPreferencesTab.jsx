@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useClerk } from '@clerk/clerk-react';
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
+import { getTimezoneOptions } from 'utils/timezones';
+import { PERSONAL_CURRENCY_OPTIONS } from '../companyApi';
 import ChangeEmailModal from './ChangeEmailModal';
 import styles from '../styles/company.module.scss';
 
@@ -55,24 +57,7 @@ const AccountPreferencesTab = ({
     handlePreferenceChange('notifications', updatedNotifications);
   };
 
-  const languageOptions = [
-    { value: 'sr-cyrl', label: 'Serbian (Cyrillic)' },
-    { value: 'sr-latn', label: 'Serbian (Latin)' },
-    { value: 'en', label: 'English' }
-  ];
-
-  const timezoneOptions = [
-    { value: 'Europe/Belgrade', label: 'Belgrade (UTC+1)' },
-    { value: 'Europe/London', label: 'London (UTC+0)' },
-    { value: 'Europe/Berlin', label: 'Berlin (UTC+1)' },
-    { value: 'America/New_York', label: 'New York (UTC-5)' }
-  ];
-
-  const currencyOptions = [
-    { value: 'RSD', label: 'Serbian dinar (RSD)' },
-    { value: 'EUR', label: 'Euro (EUR)' },
-    { value: 'USD', label: 'US dollar (USD)' }
-  ];
+  const timezoneOptions = useMemo(() => getTimezoneOptions(preferences?.timezone), [preferences?.timezone]);
 
   const CheckIcon = () => (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2">
@@ -175,11 +160,7 @@ const AccountPreferencesTab = ({
         <div className={styles.form2}>
           <div className={styles.field}>
             <label className={styles.flabel}>Interface language</label>
-            <Select
-              value={preferences?.language}
-              onChange={(value) => handlePreferenceChange('language', value)}
-              options={languageOptions}
-            />
+            <input className={styles.finput} type="text" value="English" disabled />
           </div>
 
           <div className={styles.field}>
@@ -188,6 +169,7 @@ const AccountPreferencesTab = ({
               value={preferences?.timezone}
               onChange={(value) => handlePreferenceChange('timezone', value)}
               options={timezoneOptions}
+              searchable
             />
           </div>
 
@@ -196,7 +178,7 @@ const AccountPreferencesTab = ({
             <Select
               value={preferences?.currency}
               onChange={(value) => handlePreferenceChange('currency', value)}
-              options={currencyOptions}
+              options={PERSONAL_CURRENCY_OPTIONS}
             />
           </div>
         </div>

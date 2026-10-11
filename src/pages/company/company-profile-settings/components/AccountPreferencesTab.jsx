@@ -26,6 +26,9 @@ const AccountPreferencesTab = ({ preferences, onPreferencesChange, onSave, isSav
     }
   };
 
+  // Recruiters can't clear their name (they gave it when accepting the invite); the owner's is optional.
+  const nameMissing = !isOwner && !preferences?.name?.trim();
+
   const handlePreferenceChange = (key, value) => {
     onPreferencesChange({ ...preferences, [key]: value });
   };
@@ -117,19 +120,20 @@ const AccountPreferencesTab = ({ preferences, onPreferencesChange, onSave, isSav
       {/* Your profile — the name teammates see on what you unlock, save and buy */}
       <div className={styles.card}>
         <div className={styles.cardTitle}>Your profile</div>
-        <div className={styles.cardSub}>Your teammates see this name next to what you unlock, save and buy</div>
+        <div className={styles.cardSub}>Shown to your team next to what you unlock, save and buy — without a name they see your email</div>
 
         <div className={styles.form2}>
           <div className={styles.field}>
-            <label className={styles.flabel}>Your name</label>
+            <label className={styles.flabel}>Your name {!isOwner && <span className={styles.req}>*</span>}</label>
             <input
-              className={styles.finput}
+              className={nameMissing ? `${styles.finput} ${styles.finvalid}` : styles.finput}
               type="text"
               maxLength={100}
               placeholder="e.g. Ana Jovanović"
               value={preferences?.name || ''}
               onChange={(e) => handlePreferenceChange('name', e.target.value)}
             />
+            {nameMissing && <span className={styles.ferr}>Your name is required.</span>}
           </div>
           <div className={styles.field}>
             <label className={styles.flabel}>Login email</label>

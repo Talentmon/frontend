@@ -145,6 +145,10 @@ const CompanyProfileSettings = () => {
   };
 
   const handleSavePreferences = async () => {
+    if (!isCompanyOwner && !preferences?.name?.trim()) {
+      fireToast('Your name is required — your teammates see it next to what you unlock, save and buy.');
+      return;
+    }
     setIsSavingPrefs(true);
     try {
       // Profile privacy is company-wide (owner-only); everything else on the tab is the signed-in member's own.

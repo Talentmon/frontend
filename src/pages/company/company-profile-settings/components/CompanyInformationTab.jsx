@@ -170,6 +170,9 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
           <div className={styles.field}>
             <label className={styles.flabel}>Company email {requiredMark}</label>
             <input className={styles.finput} type="email" value={companyData?.email || ''} disabled />
+            <span className={styles.fhint}>
+              {readOnly ? "The account owner's login email." : 'Your login email — change it under Account settings.'}
+            </span>
           </div>
 
           <div {...fieldProps('industry')}>

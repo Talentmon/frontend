@@ -2,11 +2,22 @@ import React, { useState } from 'react';
 import { useClerk } from '@clerk/clerk-react';
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
+import ChangeEmailModal from './ChangeEmailModal';
 import styles from '../styles/company.module.scss';
 
 // Profile privacy and account deletion are company-wide (owner-only); language, notifications and security are each person's own.
-const AccountPreferencesTab = ({ preferences, onPreferencesChange, onSave, isSaving, onDeleteAccount, fireToast, isOwner }) => {
+const AccountPreferencesTab = ({
+  preferences,
+  onPreferencesChange,
+  onSave,
+  isSaving,
+  onDeleteAccount,
+  onLoginEmailChanged,
+  fireToast,
+  isOwner,
+}) => {
   const clerk = useClerk();
+  const [showEmailModal, setShowEmailModal] = useState(false);
   const [pwCurrent, setPwCurrent] = useState('');
   const [pwNew, setPwNew] = useState('');
   const [pwBusy, setPwBusy] = useState(false);
@@ -137,10 +148,24 @@ const AccountPreferencesTab = ({ preferences, onPreferencesChange, onSave, isSav
           </div>
           <div className={styles.field}>
             <label className={styles.flabel}>Login email</label>
-            <input className={styles.finput} type="email" value={preferences?.email || ''} disabled />
+            <div className={styles.inputAction}>
+              <input className={styles.finput} type="email" value={preferences?.email || ''} disabled />
+              <button type="button" className={styles.btnSm} onClick={() => setShowEmailModal(true)}>Change</button>
+            </div>
           </div>
         </div>
       </div>
+
+      <ChangeEmailModal
+        isVisible={showEmailModal}
+        currentEmail={preferences?.email}
+        isOwner={isOwner}
+        onClose={() => setShowEmailModal(false)}
+        onChanged={(email) => {
+          setShowEmailModal(false);
+          onLoginEmailChanged?.(email);
+        }}
+      />
 
       {/* Language & Region */}
       <div className={styles.card}>

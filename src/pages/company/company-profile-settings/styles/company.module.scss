@@ -1771,6 +1771,57 @@ $red-deep: #b53e3e;
   svg { width: 13px; height: 13px; }
 }
 
+// Non-destructive variant of the modal above (change login email, transfer ownership)
+.mIcon.mIconGold {
+  color: $gold-deep;
+  background: $amber-bg;
+  border-color: rgba(230, 169, 60, .32);
+}
+
+.mEyebrow.mEyebrowGold { color: $gold-deep; }
+
+.consX.consInfo {
+  background: $amber-bg;
+  color: $gold-deep;
+}
+
+.mFields {
+  display: grid;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.mLinks {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin: -12px 0 16px;
+}
+
+.mError {
+  font-size: .84rem;
+  font-weight: 600;
+  color: $red;
+  margin: -8px 0 16px;
+}
+
+.mActions .btnPrimary {
+  flex: 1;
+  justify-content: center;
+  padding: .92em 1.1em;
+  font-size: .95rem;
+}
+
+// Read-only input with an action next to it (Login email → Change)
+.inputAction {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .finput { flex: 1; min-width: 0; }
+  .btnSm { flex: none; }
+}
+
 @media (max-width: 440px) {
   .mBody { padding: 22px 20px 22px; }
   .mHead { padding: 18px 20px; }

@@ -180,6 +180,22 @@ const CompanyProfileSettings = () => {
     setPreferences(newPreferences);
   };
 
+  // The backend already moved it everywhere (team list, and the company email for the owner) — mirror that here.
+  const handleLoginEmailChanged = (email) => {
+    setPreferences((prev) => ({ ...prev, email }));
+    if (isCompanyOwner) setCompanyData((prev) => (prev ? { ...prev, email } : prev));
+    refetchCurrentUser({ silent: true }).catch(() => {});
+    fireToast(`Login email changed to ${email}`);
+  };
+
+  // Company.email follows the owner's login, and the page now renders for a recruiter.
+  const handleOwnershipTransferred = () => {
+    getCompany()
+      .then((company) => setCompanyData((prev) => ({ ...prev, ...companyToFrontend(company) })))
+      .catch(() => {});
+    refetchCurrentUser({ silent: true }).catch(() => {});
+  };
+
   const handleDeleteAccount = async () => {
     setDeleteBusy(true);
     try {
@@ -207,7 +223,7 @@ const CompanyProfileSettings = () => {
           />
         );
       case 'team':
-        return <TeamManagementTab fireToast={fireToast} />;
+        return <TeamManagementTab fireToast={fireToast} onOwnershipTransferred={handleOwnershipTransferred} />;
       case 'reputation':
         return <ReputationManagementTab reputationData={reputationData} />;
       case 'preferences':
@@ -218,6 +234,7 @@ const CompanyProfileSettings = () => {
             onSave={handleSavePreferences}
             isSaving={isSavingPrefs}
             onDeleteAccount={() => setShowDeleteModal(true)}
+            onLoginEmailChanged={handleLoginEmailChanged}
             fireToast={fireToast}
             isOwner={isCompanyOwner}
           />

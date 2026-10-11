@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
 import { useCurrentUser } from 'lib/CurrentUserContext';
-import { listTeam, getTeamSeats, inviteTeamMember, resendTeamInvite, removeTeamMember } from '../companyApi';
+import { listTeam, getTeamSeats, inviteTeamMember, resendTeamInvite, removeTeamMember, transferOwnership } from '../companyApi';
+import TransferOwnershipModal from './TransferOwnershipModal';
 import styles from '../styles/company.module.scss';
 
 const initials = (value) => {
@@ -39,7 +40,7 @@ const metaLine = (member) => {
   return '';
 };
 
-const TeamManagementTab = ({ fireToast }) => {
+const TeamManagementTab = ({ fireToast, onOwnershipTransferred }) => {
   const { isCompanyOwner, company } = useCurrentUser();
   // undefined until loaded; null = no cap (1000+ employees). Used seats = the list itself (active + pending).
   const [seatLimit, setSeatLimit] = useState(undefined);
@@ -50,6 +51,9 @@ const TeamManagementTab = ({ fireToast }) => {
   const [inviteBusy, setInviteBusy] = useState(false);
   const [justInvited, setJustInvited] = useState('');
   const [busyId, setBusyId] = useState(null);
+  const [transferTo, setTransferTo] = useState(null);
+  const [transferBusy, setTransferBusy] = useState(false);
+  const [transferError, setTransferError] = useState('');
 
   const loadTeam = useCallback(
     () =>
@@ -134,6 +138,27 @@ const TeamManagementTab = ({ fireToast }) => {
     }
   };
 
+  const openTransfer = (member) => {
+    setTransferError('');
+    setTransferTo(member);
+  };
+
+  const handleTransfer = async (password) => {
+    setTransferBusy(true);
+    setTransferError('');
+    try {
+      await transferOwnership(transferTo.id, password);
+      fireToast?.(`${transferTo.name || transferTo.email} is now the account owner`);
+      setTransferTo(null);
+      loadTeam();
+      onOwnershipTransferred?.();
+    } catch (err) {
+      setTransferError(err?.response?.data?.message || 'Could not transfer ownership — please try again.');
+    } finally {
+      setTransferBusy(false);
+    }
+  };
+
   return (
     <div className={styles.stack}>
       <div className={styles.card}>
@@ -177,6 +202,17 @@ const TeamManagementTab = ({ fireToast }) => {
                       onClick={() => handleResend(member)}
                     >
                       Resend
+                    </button>
+                  )}
+                  {isCompanyOwner && !isOwner && member.status === 'active' && (
+                    <button
+                      type="button"
+                      className={styles.teamAction}
+                      title="Hand the company account over to this person"
+                      disabled={busyId === member.id}
+                      onClick={() => openTransfer(member)}
+                    >
+                      Make owner
                     </button>
                   )}
                   {isCompanyOwner && !isOwner && (
@@ -255,6 +291,14 @@ const TeamManagementTab = ({ fireToast }) => {
           Only the account owner can invite or remove team members.
         </div>
       )}
+
+      <TransferOwnershipModal
+        member={transferTo}
+        busy={transferBusy}
+        error={transferError}
+        onClose={() => setTransferTo(null)}
+        onConfirm={handleTransfer}
+      />
     </div>
   );
 };

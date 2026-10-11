@@ -72,8 +72,8 @@ export { companyVisual };
 export const TIMEZONE_TO_BACKEND = { be: 'Europe/Belgrade', ld: 'Europe/London' };
 export const TIMEZONE_TO_FRONTEND = { 'Europe/Belgrade': 'be', 'Europe/London': 'ld' };
 
-export const CURRENCY_TO_BACKEND = { eur: 'EUR', rsd: 'RSD' };
-export const CURRENCY_TO_FRONTEND = { EUR: 'eur', RSD: 'rsd' };
+export const CURRENCY_TO_BACKEND = { eur: 'EUR' };
+export const CURRENCY_TO_FRONTEND = { EUR: 'eur' };
 
 export const creditValidityToBackend = (value) => (value === 'never' ? null : Number(value));
 export const creditValidityToFrontend = (months) => (months ? String(months) : 'never');

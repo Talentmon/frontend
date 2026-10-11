@@ -38,7 +38,6 @@ const TIMEZONE_OPTIONS = [
 
 const CURRENCY_OPTIONS = [
   { value: 'eur', label: 'Euro (€)' },
-  { value: 'rsd', label: 'Serbian dinar (RSD)' },
 ];
 
 const CREDIT_VALIDITY_OPTIONS = [
@@ -544,7 +543,7 @@ const AdminSettings = () => {
                   <h3>Payout account</h3><div className="csub">Where your credit-sales revenue is settled</div>
                   <div className="payline">
                     <span className="pic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 21h18M4 21V10l8-5 8 5v11M9 21v-6h6v6" /></svg></span>
-                    <div className="pd"><b>Komercijalna banka · •••• 4021</b><span>Talentmon d.o.o. · RSD settlement</span></div>
+                    <div className="pd"><b>Komercijalna banka · •••• 4021</b><span>Talentmon d.o.o. · EUR settlement</span></div>
                     <span className="verified"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4"><path d="M20 6 9 17l-5-5" /></svg>Verified</span>
                   </div>
                   <div style={{ marginTop: 12 }}><button type="button" className="btn-ghost">Change payout account</button></div>

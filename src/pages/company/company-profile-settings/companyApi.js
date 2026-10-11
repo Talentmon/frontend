@@ -258,7 +258,7 @@ export function companyPreferencesToFrontend(data) {
     email: data.email || '',
     language: 'en',
     timezone: data.timezone,
-    // Older accounts may still hold RSD from before the list was narrowed.
+    // Anything outside the list (e.g. a value saved before it was narrowed) falls back to EUR.
     currency: PERSONAL_CURRENCY_OPTIONS.some((option) => option.value === data.currency) ? data.currency : 'EUR',
     profileVisibility: data.profileVisibility,
     showEmployeeCount: data.showEmployeeCount,

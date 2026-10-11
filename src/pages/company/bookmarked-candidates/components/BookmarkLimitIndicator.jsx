@@ -13,6 +13,7 @@ const BookmarkLimitIndicator = ({
   maxCount = 10,
   personalUsed = 0,
   personalLimit = 0,
+  overflowDeadline = null,
   totalCount = currentCount,
   onManageBookmarks,
   onSearchCandidates,
@@ -23,6 +24,8 @@ const BookmarkLimitIndicator = ({
   const freeSlots = sharedFree + personalFree;
   const isAtLimit = freeSlots === 0;
   const isNearLimit = !isAtLimit && personalFree === 0 && currentCount >= maxCount * 0.8;
+  // Past the limit after an ownership transfer — the excess is removed at the deadline unless the team removes it first.
+  const overBy = overflowDeadline ? currentCount - maxCount : 0;
 
   const stateClass = isAtLimit ? 'danger' : isNearLimit ? 'warn' : '';
   const iconColor = isAtLimit ? '#cf4b4b' : isNearLimit ? '#C98A1F' : '#2f9e69';
@@ -65,7 +68,16 @@ const BookmarkLimitIndicator = ({
           Bookmarked candidates limit
         </h3>
 
-        {isAtLimit ? (
+        {overBy > 0 ? (
+          <div className={`${styles.limitNote} ${styles.danger}`}>
+            <Icon name="AlertCircle" size={16} />
+            <span>
+              <b>The shared list is {overBy} over the limit.</b> Remove {overBy} shared bookmark{overBy === 1 ? '' : 's'} by{' '}
+              <b>{new Date(overflowDeadline).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</b>
+              {' '}— otherwise the {overBy} oldest from the ownership transfer are removed.
+            </span>
+          </div>
+        ) : isAtLimit ? (
           <div className={`${styles.limitNote} ${styles.danger}`}>
             <Icon name="AlertCircle" size={16} />
             <span>

@@ -195,6 +195,10 @@ export function resendTeamInvite(id) {
 export function removeTeamMember(id) {
   return apiClient.delete(`/companies/me/team/${id}`).then((r) => r.data);
 }
+/** `{ moving, overLimit }` — their personal bookmarks that would join the shared list, and how many of those don't fit. */
+export function getTransferPreview(id) {
+  return apiClient.get(`/companies/me/team/${id}/make-owner`).then((r) => r.data);
+}
 /** They become the owner, you stay on as a recruiter. Needs your password. */
 export function transferOwnership(id, password) {
   return apiClient.post(`/companies/me/team/${id}/make-owner`, { password }).then((r) => r.data);

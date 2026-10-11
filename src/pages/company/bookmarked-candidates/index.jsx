@@ -44,6 +44,7 @@ const BookmarkedCandidatesPage = () => {
   const [creditBalance, setCreditBalance] = useState(0);
   const [bookmarkLimit, setBookmarkLimit] = useState(10);
   const [personalLimit, setPersonalLimit] = useState(0);
+  const [overflowDeadline, setOverflowDeadline] = useState(null);
   const [unlockTarget, setUnlockTarget] = useState(null);
   const [previewId, setPreviewId] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
@@ -67,9 +68,10 @@ const BookmarkedCandidatesPage = () => {
       .finally(() => setLoading(false));
     getCreditsBalance().then(setCreditBalance).catch(() => {});
     getBookmarkLimit()
-      .then(({ limit, personalLimit: personal }) => {
+      .then(({ limit, personalLimit: personal, overflowDeadline: deadline }) => {
         setBookmarkLimit(limit);
         setPersonalLimit(personal || 0);
+        setOverflowDeadline(deadline || null);
       })
       .catch(() => {});
   }, []);
@@ -441,6 +443,7 @@ const BookmarkedCandidatesPage = () => {
                   maxCount={bookmarkLimit}
                   personalUsed={allBookmarkedCandidates?.filter((c) => c?.pocket === 'PERSONAL' && c?.canRemove)?.length}
                   personalLimit={personalLimit}
+                  overflowDeadline={overflowDeadline}
                   totalCount={allBookmarkedCandidates?.length}
                   onManageBookmarks={() => { setReorderMode(false); setSelectionMode(true); }}
                   onSearchCandidates={handleSearchCandidates}

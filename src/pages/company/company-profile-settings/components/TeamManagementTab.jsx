@@ -1,7 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
 import { useCurrentUser } from 'lib/CurrentUserContext';
-import { listTeam, getTeamSeats, inviteTeamMember, resendTeamInvite, removeTeamMember, transferOwnership } from '../companyApi';
+import {
+  listTeam,
+  getTeamSeats,
+  inviteTeamMember,
+  resendTeamInvite,
+  removeTeamMember,
+  getTransferPreview,
+  transferOwnership,
+} from '../companyApi';
 import TransferOwnershipModal from './TransferOwnershipModal';
 import styles from '../styles/company.module.scss';
 
@@ -54,6 +62,7 @@ const TeamManagementTab = ({ fireToast, onOwnershipTransferred }) => {
   const [transferTo, setTransferTo] = useState(null);
   const [transferBusy, setTransferBusy] = useState(false);
   const [transferError, setTransferError] = useState('');
+  const [transferFit, setTransferFit] = useState(null);
 
   const loadTeam = useCallback(
     () =>
@@ -140,7 +149,11 @@ const TeamManagementTab = ({ fireToast, onOwnershipTransferred }) => {
 
   const openTransfer = (member) => {
     setTransferError('');
+    setTransferFit(null);
     setTransferTo(member);
+    getTransferPreview(member.id)
+      .then(setTransferFit)
+      .catch((err) => setTransferError(err?.response?.data?.message || 'Could not check their bookmarks — please try again.'));
   };
 
   const handleTransfer = async (password) => {
@@ -294,6 +307,7 @@ const TeamManagementTab = ({ fireToast, onOwnershipTransferred }) => {
 
       <TransferOwnershipModal
         member={transferTo}
+        fit={transferFit}
         busy={transferBusy}
         error={transferError}
         onClose={() => setTransferTo(null)}

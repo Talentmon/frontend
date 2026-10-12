@@ -11,7 +11,7 @@ import {
   getPlatformSettings,
   updatePlatformSettings,
   listCreditPackages,
-  updateCreditPackage,
+  setCreditPackagePrice,
   listAdmins,
   inviteAdmin,
   updateAdminRole,
@@ -38,6 +38,14 @@ const TIMEZONE_OPTIONS = [
 
 const CURRENCY_OPTIONS = [
   { value: 'eur', label: 'Euro (€)' },
+];
+
+// Every package has a fixed price in each billing currency a company can pick.
+const PRICE_CURRENCIES = [
+  { code: 'EUR', symbol: '€' },
+  { code: 'USD', symbol: '$' },
+  { code: 'GBP', symbol: '£' },
+  { code: 'CNY', symbol: '¥' },
 ];
 
 const CREDIT_VALIDITY_OPTIONS = [
@@ -210,15 +218,16 @@ const AdminSettings = () => {
     }
   };
 
-  const handlePackagePriceBlur = async (pkg, priceEuro) => {
-    const priceCents = Math.round(Number(priceEuro) * 100);
-    if (!Number.isFinite(priceCents) || priceCents === pkg.priceCents) return;
+  const handlePackagePriceBlur = async (pkg, currency, value) => {
+    const priceCents = Math.round(Number(value) * 100);
+    const current = pkg.prices?.find((p) => p.currency === currency)?.priceCents;
+    if (!value || !Number.isFinite(priceCents) || priceCents <= 0 || priceCents === current) return;
     try {
-      const updated = await updateCreditPackage(pkg.id, { priceCents });
+      const updated = await setCreditPackagePrice(pkg.id, currency, priceCents);
       setCreditPackages((prev) => prev.map((p) => (p.id === pkg.id ? updated : p)));
-      showToast(`${updated.name} price updated`);
-    } catch {
-      showToast('Could not update package price — please try again.');
+      showToast(`${updated.name} ${currency} price updated`);
+    } catch (err) {
+      showToast(err?.response?.data?.message || 'Could not update package price — please try again.');
     }
   };
 
@@ -373,20 +382,30 @@ const AdminSettings = () => {
               <section className={`panel${activeTab === 'platform' ? ' on' : ''}`}>
                 {!isOwner && <p className="csub" style={{ marginBottom: 10 }}>Only the Owner can change pricing and platform rules — you can view them here.</p>}
                 <div className="card">
-                  <h3>Credit packages &amp; pricing</h3><div className="csub">What companies pay to buy credits — this is your revenue</div>
+                  <h3>Credit packages &amp; pricing</h3><div className="csub">What companies pay to buy credits, in each billing currency — a company pays in the one its owner picks</div>
                   {creditPackages.map((pkg) => (
                     <div className="pack" key={pkg.id}>
                       <div className="pn"><b>{pkg.name}</b><span>{pkg.popular ? 'most popular' : pkg.code}</span></div>
                       <span className="pcredits">{pkg.credits} credit{pkg.credits === 1 ? '' : 's'}</span>
-                      <div className="pre-wrap pprice">
-                        <span className="p">€</span>
-                        <input
-                          className="finput pre"
-                          type="number"
-                          defaultValue={(pkg.priceCents / 100).toFixed(2)}
-                          disabled={!isOwner}
-                          onBlur={(e) => handlePackagePriceBlur(pkg, e.target.value)}
-                        />
+                      <div className="pprices">
+                        {PRICE_CURRENCIES.map(({ code, symbol }) => {
+                          const price = pkg.prices?.find((p) => p.currency === code);
+                          return (
+                            <div className="pre-wrap" key={code} title={code}>
+                              <span className="p">{symbol}</span>
+                              <input
+                                className="finput pre"
+                                type="number"
+                                min="0"
+                                aria-label={`${pkg.name} price in ${code}`}
+                                defaultValue={price ? (price.priceCents / 100).toFixed(2) : ''}
+                                placeholder={code}
+                                disabled={!isOwner}
+                                onBlur={(e) => handlePackagePriceBlur(pkg, code, e.target.value)}
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   ))}

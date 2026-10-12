@@ -244,8 +244,8 @@ export const DEFAULT_COMPANY_NOTIFICATIONS = {
   },
 };
 
-// Interface is English-only; currency is one of these four (the backend enforces both).
-export const PERSONAL_CURRENCY_OPTIONS = [
+// Company-wide: what credit packages are priced and paid in. Mirrors BILLING_CURRENCIES on the backend.
+export const BILLING_CURRENCY_OPTIONS = [
   { value: 'EUR', label: 'Euro (EUR)' },
   { value: 'USD', label: 'US dollar (USD)' },
   { value: 'GBP', label: 'British pound (GBP)' },
@@ -258,8 +258,7 @@ export function companyPreferencesToFrontend(data) {
     email: data.email || '',
     language: 'en',
     timezone: data.timezone,
-    // Anything outside the list (e.g. a value saved before it was narrowed) falls back to EUR.
-    currency: PERSONAL_CURRENCY_OPTIONS.some((option) => option.value === data.currency) ? data.currency : 'EUR',
+    currency: BILLING_CURRENCY_OPTIONS.some((option) => option.value === data.currency) ? data.currency : 'EUR',
     profileVisibility: data.profileVisibility,
     showEmployeeCount: data.showEmployeeCount,
     showContactInfo: data.showContactInfo,
@@ -270,8 +269,10 @@ export function companyPreferencesToFrontend(data) {
   };
 }
 
-export function companyPrivacyToPayload(preferences) {
+/** Owner-only, company-wide settings: profile privacy and billing currency. */
+export function companyWidePreferencesToPayload(preferences) {
   return {
+    currency: preferences.currency,
     profileVisibility: preferences.profileVisibility,
     showEmployeeCount: preferences.showEmployeeCount,
     showContactInfo: preferences.showContactInfo,
@@ -284,7 +285,6 @@ export function personalPreferencesToPayload(preferences) {
     name: preferences.name,
     language: 'en',
     timezone: preferences.timezone,
-    currency: preferences.currency,
     notificationPrefs: preferences.notifications,
     twoFactorEnabled: preferences.twoFactorEnabled,
     loginNotifications: preferences.loginNotifications,

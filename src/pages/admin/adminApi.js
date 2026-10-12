@@ -43,6 +43,10 @@ export function listCreditPackages() {
 export function updateCreditPackage(id, dto) {
   return apiClient.patch(`/admin/credit-packages/${id}`, dto).then((r) => r.data);
 }
+/** One currency's price; the backend keeps the Paddle price in step. Returns the package with all its prices. */
+export function setCreditPackagePrice(id, currency, priceCents) {
+  return apiClient.patch(`/admin/credit-packages/${id}/prices/${currency}`, { priceCents }).then((r) => r.data);
+}
 export function listAdmins() {
   return apiClient.get('/admin/admins').then((r) => r.data);
 }

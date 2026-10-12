@@ -185,11 +185,12 @@ export function getCreditsBalance() {
 }
 
 export function listCreditPackages() {
-  return apiClient.get('/credits/packages').then((r) =>
+  return apiClient.get('/companies/me/credits/packages').then((r) =>
     r.data.map((p) => ({
       id: p.id,
       credits: p.credits,
       price: p.priceCents / 100,
+      currency: p.currency,
       pricePerCredit: p.priceCents / 100 / p.credits,
       popular: p.popular,
     }))

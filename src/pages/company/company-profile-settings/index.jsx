@@ -21,7 +21,7 @@ import {
   updateCompanyPreferences,
   updateMyPreferences,
   companyPreferencesToFrontend,
-  companyPrivacyToPayload,
+  companyWidePreferencesToPayload,
   personalPreferencesToPayload,
   deleteCompanyAccount,
   validateCompany,
@@ -151,8 +151,8 @@ const CompanyProfileSettings = () => {
     }
     setIsSavingPrefs(true);
     try {
-      // Profile privacy is company-wide (owner-only); everything else on the tab is the signed-in member's own.
-      if (isCompanyOwner) await updateCompanyPreferences(companyPrivacyToPayload(preferences));
+      // Profile privacy and billing currency are company-wide (owner-only); everything else on the tab is the signed-in member's own.
+      if (isCompanyOwner) await updateCompanyPreferences(companyWidePreferencesToPayload(preferences));
       const saved = await updateMyPreferences(personalPreferencesToPayload(preferences));
       setPreferences(companyPreferencesToFrontend(saved));
       // Silent: picks up a changed display name without unmounting this page.

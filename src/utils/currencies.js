@@ -114,6 +114,7 @@ const CURRENCIES_RAW = [
   { code: 'PYG', name: 'Paraguayan Guarani', iso: 'py' },
   { code: 'QAR', name: 'Qatari Rial', iso: 'qa' },
   { code: 'RON', name: 'Romanian Leu', iso: 'ro' },
+  { code: 'RSD', name: 'Serbian Dinar', iso: 'rs' },
   { code: 'RUB', name: 'Russian Ruble', iso: 'ru' },
   { code: 'RWF', name: 'Rwandan Franc', iso: 'rw' },
   { code: 'SAR', name: 'Saudi Riyal', iso: 'sa' },

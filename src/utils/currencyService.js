@@ -22,7 +22,7 @@ export const currencySelectOptions = () => [
 // Formats `amount` in its own currency - this is what candidates/employers
 // entered and it must never be silently converted. Falls back to a plain
 // "1.234 XYZ" format if Intl doesn't recognize the ISO code in this runtime.
-export const formatMoney = (amount, currencyCode, { maximumFractionDigits = 0 } = {}) => {
+export const formatMoney = (amount, currencyCode, { maximumFractionDigits = 0, minimumFractionDigits = 0 } = {}) => {
   const value = Number(amount) || 0;
   if (!isSupportedCurrency(currencyCode)) {
     return `${value.toLocaleString('en-US')} ${currencyCode || ''}`.trim();
@@ -31,7 +31,7 @@ export const formatMoney = (amount, currencyCode, { maximumFractionDigits = 0 } 
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currencyCode,
-      minimumFractionDigits: 0,
+      minimumFractionDigits,
       maximumFractionDigits,
     }).format(value);
   } catch {

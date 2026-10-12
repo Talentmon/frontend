@@ -8,7 +8,7 @@ import AutoRenewalSettings from './components/AutoRenewalSettings';
 import PaymentMethods from './components/PaymentMethods';
 import Icon from 'components/AppIcon';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
-import { getBalance, getUsageAnalytics } from './creditsApi';
+import { formatPrice, getBalance, getUsageAnalytics } from './creditsApi';
 import styles from './styles/credits.module.scss';
 
 const CreditManagement = () => {
@@ -236,7 +236,7 @@ const CreditManagement = () => {
                     <b>
                       +{selectedPackage?.credits}{' '}
                       <span style={{ color: '#8693A0', fontWeight: 400 }}>
-                        (€{selectedPackage?.pricePerCredit?.toFixed(2)} / unlock)
+                        ({formatPrice(selectedPackage?.pricePerCredit, selectedPackage?.currency, { cents: true })} / unlock)
                       </span>
                     </b>
                   </div>
@@ -248,7 +248,7 @@ const CreditManagement = () => {
                   )}
                   <div className={styles.modalRow}>
                     <span className={styles.modalRowKey}>Price</span>
-                    <b>€{selectedPackage?.price?.toLocaleString('en-US')}</b>
+                    <b>{formatPrice(selectedPackage?.price, selectedPackage?.currency)}</b>
                   </div>
                 </div>
 
@@ -264,7 +264,7 @@ const CreditManagement = () => {
                     ) : (
                       <>
                         <Icon name="Lock" size={16} />
-                        Pay €{selectedPackage?.price?.toLocaleString('en-US')}
+                        Pay {formatPrice(selectedPackage?.price, selectedPackage?.currency)}
                       </>
                     )}
                   </button>

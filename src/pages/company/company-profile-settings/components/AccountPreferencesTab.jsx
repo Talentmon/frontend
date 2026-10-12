@@ -3,11 +3,11 @@ import { useClerk } from '@clerk/clerk-react';
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
 import { getTimezoneOptions } from 'utils/timezones';
-import { PERSONAL_CURRENCY_OPTIONS } from '../companyApi';
+import { BILLING_CURRENCY_OPTIONS } from '../companyApi';
 import ChangeEmailModal from './ChangeEmailModal';
 import styles from '../styles/company.module.scss';
 
-// Profile privacy and account deletion are company-wide (owner-only); language, notifications and security are each person's own.
+// Billing currency, profile privacy and account deletion are company-wide (owner-only); language, notifications and security are each person's own.
 const AccountPreferencesTab = ({
   preferences,
   onPreferencesChange,
@@ -172,14 +172,24 @@ const AccountPreferencesTab = ({
               searchable
             />
           </div>
+        </div>
+      </div>
 
+      {/* Billing currency — company-wide, everyone sees it, only the owner changes it */}
+      <div className={styles.card}>
+        <div className={styles.cardTitle}>Billing currency</div>
+        <div className={styles.cardSub}>Credit packages are priced and paid in this currency — for the whole team</div>
+
+        <div className={styles.form2}>
           <div className={styles.field}>
             <label className={styles.flabel}>Currency</label>
             <Select
               value={preferences?.currency}
               onChange={(value) => handlePreferenceChange('currency', value)}
-              options={PERSONAL_CURRENCY_OPTIONS}
+              options={BILLING_CURRENCY_OPTIONS}
+              disabled={!isOwner}
             />
+            {!isOwner && <span className={styles.fhint}>Only the account owner can change this.</span>}
           </div>
         </div>
       </div>

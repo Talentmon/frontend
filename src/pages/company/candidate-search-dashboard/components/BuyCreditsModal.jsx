@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Icon from 'components/AppIcon';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
+import { formatPrice } from 'pages/company/credit-management/creditsApi';
 import styles from '../styles/dashboard.module.scss';
 
 const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => {} }) => {
@@ -36,7 +37,7 @@ const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => 
             <>
               <h3 className={styles.modalTitle}>Buy {selectedPackage?.credits} credits</h3>
               <p className={styles.buyBal}>
-                <b>€{selectedPackage?.price?.toLocaleString('en-US')}</b> · €{selectedPackage?.pricePerCredit?.toFixed(2)} / unlock
+                <b>{formatPrice(selectedPackage?.price, selectedPackage?.currency)}</b> · {formatPrice(selectedPackage?.pricePerCredit, selectedPackage?.currency, { cents: true })} / unlock
               </p>
 
               {error && <p className={styles.checkoutError}>{error}</p>}
@@ -46,7 +47,7 @@ const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => 
                   Back to packages
                 </button>
                 <button className={styles.btnGo} onClick={() => buy(selectedPackage)} disabled={busy}>
-                  {busy ? 'Processing…' : `Pay €${selectedPackage?.price?.toLocaleString('en-US')}`}
+                  {busy ? 'Processing…' : `Pay ${formatPrice(selectedPackage?.price, selectedPackage?.currency)}`}
                 </button>
               </div>
             </>
@@ -81,10 +82,10 @@ const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => 
                 <div className={styles.pkgLeft}>
                   <b>{pkg?.credits} credits</b>
                   {pkg?.popular && <span className={styles.pkgBadge}>POPULAR</span>}
-                  <span className={styles.pkgUnit}>€{pkg?.pricePerCredit?.toFixed(2)} / unlock</span>
+                  <span className={styles.pkgUnit}>{formatPrice(pkg?.pricePerCredit, pkg?.currency, { cents: true })} / unlock</span>
                 </div>
                 <div className={styles.pkgRight}>
-                  <b>€{pkg?.price?.toLocaleString('en-US')}</b>
+                  <b>{formatPrice(pkg?.price, pkg?.currency)}</b>
                   <span>one-time</span>
                 </div>
               </button>

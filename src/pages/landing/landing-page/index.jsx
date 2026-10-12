@@ -725,8 +725,8 @@ const LandingPage = () => {
           <div className="cmp fx">
             <div className="cmp-row best">
               <div className="cmp-name">Talentmon<span>10 candidates you hand-pick</span></div>
-              <div className="cmp-bar"><i style={{ width: '8%' }} /></div>
-              <div className="cmp-cost">€119</div>
+              <div className="cmp-bar"><i style={{ width: '11%' }} /></div>
+              <div className="cmp-cost">€199</div>
             </div>
             <div className="cmp-row">
               <div className="cmp-name">Job board ad<span>One listing, then sift every applicant</span></div>
@@ -774,32 +774,32 @@ const LandingPage = () => {
               <span className="plan-name">Starter</span>
               <p className="plan-desc">For a single open role.</p>
               <div className="plan-credits"><span className="num">10</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€119</b> one-time</div>
-              <div className="plan-unlocks">€11.90 / unlock</div>
+              <div className="plan-price"><b>€199</b> one-time</div>
+              <div className="plan-unlocks">€19.90 / unlock</div>
               <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(10); }} className="btn btn-ghost">Buy 10 credits</a>
             </div>
             <div className="plan pop fx">
               <span className="plan-name">Growth</span>
               <p className="plan-desc">For teams hiring across roles.</p>
               <div className="plan-credits"><span className="num">30</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€339</b> one-time</div>
-              <div className="plan-unlocks">€11.30 / unlock</div>
+              <div className="plan-price"><b>€589</b> one-time</div>
+              <div className="plan-unlocks">€19.63 / unlock</div>
               <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(30); }} className="btn btn-gold">Buy 30 credits</a>
             </div>
             <div className="plan fx">
               <span className="plan-name">Scale</span>
               <p className="plan-desc">For busy recruiting teams.</p>
               <div className="plan-credits"><span className="num">50</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€569</b> one-time</div>
-              <div className="plan-unlocks">€11.38 / unlock</div>
+              <div className="plan-price"><b>€979</b> one-time</div>
+              <div className="plan-unlocks">€19.58 / unlock</div>
               <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(50); }} className="btn btn-ghost">Buy 50 credits</a>
             </div>
             <div className="plan fx">
               <span className="plan-name">Agency</span>
               <p className="plan-desc">For agencies &amp; high-volume hiring.</p>
               <div className="plan-credits"><span className="num">100</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€1,099</b> one-time</div>
-              <div className="plan-unlocks">€10.99 / unlock</div>
+              <div className="plan-price"><b>€1,949</b> one-time</div>
+              <div className="plan-unlocks">€19.49 / unlock</div>
               <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(100); }} className="btn btn-ghost">Buy 100 credits</a>
             </div>
           </div>
@@ -809,7 +809,7 @@ const LandingPage = () => {
             <em><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M20 6 9 17l-5-5" /></svg>Shortlist &amp; pipeline</em>
             <em><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M20 6 9 17l-5-5" /></svg>Standardized PDF CV on unlock</em>
           </div>
-          <p className="price-note">Secure checkout · VAT calculated at checkout</p>
+          <p className="price-note">Prices include VAT · Secure checkout</p>
         </div>
       </section>
 

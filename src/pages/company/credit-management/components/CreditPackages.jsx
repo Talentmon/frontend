@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
-import { getPackageBookmarkBonuses, listPackages, packageToFrontend } from '../creditsApi';
+import { formatPrice, getPackageBookmarkBonuses, listPackages, packageToFrontend } from '../creditsApi';
 import styles from '../styles/credits.module.scss';
 
 const commonFeatures = [
@@ -72,8 +72,8 @@ const CreditPackages = ({ onPurchase }) => {
             )}
 
             <div className={styles.pkgName}>{pkg?.name}</div>
-            <div className={styles.pkgPrice}>€{pkg?.price?.toLocaleString('en-US')}</div>
-            <div className={styles.pkgPriceSub}>€{pkg?.pricePerCredit?.toFixed(2)} per unlock</div>
+            <div className={styles.pkgPrice}>{formatPrice(pkg?.price, pkg?.currency)}</div>
+            <div className={styles.pkgPriceSub}>{formatPrice(pkg?.pricePerCredit, pkg?.currency, { cents: true })} per unlock</div>
 
             <div className={styles.pkgCredits}>
               <Icon name="Coins" size={20} />
@@ -108,7 +108,7 @@ const CreditPackages = ({ onPurchase }) => {
       </div>
 
       <div className={styles.paynote}>
-        <div><Icon name="ShieldCheck" size={15} /><span>Prices include 20% VAT</span></div>
+        <div><Icon name="ShieldCheck" size={15} /><span>Prices include VAT</span></div>
         <div><Icon name="Clock" size={15} /><span>Credits never expire</span></div>
         <div><Icon name="CreditCard" size={15} /><span>Secure card payment</span></div>
       </div>

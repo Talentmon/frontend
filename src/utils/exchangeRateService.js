@@ -18,6 +18,7 @@ const EUR_RATES = {
   USD: 0.92,
   GBP: 1.17,
   CHF: 1.05,
+  RSD: 0.00853,
   CNY: 0.128,
   RUB: 0.0098,
   JPY: 0.0061,

@@ -3,6 +3,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
 import { getUsageAnalytics } from '../creditsApi';
+
+/** "€", "$", "£", "CN¥" — the symbol Intl uses for the currency in en-US. */
+const currencySymbol = (currency) =>
+  new Intl.NumberFormat('en-US', { style: 'currency', currency }).formatToParts(0).find((p) => p.type === 'currency')?.value || currency;
 import styles from '../styles/credits.module.scss';
 
 const PERIOD_TO_MONTHS = { '3months': 3, '6months': 6, '12months': 12 };
@@ -11,14 +15,16 @@ const UsageAnalytics = () => {
   const [selectedPeriod, setSelectedPeriod] = useState('6months');
   const [monthlyUsageData, setMonthlyUsageData] = useState([]);
   const [hiresInvestmentData, setHiresInvestmentData] = useState([]);
+  const [currency, setCurrency] = useState('EUR');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
     getUsageAnalytics(PERIOD_TO_MONTHS[selectedPeriod])
-      .then(({ monthlyUsage, hiresInvestment }) => {
+      .then(({ currency: billingCurrency, monthlyUsage, hiresInvestment }) => {
         setMonthlyUsageData(monthlyUsage);
         setHiresInvestmentData(hiresInvestment);
+        if (billingCurrency) setCurrency(billingCurrency);
       })
       .catch(() => {})
       .finally(() => setLoading(false));
@@ -114,7 +120,7 @@ const UsageAnalytics = () => {
                   }}
                 />
                 <Line yAxisId="hires" type="monotone" dataKey="hires" stroke="#2f9e69" strokeWidth={2} name="Hires" />
-                <Line yAxisId="investment" type="monotone" dataKey="investment" stroke="#E6A93C" strokeWidth={2} name="Investment (€)" />
+                <Line yAxisId="investment" type="monotone" dataKey="investment" stroke="#E6A93C" strokeWidth={2} name={`Investment (${currencySymbol(currency)})`} />
               </LineChart>
             </ResponsiveContainer>
           </div>

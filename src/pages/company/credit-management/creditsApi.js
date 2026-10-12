@@ -1,9 +1,14 @@
 import apiClient from 'lib/apiClient';
+import { formatMoney } from 'utils/currencyService';
 
-// ---- Packages (public) ----
+// ---- Packages, priced in the company's billing currency ----
 export function listPackages() {
-  return apiClient.get('/credits/packages').then((r) => r.data);
+  return apiClient.get('/companies/me/credits/packages').then((r) => r.data);
 }
+
+/** "€199", "$216" — or "€19.90" with `cents`, for per-unlock prices. */
+export const formatPrice = (amount, currency, { cents = false } = {}) =>
+  formatMoney(amount, currency || 'EUR', cents ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {});
 
 /** priceCents/currency are the only real backend fields — pricePerCredit is derived, nothing else is invented (no fake "savings %" with no baseline to compare against). */
 export function packageToFrontend(p) {

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
-import { getTransactions, transactionToFrontend } from '../creditsApi';
+import { formatPrice, getTransactions, transactionToFrontend } from '../creditsApi';
 import styles from '../styles/credits.module.scss';
 
 const TYPE_TO_BACKEND = { purchase: 'PURCHASE', unlock: 'UNLOCK' };
@@ -106,7 +106,7 @@ const TransactionHistory = () => {
                       {transaction?.amount > 0 ? '+' : ''}{transaction?.amount} Credits
                     </div>
                     {transaction?.cost && (
-                      <div className={styles.haCost}>{transaction?.cost?.toLocaleString('en-US')} {transaction?.currency || 'EUR'}</div>
+                      <div className={styles.haCost}>{formatPrice(transaction?.cost, transaction?.currency)}</div>
                     )}
                     <div className={styles.haBal}>Balance: {transaction?.balanceAfter} Credits</div>
                   </div>

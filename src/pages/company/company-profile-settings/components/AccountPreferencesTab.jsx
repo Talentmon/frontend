@@ -7,7 +7,7 @@ import { BILLING_CURRENCY_OPTIONS } from '../companyApi';
 import ChangeEmailModal from './ChangeEmailModal';
 import styles from '../styles/company.module.scss';
 
-// Billing currency and account deletion are company-wide (owner-only); language, notifications and security are each person's own.
+// Billing currency and account deletion are company-wide (owner-only); language and security are each person's own.
 const AccountPreferencesTab = ({
   preferences,
   onPreferencesChange,
@@ -46,70 +46,7 @@ const AccountPreferencesTab = ({
     onPreferencesChange({ ...preferences, [key]: value });
   };
 
-  const handleNotificationChange = (category, type, value) => {
-    const updatedNotifications = {
-      ...preferences?.notifications,
-      [category]: {
-        ...preferences?.notifications?.[category],
-        [type]: value
-      }
-    };
-    handlePreferenceChange('notifications', updatedNotifications);
-  };
-
   const timezoneOptions = useMemo(() => getTimezoneOptions(preferences?.timezone), [preferences?.timezone]);
-
-  const CheckIcon = () => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2">
-      <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-
-  const NotificationSection = ({ title, category, settings }) => (
-    <div className={styles.notifGrp}>
-      <div className={styles.notifGrpTitle}>{title}</div>
-      {Object.entries(settings)?.map(([key, setting]) => (
-        <div key={key} className={styles.notifRow}>
-          <span>{setting?.label}</span>
-          <div className={styles.notifCh}>
-            <label className={styles.ncheck}>
-              <input
-                type="checkbox"
-                checked={preferences?.notifications?.[category]?.[key]?.email || false}
-                onChange={(e) => handleNotificationChange(category, key, {
-                  ...preferences?.notifications?.[category]?.[key],
-                  email: e?.target?.checked
-                })}
-              />
-              <span className={styles.ncheckBx}><CheckIcon /></span>Email
-            </label>
-            <label className={styles.ncheck}>
-              <input
-                type="checkbox"
-                checked={preferences?.notifications?.[category]?.[key]?.sms || false}
-                onChange={(e) => handleNotificationChange(category, key, {
-                  ...preferences?.notifications?.[category]?.[key],
-                  sms: e?.target?.checked
-                })}
-              />
-              <span className={styles.ncheckBx}><CheckIcon /></span>SMS
-            </label>
-            <label className={styles.ncheck}>
-              <input
-                type="checkbox"
-                checked={preferences?.notifications?.[category]?.[key]?.push || false}
-                onChange={(e) => handleNotificationChange(category, key, {
-                  ...preferences?.notifications?.[category]?.[key],
-                  push: e?.target?.checked
-                })}
-              />
-              <span className={styles.ncheckBx}><CheckIcon /></span>Push
-            </label>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 
   return (
     <div className={styles.stack}>
@@ -192,42 +129,6 @@ const AccountPreferencesTab = ({
             {!isOwner && <span className={styles.fhint}>Only the account owner can change this.</span>}
           </div>
         </div>
-      </div>
-
-      {/* Notification Preferences */}
-      <div className={styles.card}>
-        <div className={styles.cardTitle}>Notifications</div>
-        <div className={styles.cardSub}>Choose how you want to be notified</div>
-
-        <NotificationSection
-          title="Candidate activity"
-          category="candidates"
-          settings={{
-            newApplications: { label: 'New candidate applications' },
-            profileViews: { label: 'Company profile views' },
-            bookmarks: { label: 'Candidates bookmarked your profile' }
-          }}
-        />
-
-        <NotificationSection
-          title="System & account"
-          category="system"
-          settings={{
-            creditLow: { label: 'Low Credits (fewer than 10)' },
-            creditPurchase: { label: 'Credits purchase confirmation' },
-            accountUpdates: { label: 'Account updates' }
-          }}
-        />
-
-        <NotificationSection
-          title="Marketing"
-          category="marketing"
-          settings={{
-            newsletters: { label: 'Newsletters and news' },
-            promotions: { label: 'Promotions and discounts' },
-            surveys: { label: 'Surveys and research' }
-          }}
-        />
       </div>
 
       {/* Data & Security */}

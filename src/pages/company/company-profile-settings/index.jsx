@@ -97,7 +97,7 @@ const CompanyProfileSettings = () => {
       id: 'preferences',
       name: 'Account settings',
       icon: 'Settings',
-      description: 'Billing currency, notifications, and security'
+      description: 'Billing currency and security'
     }
   ];
 

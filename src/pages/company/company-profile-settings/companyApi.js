@@ -218,31 +218,10 @@ export function getCompanyPreferences() {
 export function updateCompanyPreferences(patch) {
   return apiClient.patch('/companies/me/preferences', patch).then((r) => r.data);
 }
-/** The signed-in team member's own settings (language, notifications, security). */
+/** The signed-in team member's own settings (language, security). */
 export function updateMyPreferences(patch) {
   return apiClient.patch('/companies/me/preferences/personal', patch).then((r) => r.data);
 }
-
-// `notificationPrefs` is a freeform JSON blob with no server-side defaults —
-// a first-time company gets `{}` back, so sensible per-toggle defaults are
-// merged in on load rather than everything rendering as switched off.
-export const DEFAULT_COMPANY_NOTIFICATIONS = {
-  candidates: {
-    newApplications: { email: true, sms: false, push: true },
-    profileViews: { email: false, sms: false, push: true },
-    bookmarks: { email: true, sms: false, push: false },
-  },
-  system: {
-    creditLow: { email: true, sms: true, push: true },
-    creditPurchase: { email: true, sms: false, push: false },
-    accountUpdates: { email: true, sms: false, push: false },
-  },
-  marketing: {
-    newsletters: { email: true, sms: false, push: false },
-    promotions: { email: false, sms: false, push: false },
-    surveys: { email: false, sms: false, push: false },
-  },
-};
 
 // Company-wide: what credit packages are priced and paid in. Mirrors BILLING_CURRENCIES on the backend.
 export const BILLING_CURRENCY_OPTIONS = [
@@ -259,7 +238,6 @@ export function companyPreferencesToFrontend(data) {
     language: 'en',
     timezone: data.timezone,
     currency: BILLING_CURRENCY_OPTIONS.some((option) => option.value === data.currency) ? data.currency : 'EUR',
-    notifications: { ...DEFAULT_COMPANY_NOTIFICATIONS, ...(data.notificationPrefs || {}) },
     twoFactorEnabled: data.twoFactorEnabled,
     loginNotifications: data.loginNotifications,
   };
@@ -277,7 +255,6 @@ export function personalPreferencesToPayload(preferences) {
     name: preferences.name,
     language: 'en',
     timezone: preferences.timezone,
-    notificationPrefs: preferences.notifications,
     twoFactorEnabled: preferences.twoFactorEnabled,
     loginNotifications: preferences.loginNotifications,
   };

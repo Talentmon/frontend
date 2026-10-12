@@ -7,7 +7,7 @@ import { BILLING_CURRENCY_OPTIONS } from '../companyApi';
 import ChangeEmailModal from './ChangeEmailModal';
 import styles from '../styles/company.module.scss';
 
-// Billing currency, profile privacy and account deletion are company-wide (owner-only); language, notifications and security are each person's own.
+// Billing currency and account deletion are company-wide (owner-only); language, notifications and security are each person's own.
 const AccountPreferencesTab = ({
   preferences,
   onPreferencesChange,
@@ -193,59 +193,6 @@ const AccountPreferencesTab = ({
           </div>
         </div>
       </div>
-
-      {/* Privacy Settings */}
-      {isOwner && (
-        <div className={styles.card}>
-          <div className={styles.cardTitle}>Profile privacy</div>
-          <div className={styles.cardSub}>Control who can see your company profile</div>
-
-          <div className={styles.toggleRow} style={{ marginTop: 10 }}>
-            <label className={styles.toggle}>
-              <input
-                type="checkbox"
-                checked={preferences?.showEmployeeCount}
-                onChange={(e) => handlePreferenceChange('showEmployeeCount', e?.target?.checked)}
-              />
-              <span className={styles.toggleTrack}></span>
-            </label>
-            <div className={styles.toggleTxt}>
-              <b>Show employee count</b>
-              <span>Allow candidates to see the size of your company</span>
-            </div>
-          </div>
-
-          <div className={styles.toggleRow}>
-            <label className={styles.toggle}>
-              <input
-                type="checkbox"
-                checked={preferences?.showContactInfo}
-                onChange={(e) => handlePreferenceChange('showContactInfo', e?.target?.checked)}
-              />
-              <span className={styles.toggleTrack}></span>
-            </label>
-            <div className={styles.toggleTxt}>
-              <b>Show contact information</b>
-              <span>Allow candidates to see your contact details</span>
-            </div>
-          </div>
-
-          <div className={styles.toggleRow}>
-            <label className={styles.toggle}>
-              <input
-                type="checkbox"
-                checked={preferences?.showHiringHistory}
-                onChange={(e) => handlePreferenceChange('showHiringHistory', e?.target?.checked)}
-              />
-              <span className={styles.toggleTrack}></span>
-            </label>
-            <div className={styles.toggleTxt}>
-              <b>Show hiring history</b>
-              <span>Allow candidates to see your hiring history</span>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Notification Preferences */}
       <div className={styles.card}>

@@ -97,7 +97,7 @@ const CompanyProfileSettings = () => {
       id: 'preferences',
       name: 'Account settings',
       icon: 'Settings',
-      description: 'Privacy, notifications, and security'
+      description: 'Billing currency, notifications, and security'
     }
   ];
 
@@ -151,7 +151,7 @@ const CompanyProfileSettings = () => {
     }
     setIsSavingPrefs(true);
     try {
-      // Profile privacy and billing currency are company-wide (owner-only); everything else on the tab is the signed-in member's own.
+      // Billing currency is company-wide (owner-only); everything else on the tab is the signed-in member's own.
       if (isCompanyOwner) await updateCompanyPreferences(companyWidePreferencesToPayload(preferences));
       const saved = await updateMyPreferences(personalPreferencesToPayload(preferences));
       setPreferences(companyPreferencesToFrontend(saved));

@@ -214,7 +214,7 @@ export function changeLoginEmail(emailAddressId, password) {
 export function getCompanyPreferences() {
   return apiClient.get('/companies/me/preferences').then((r) => r.data);
 }
-/** Company-wide profile privacy — Owner-only. */
+/** Company-wide billing currency — Owner-only. */
 export function updateCompanyPreferences(patch) {
   return apiClient.patch('/companies/me/preferences', patch).then((r) => r.data);
 }
@@ -259,24 +259,16 @@ export function companyPreferencesToFrontend(data) {
     language: 'en',
     timezone: data.timezone,
     currency: BILLING_CURRENCY_OPTIONS.some((option) => option.value === data.currency) ? data.currency : 'EUR',
-    profileVisibility: data.profileVisibility,
-    showEmployeeCount: data.showEmployeeCount,
-    showContactInfo: data.showContactInfo,
-    showHiringHistory: data.showHiringHistory,
     notifications: { ...DEFAULT_COMPANY_NOTIFICATIONS, ...(data.notificationPrefs || {}) },
     twoFactorEnabled: data.twoFactorEnabled,
     loginNotifications: data.loginNotifications,
   };
 }
 
-/** Owner-only, company-wide settings: profile privacy and billing currency. */
+/** Owner-only, company-wide settings: billing currency. */
 export function companyWidePreferencesToPayload(preferences) {
   return {
     currency: preferences.currency,
-    profileVisibility: preferences.profileVisibility,
-    showEmployeeCount: preferences.showEmployeeCount,
-    showContactInfo: preferences.showContactInfo,
-    showHiringHistory: preferences.showHiringHistory,
   };
 }
 

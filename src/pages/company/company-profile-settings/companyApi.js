@@ -239,7 +239,6 @@ export function companyPreferencesToFrontend(data) {
     timezone: data.timezone,
     currency: BILLING_CURRENCY_OPTIONS.some((option) => option.value === data.currency) ? data.currency : 'EUR',
     twoFactorEnabled: data.twoFactorEnabled,
-    loginNotifications: data.loginNotifications,
   };
 }
 
@@ -256,7 +255,6 @@ export function personalPreferencesToPayload(preferences) {
     language: 'en',
     timezone: preferences.timezone,
     twoFactorEnabled: preferences.twoFactorEnabled,
-    loginNotifications: preferences.loginNotifications,
   };
 }
 

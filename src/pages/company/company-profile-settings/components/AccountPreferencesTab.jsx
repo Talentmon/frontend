@@ -220,21 +220,6 @@ const AccountPreferencesTab = ({
           </div>
         </div>
 
-        <div className={styles.toggleRow}>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences?.loginNotifications}
-              onChange={(e) => handlePreferenceChange('loginNotifications', e?.target?.checked)}
-            />
-            <span className={styles.toggleTrack}></span>
-          </label>
-          <div className={styles.toggleTxt}>
-            <b>Login notifications</b>
-            <span>Receive notifications when someone logs into your account</span>
-          </div>
-        </div>
-
         {isOwner && (
           <div className={`${styles.dangerRow} ${styles.dangerRowDel}`}>
             <div className={`${styles.dangerTxt} ${styles.del}`}>

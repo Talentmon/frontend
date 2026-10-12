@@ -22,16 +22,23 @@ const AccountPreferencesTab = ({
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [pwCurrent, setPwCurrent] = useState('');
   const [pwNew, setPwNew] = useState('');
+  const [pwConfirm, setPwConfirm] = useState('');
+  // On by default: a password usually changes because someone else might know the old one.
+  const [pwSignOutOthers, setPwSignOutOthers] = useState(true);
   const [pwBusy, setPwBusy] = useState(false);
 
+  const pwTooShort = pwNew.length > 0 && pwNew.length < 8;
+  const pwMismatch = pwConfirm.length > 0 && pwConfirm !== pwNew;
+
   const changePassword = async () => {
-    if (!pwCurrent || !pwNew) return;
+    if (!pwCurrent || !pwNew || !pwConfirm || pwTooShort || pwMismatch) return;
     setPwBusy(true);
     try {
-      await clerk.user.updatePassword({ currentPassword: pwCurrent, newPassword: pwNew, signOutOfOtherSessions: false });
+      await clerk.user.updatePassword({ currentPassword: pwCurrent, newPassword: pwNew, signOutOfOtherSessions: pwSignOutOthers });
       setPwCurrent('');
       setPwNew('');
-      fireToast?.('Password updated');
+      setPwConfirm('');
+      fireToast?.(pwSignOutOthers ? 'Password updated — other devices were signed out' : 'Password updated');
     } catch (err) {
       fireToast?.(err?.errors?.[0]?.message || 'Could not update password — check your current password.');
     } finally {
@@ -142,25 +149,58 @@ const AccountPreferencesTab = ({
             <input
               className={styles.finput}
               type="password"
+              autoComplete="current-password"
               placeholder="Enter your current password"
               value={pwCurrent}
               onChange={(e) => setPwCurrent(e.target.value)}
             />
           </div>
+        </div>
 
+        <div className={styles.form2} style={{ marginBottom: 8 }}>
           <div className={styles.field}>
             <label className={styles.flabel}>New password</label>
             <input
-              className={styles.finput}
+              className={pwTooShort ? `${styles.finput} ${styles.finvalid}` : styles.finput}
               type="password"
-              placeholder="Enter your new password"
+              autoComplete="new-password"
+              placeholder="At least 8 characters"
               value={pwNew}
               onChange={(e) => setPwNew(e.target.value)}
             />
+            {pwTooShort && <span className={styles.ferr}>Use at least 8 characters.</span>}
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.flabel}>Confirm new password</label>
+            <input
+              className={pwMismatch ? `${styles.finput} ${styles.finvalid}` : styles.finput}
+              type="password"
+              autoComplete="new-password"
+              placeholder="Type the new password again"
+              value={pwConfirm}
+              onChange={(e) => setPwConfirm(e.target.value)}
+              onPaste={(e) => e.preventDefault()}
+              onDrop={(e) => e.preventDefault()}
+            />
+            {pwMismatch
+              ? <span className={styles.ferr}>Passwords do not match.</span>
+              : <span className={styles.fhint}>Type it again — pasting is disabled here.</span>}
           </div>
         </div>
+
+        <label className={styles.pwOthers}>
+          <input type="checkbox" checked={pwSignOutOthers} onChange={(e) => setPwSignOutOthers(e.target.checked)} />
+          <span className={`${styles.bCheck} ${pwSignOutOthers ? styles.checked : ''}`}><Icon name="Check" size={11} /></span>
+          Sign out of all other devices
+        </label>
+
         <div style={{ marginBottom: 18 }}>
-          <button className={styles.btnSm} disabled={pwBusy || !pwCurrent || !pwNew} onClick={changePassword}>
+          <button
+            className={styles.btnSm}
+            disabled={pwBusy || !pwCurrent || !pwNew || !pwConfirm || pwTooShort || pwMismatch}
+            onClick={changePassword}
+          >
             {pwBusy ? 'Updating…' : 'Update password'}
           </button>
         </div>

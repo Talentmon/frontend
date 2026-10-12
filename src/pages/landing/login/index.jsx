@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSignIn, useSignUp } from '@clerk/clerk-react';
@@ -11,6 +11,22 @@ function firstClerkError(err, fallback) {
   return err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || fallback;
 }
 
+const PwToggle = ({ on, onClick }) => (
+  <button
+    type="button"
+    className={`pw-toggle${on ? ' on' : ''}`}
+    aria-label={on ? 'Hide password' : 'Show password'}
+    onClick={onClick}
+  >
+    <svg className="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
+    <svg className="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.6 6.1A9.8 9.8 0 0 1 12 6c6.5 0 10 7 10 7a14 14 0 0 1-2.3 3M6.6 6.6A14 14 0 0 0 2 13s3.5 7 10 7a9.8 9.8 0 0 0 4.3-1M3 3l18 18" /></svg>
+  </button>
+);
+
+const ArrowIcon = () => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+);
+
 const Login = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -20,7 +36,7 @@ const Login = () => {
 
   const [uiRole, setRole] = useState('hr'); // 'hr' | 'candidate' — matches existing UI naming
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
-  const [step, setStep] = useState('form'); // 'form' | 'verify'
+  const [step, setStep] = useState('form'); // 'form' | 'verify' | 'reset-request' | 'reset'
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [note, setNote] = useState('');
@@ -30,6 +46,9 @@ const Login = () => {
   const [pendingRole, setPendingRole] = useState(null); // role picked at signup, applied after verification
   const [pendingCompanyName, setPendingCompanyName] = useState(''); // company signups only, sent with the role
   const [almostCompanyName, setAlmostCompanyName] = useState(''); // "Almost there" screen's own Company name input
+  const [resetEmail, setResetEmail] = useState(''); // forgot-password flow
+  const [resetCode, setResetCode] = useState('');
+  const emailRef = useRef(null);
 
   useEffect(() => {
     const t = searchParams?.get('tab');
@@ -219,6 +238,96 @@ const Login = () => {
     }
   };
 
+  // ---- forgot password ----
+  // Clerk emails a 6-digit code; the code + a new password then sign the
+  // person straight in, and every other device is signed out.
+  const openForgotPassword = () => {
+    setResetEmail(emailRef.current?.value?.trim() || '');
+    setResetCode('');
+    setNote('');
+    setErrors({});
+    setStep('reset-request');
+  };
+
+  const sendResetCode = (email) => signIn.create({ strategy: 'reset_password_email_code', identifier: email });
+
+  const handleResetRequest = async (e) => {
+    e?.preventDefault();
+    if (!signInLoaded) return;
+    const email = resetEmail.trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      setErrors({ resetEmail: email ? 'Enter a valid email.' : 'This field is required.' });
+      return;
+    }
+    setErrors({});
+    setNote('');
+    setSubmitting(true);
+    try {
+      await sendResetCode(email);
+      setResetEmail(email);
+      setResetCode('');
+      setStep('reset');
+    } catch (err) {
+      setNote(firstClerkError(err, 'Could not send the reset code.'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResetSubmit = async (e) => {
+    e?.preventDefault();
+    if (!signInLoaded) return;
+    setNote('');
+    const els = e.target.elements;
+    const password = els.newPassword?.value || '';
+    const confirmPassword = els.confirmNewPassword?.value || '';
+
+    const nextErrors = {};
+    if (!resetCode) nextErrors.resetCode = 'This field is required.';
+    if (!password) nextErrors.newPassword = 'This field is required.';
+    else if (password.length < 8) nextErrors.newPassword = 'Use at least 8 characters.';
+    if (!confirmPassword) nextErrors.confirmNewPassword = 'Please confirm your password.';
+    else if (confirmPassword !== password) nextErrors.confirmNewPassword = 'Passwords do not match.';
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
+    setSubmitting(true);
+    try {
+      // An accepted code is spent — if Clerk then rejected the new password
+      // (e.g. found in a data breach), a retry only resends the password.
+      let result = signIn.status === 'needs_new_password'
+        ? signIn
+        : await signIn.attemptFirstFactor({ strategy: 'reset_password_email_code', code: resetCode });
+      if (result.status === 'needs_new_password') {
+        result = await signIn.resetPassword({ password, signOutOfOtherSessions: true });
+      }
+      if (result.status !== 'complete') {
+        switchMode('login');
+        setNote('Your password was changed — log in with it to continue.');
+        return;
+      }
+      setRememberLogin(!!els.remember?.checked);
+      await setActiveSignIn({ session: result.createdSessionId });
+      // Same as a normal login: the redirect effect above takes it from here.
+    } catch (err) {
+      setNote(firstClerkError(err, 'Could not reset your password — check the code and try again.'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResendResetCode = async () => {
+    if (!signInLoaded) return;
+    setNote('');
+    try {
+      await sendResetCode(resetEmail);
+      setResetCode('');
+      setNote('New code sent.');
+    } catch (err) {
+      setNote(firstClerkError(err, 'Could not resend the code.'));
+    }
+  };
+
   // Signed in via Clerk but the account never picked a role (e.g. closed the
   // tab mid-signup before verification). Let them finish without re-entering
   // a password — the Clerk session already exists.
@@ -352,7 +461,7 @@ const Login = () => {
           </div>
 
           <div className="auth-card">
-            {step === 'verify' ? (
+            {step === 'verify' && (
               <>
                 <div className="card-head">
                   <h2>Check your email</h2>
@@ -377,7 +486,7 @@ const Login = () => {
                   </div>
                   <button type="submit" className="btn-submit" disabled={submitting || !signUpLoaded}>
                     <span>Confirm &amp; continue</span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                    <ArrowIcon />
                   </button>
                   <p className={`form-note${note ? ' show' : ''}`}>{note}</p>
                 </form>
@@ -385,7 +494,127 @@ const Login = () => {
                   <span>Didn&apos;t get it? <button type="button" className="link-btn" onClick={handleResendCode}>Resend code →</button></span>
                 </div>
               </>
-            ) : (
+            )}
+
+            {step === 'reset-request' && (
+              <>
+                <div className="card-head">
+                  <h2>Reset your password</h2>
+                  <p>Enter your account email and we&apos;ll send you a 6-digit code.</p>
+                </div>
+                <form onSubmit={handleResetRequest} noValidate>
+                  <div className={`field${errors.resetEmail ? ' invalid' : ''}`}>
+                    <label htmlFor="resetEmail">Email</label>
+                    <div className="ctrl">
+                      <input
+                        id="resetEmail"
+                        type="email"
+                        autoComplete="email"
+                        placeholder="you@email.com"
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                    {errors.resetEmail && <span className="field-hint error">{errors.resetEmail}</span>}
+                  </div>
+                  <button type="submit" className="btn-submit" disabled={submitting || !signInLoaded}>
+                    <span>{submitting ? 'Please wait…' : 'Send code'}</span>
+                    <ArrowIcon />
+                  </button>
+                  <p className={`form-note${note ? ' show' : ''}`}>{note}</p>
+                </form>
+                <div className="card-foot">
+                  <span>Remembered it? <button type="button" className="link-btn" onClick={() => switchMode('login')}>Back to log in →</button></span>
+                </div>
+              </>
+            )}
+
+            {step === 'reset' && (
+              <>
+                <div className="card-head">
+                  <h2>Set a new password</h2>
+                  <p>We sent a 6-digit code to {resetEmail}.</p>
+                </div>
+                <form onSubmit={handleResetSubmit} noValidate>
+                  <div className={`field${errors.resetCode ? ' invalid' : ''}`}>
+                    <label htmlFor="resetCode">Code from the email</label>
+                    <div className="ctrl">
+                      <input
+                        id="resetCode"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        placeholder="123456"
+                        value={resetCode}
+                        onChange={(e) => setResetCode(e.target.value.trim())}
+                        required
+                      />
+                    </div>
+                    {errors.resetCode && <span className="field-hint error">{errors.resetCode}</span>}
+                  </div>
+
+                  <div className={`field${errors.newPassword ? ' invalid' : ''}`}>
+                    <label htmlFor="newPassword">New password</label>
+                    <div className="ctrl">
+                      <input
+                        id="newPassword"
+                        name="newPassword"
+                        type={showPassword ? 'text' : 'password'}
+                        autoComplete="new-password"
+                        placeholder="••••••••"
+                        required
+                      />
+                      <PwToggle on={showPassword} onClick={() => setShowPassword((v) => !v)} />
+                    </div>
+                    {errors.newPassword && <span className="field-hint error">{errors.newPassword}</span>}
+                  </div>
+
+                  <div className={`field${errors.confirmNewPassword ? ' invalid' : ''}`}>
+                    <label htmlFor="confirmNewPassword">Confirm new password</label>
+                    <div className="ctrl">
+                      <input
+                        id="confirmNewPassword"
+                        name="confirmNewPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        autoComplete="new-password"
+                        placeholder="••••••••"
+                        onPaste={(e) => e.preventDefault()}
+                        onDrop={(e) => e.preventDefault()}
+                        onCopy={(e) => e.preventDefault()}
+                        required
+                      />
+                      <PwToggle on={showConfirmPassword} onClick={() => setShowConfirmPassword((v) => !v)} />
+                    </div>
+                    {errors.confirmNewPassword ? (
+                      <span className="field-hint error">{errors.confirmNewPassword}</span>
+                    ) : (
+                      <span className="field-hint">Type it again — pasting is disabled here.</span>
+                    )}
+                  </div>
+
+                  <div className="row-between">
+                    <label className="remember">
+                      <input type="checkbox" name="remember" />
+                      <span className="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2"><path d="M20 6 9 17l-5-5" /></svg></span>
+                      Remember me
+                    </label>
+                    <button type="button" className="forgot" onClick={() => switchMode('login')}>Back to log in</button>
+                  </div>
+
+                  <button type="submit" className="btn-submit" disabled={submitting || !signInLoaded}>
+                    <span>{submitting ? 'Please wait…' : 'Save password & log in'}</span>
+                    <ArrowIcon />
+                  </button>
+                  <p className={`form-note${note ? ' show' : ''}`}>{note}</p>
+                </form>
+                <div className="card-foot">
+                  <span>Didn&apos;t get it? <button type="button" className="link-btn" onClick={handleResendResetCode}>Resend code →</button></span>
+                </div>
+              </>
+            )}
+
+            {step === 'form' && (
               <>
                 {/* TABS */}
                 <div className="tabs" role="tablist" aria-label="Choose account type">
@@ -464,7 +693,7 @@ const Login = () => {
                   <div className={`field${errors.email ? ' invalid' : ''}`}>
                     <label htmlFor="email">Email</label>
                     <div className="ctrl">
-                      <input id="email" name="email" type="email" autoComplete="email" placeholder="you@email.com" required />
+                      <input ref={emailRef} id="email" name="email" type="email" autoComplete="email" placeholder="you@email.com" required />
                     </div>
                     {errors.email && <span className="field-hint error">{errors.email}</span>}
                   </div>
@@ -480,15 +709,7 @@ const Login = () => {
                         placeholder="••••••••"
                         required
                       />
-                      <button
-                        type="button"
-                        className={`pw-toggle${showPassword ? ' on' : ''}`}
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        onClick={() => setShowPassword((v) => !v)}
-                      >
-                        <svg className="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
-                        <svg className="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.6 6.1A9.8 9.8 0 0 1 12 6c6.5 0 10 7 10 7a14 14 0 0 1-2.3 3M6.6 6.6A14 14 0 0 0 2 13s3.5 7 10 7a9.8 9.8 0 0 0 4.3-1M3 3l18 18" /></svg>
-                      </button>
+                      <PwToggle on={showPassword} onClick={() => setShowPassword((v) => !v)} />
                     </div>
                     {errors.password && <span className="field-hint error">{errors.password}</span>}
                   </div>
@@ -508,15 +729,7 @@ const Login = () => {
                           onCopy={(e) => e.preventDefault()}
                           required
                         />
-                        <button
-                          type="button"
-                          className={`pw-toggle${showConfirmPassword ? ' on' : ''}`}
-                          aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
-                          onClick={() => setShowConfirmPassword((v) => !v)}
-                        >
-                          <svg className="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></svg>
-                          <svg className="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.6 6.1A9.8 9.8 0 0 1 12 6c6.5 0 10 7 10 7a14 14 0 0 1-2.3 3M6.6 6.6A14 14 0 0 0 2 13s3.5 7 10 7a9.8 9.8 0 0 0 4.3-1M3 3l18 18" /></svg>
-                        </button>
+                        <PwToggle on={showConfirmPassword} onClick={() => setShowConfirmPassword((v) => !v)} />
                       </div>
                       {errors.confirmPassword ? (
                         <span className="field-hint error">{errors.confirmPassword}</span>
@@ -533,7 +746,7 @@ const Login = () => {
                         <span className="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2"><path d="M20 6 9 17l-5-5" /></svg></span>
                         Remember me
                       </label>
-                      <a href="#forgot" className="forgot">Forgot password?</a>
+                      <button type="button" className="forgot" onClick={openForgotPassword}>Forgot password?</button>
                     </div>
                   )}
 
@@ -558,7 +771,7 @@ const Login = () => {
                           ? (uiRole === 'hr' ? 'Create account' : 'Create profile')
                           : (uiRole === 'hr' ? 'Log in to dashboard' : 'Log in to my profile')}
                     </span>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                    <ArrowIcon />
                   </button>
                   <p className={`form-note${note ? ' show' : ''}`}>{note}</p>
                 </form>

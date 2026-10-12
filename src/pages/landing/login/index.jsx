@@ -36,7 +36,7 @@ const Login = () => {
 
   const [uiRole, setRole] = useState('hr'); // 'hr' | 'candidate' — matches existing UI naming
   const [mode, setMode] = useState('login'); // 'login' | 'signup'
-  const [step, setStep] = useState('form'); // 'form' | 'verify' | 'reset-request' | 'reset'
+  const [step, setStep] = useState('form'); // 'form' | 'verify' | 'login-code' | 'reset-request' | 'reset'
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [note, setNote] = useState('');
@@ -48,6 +48,8 @@ const Login = () => {
   const [almostCompanyName, setAlmostCompanyName] = useState(''); // "Almost there" screen's own Company name input
   const [resetEmail, setResetEmail] = useState(''); // forgot-password flow
   const [resetCode, setResetCode] = useState('');
+  const [secondFactor, setSecondFactor] = useState(null); // { emailAddressId, email } while a login waits for its emailed code
+  const [loginCode, setLoginCode] = useState('');
   const emailRef = useRef(null);
 
   useEffect(() => {
@@ -100,12 +102,27 @@ const Login = () => {
     return /already signed in/i.test(firstClerkError(err, ''));
   }
 
+  // Clerk's Client Trust: a password login from a browser it hasn't seen
+  // before also needs a code emailed to the account. Sends that code and
+  // opens the code step; false if the account needs a factor we don't offer.
+  const startEmailSecondFactor = async (attempt) => {
+    const factor = attempt.supportedSecondFactors?.find((f) => f.strategy === 'email_code');
+    if (!factor) return false;
+    await signIn.prepareSecondFactor({ strategy: 'email_code', emailAddressId: factor.emailAddressId });
+    setSecondFactor({ emailAddressId: factor.emailAddressId, email: factor.safeIdentifier });
+    setLoginCode('');
+    setNote('');
+    setStep('login-code');
+    return true;
+  };
+
   const handleLoginSubmit = async (email, password, remember) => {
     if (!signInLoaded) throw new Error('Still loading — please try again in a moment.');
     // Before the session goes active — CurrentUserProvider checks it as soon as isSignedIn flips.
     setRememberLogin(remember);
     try {
       const result = await signIn.create({ identifier: email, password });
+      if (result.status === 'needs_second_factor' && (await startEmailSecondFactor(result))) return;
       if (result.status !== 'complete') {
         setNote('Additional verification is required for this account.');
         return;
@@ -238,6 +255,38 @@ const Login = () => {
     }
   };
 
+  const handleLoginCodeSubmit = async (e) => {
+    e?.preventDefault();
+    if (!signInLoaded || !loginCode) return;
+    setNote('');
+    setSubmitting(true);
+    try {
+      const result = await signIn.attemptSecondFactor({ strategy: 'email_code', code: loginCode });
+      if (result.status !== 'complete') {
+        setNote('That code did not work — check it and try again.');
+        return;
+      }
+      await setActiveSignIn({ session: result.createdSessionId });
+      // Same as a normal login: the redirect effect above takes it from here.
+    } catch (err) {
+      setNote(firstClerkError(err, 'That code did not work — check it and try again.'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleResendLoginCode = async () => {
+    if (!signInLoaded || !secondFactor) return;
+    setNote('');
+    try {
+      await signIn.prepareSecondFactor({ strategy: 'email_code', emailAddressId: secondFactor.emailAddressId });
+      setLoginCode('');
+      setNote('New code sent.');
+    } catch (err) {
+      setNote(firstClerkError(err, 'Could not resend the code.'));
+    }
+  };
+
   // ---- forgot password ----
   // Clerk emails a 6-digit code; the code + a new password then sign the
   // person straight in, and every other device is signed out.
@@ -300,6 +349,10 @@ const Login = () => {
         : await signIn.attemptFirstFactor({ strategy: 'reset_password_email_code', code: resetCode });
       if (result.status === 'needs_new_password') {
         result = await signIn.resetPassword({ password, signOutOfOtherSessions: true });
+      }
+      if (result.status === 'needs_second_factor') {
+        setRememberLogin(!!els.remember?.checked);
+        if (await startEmailSecondFactor(result)) return;
       }
       if (result.status !== 'complete') {
         switchMode('login');
@@ -492,6 +545,44 @@ const Login = () => {
                 </form>
                 <div className="card-foot">
                   <span>Didn&apos;t get it? <button type="button" className="link-btn" onClick={handleResendCode}>Resend code →</button></span>
+                </div>
+              </>
+            )}
+
+            {step === 'login-code' && (
+              <>
+                <div className="card-head">
+                  <h2>Check your email</h2>
+                  <p>You&apos;re logging in from a new device or browser, so we sent a 6-digit code to {secondFactor?.email} to make sure it&apos;s you.</p>
+                </div>
+                <form onSubmit={handleLoginCodeSubmit} noValidate>
+                  <div className="field">
+                    <label htmlFor="loginCode">Verification code</label>
+                    <div className="ctrl">
+                      <input
+                        id="loginCode"
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        placeholder="123456"
+                        value={loginCode}
+                        onChange={(e) => setLoginCode(e.target.value.trim())}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button type="submit" className="btn-submit" disabled={submitting || !signInLoaded || !loginCode}>
+                    <span>{submitting ? 'Please wait…' : 'Confirm & log in'}</span>
+                    <ArrowIcon />
+                  </button>
+                  <p className={`form-note${note ? ' show' : ''}`}>{note}</p>
+                </form>
+                <div className="card-foot">
+                  <span>
+                    Didn&apos;t get it? <button type="button" className="link-btn" onClick={handleResendLoginCode}>Resend code →</button>
+                    {' · '}
+                    <button type="button" className="link-btn" onClick={() => switchMode('login')}>Back to log in</button>
+                  </span>
                 </div>
               </>
             )}

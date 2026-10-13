@@ -196,10 +196,10 @@ const CompanyProfileSettings = () => {
     refetchCurrentUser({ silent: true }).catch(() => {});
   };
 
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = async ({ reason, comment }) => {
     setDeleteBusy(true);
     try {
-      await deleteCompanyAccount();
+      await deleteCompanyAccount({ reason, comment });
       await clerk.signOut();
       navigate('/');
     } catch {

@@ -1,30 +1,46 @@
 import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
+import { DELETION_REASONS, getCreditBalance } from '../companyApi';
 import styles from '../styles/company.module.scss';
 
 const DeleteAccountModal = ({ isVisible, companyName, onClose, onConfirm, busy }) => {
   const [confirmText, setConfirmText] = useState('');
+  const [reason, setReason] = useState('');
+  const [comment, setComment] = useState('');
+  // undefined while loading, null if it couldn't be loaded.
+  const [credits, setCredits] = useState(undefined);
   const isDeleting = !!busy;
 
   useEffect(() => {
     if (!isVisible) {
       setConfirmText('');
+      setReason('');
+      setComment('');
+      setCredits(undefined);
       return;
     }
+    let cancelled = false;
+    getCreditBalance()
+      .then((balance) => { if (!cancelled) setCredits(balance); })
+      .catch(() => { if (!cancelled) setCredits(null); });
     const handleKeyDown = (e) => {
       if (e?.key === 'Escape') onClose?.();
     };
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [isVisible, onClose]);
 
   if (!isVisible) return null;
 
   const isMatch = confirmText?.trim() === companyName;
+  const canDelete = isMatch && !!reason && !isDeleting;
 
   const handleConfirm = () => {
-    if (!isMatch || isDeleting) return;
-    onConfirm?.();
+    if (!canDelete) return;
+    onConfirm?.({ reason, comment: reason === 'OTHER' ? comment.trim() : undefined });
   };
 
   return (
@@ -53,25 +69,48 @@ const DeleteAccountModal = ({ isVisible, companyName, onClose, onConfirm, busy }
           <ul className={styles.cons}>
             <li className={styles.consItem}>
               <span className={styles.consX}><Icon name="X" size={12} /></span>
-              All company, reputation, and rating data will be permanently deleted.
+              Your company profile is removed and every team member loses access — their logins are deleted too.
             </li>
+            {(credits === null || credits > 0) && (
+              <li className={styles.consItem}>
+                <span className={styles.consX}><Icon name="X" size={12} /></span>
+                {credits > 0
+                  ? <span>You have <b>{credits} {credits === 1 ? 'credit' : 'credits'}</b> — they will be lost and are not refunded.</span>
+                  : 'Any remaining credits will be lost and are not refunded.'}
+              </li>
+            )}
             <li className={styles.consItem}>
-              <span className={styles.consX}><Icon name="X" size={12} /></span>
-              All unlocked candidate profiles and token purchase history will be lost.
-            </li>
-            <li className={styles.consItem}>
-              <span className={styles.consX}><Icon name="X" size={12} /></span>
-              Remaining tokens on the account will not be refunded.
-            </li>
-            <li className={styles.consItem}>
-              <span className={styles.consX}><Icon name="X" size={12} /></span>
-              Every team member loses access, and their logins are deleted too.
-            </li>
-            <li className={styles.consItem}>
-              <span className={styles.consX}><Icon name="X" size={12} /></span>
-              This account cannot be recovered after deletion.
+              <span className={`${styles.consX} ${styles.consInfo}`}><Icon name="Star" size={12} /></span>
+              Reviews stay on Talentmon — if you create a new account for the same company, your reviews will follow you.
             </li>
           </ul>
+
+          <div className={styles.confirmLab} id="deleteReasonLabel">Why are you deleting your account?</div>
+          <div className={styles.reasonList} role="radiogroup" aria-labelledby="deleteReasonLabel">
+            {DELETION_REASONS.map((option) => (
+              <label key={option.value} className={`${styles.reasonOpt} ${reason === option.value ? styles.on : ''}`}>
+                <input
+                  type="radio"
+                  name="deleteReason"
+                  value={option.value}
+                  checked={reason === option.value}
+                  onChange={() => setReason(option.value)}
+                />
+                <span className={styles.reasonDot} />
+                {option.label}
+              </label>
+            ))}
+          </div>
+          {reason === 'OTHER' && (
+            <textarea
+              className={styles.reasonComment}
+              rows={3}
+              maxLength={500}
+              placeholder="Tell us a bit more (optional)"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+            />
+          )}
 
           <label className={styles.confirmLab} htmlFor="deleteConfirmInput">
             To confirm, type the company name <b>{companyName}</b>
@@ -94,7 +133,7 @@ const DeleteAccountModal = ({ isVisible, companyName, onClose, onConfirm, busy }
             <button
               className={styles.btnDel}
               onClick={handleConfirm}
-              disabled={!isMatch || isDeleting}
+              disabled={!canDelete}
             >
               <Icon name="Trash2" size={16} />
               {isDeleting ? 'Deleting...' : 'Permanently delete account'}
@@ -102,11 +141,6 @@ const DeleteAccountModal = ({ isVisible, companyName, onClose, onConfirm, busy }
             <button className={styles.btnCancel} onClick={onClose} disabled={isDeleting}>
               Cancel
             </button>
-          </div>
-
-          <div className={styles.mFoot}>
-            <Icon name="Lock" size={13} />
-            You can also export your data before deleting
           </div>
         </div>
       </div>

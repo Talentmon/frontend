@@ -224,7 +224,7 @@ const AccountPreferencesTab = ({
           <div className={`${styles.dangerRow} ${styles.dangerRowDel}`}>
             <div className={`${styles.dangerTxt} ${styles.del}`}>
               <b>Delete account</b>
-              <span>Permanently delete the company account and all associated data — the whole team loses access</span>
+              <span>Permanently delete the company account — the whole team loses access</span>
             </div>
             <button className={`${styles.btnSm} ${styles.btnSmRed}`} onClick={onDeleteAccount}>
               <Icon name="Trash2" size={14} />Delete account

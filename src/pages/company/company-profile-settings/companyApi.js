@@ -259,6 +259,22 @@ export function personalPreferencesToPayload(preferences) {
 }
 
 // ---- Account deletion ----
-export function deleteCompanyAccount() {
-  return apiClient.delete('/companies/me', { data: { confirm: 'DELETE' } }).then((r) => r.data);
+// Mirrors CompanyDeletionReason on the backend.
+export const DELETION_REASONS = [
+  { value: 'FOUND_PEOPLE', label: 'We found the people we needed' },
+  { value: 'TOO_EXPENSIVE', label: 'Too expensive' },
+  { value: 'NOT_ENOUGH_CANDIDATES', label: 'Not enough suitable candidates' },
+  { value: 'OTHER_PLATFORM', label: 'We use another platform' },
+  { value: 'NEW_PROFILE', label: 'We want to start a new profile' },
+  { value: 'OTHER', label: 'Other' },
+];
+
+export function getCreditBalance() {
+  return apiClient.get('/companies/me/credits/balance').then((r) => r.data?.balance ?? 0);
+}
+
+export function deleteCompanyAccount({ reason, comment }) {
+  return apiClient
+    .delete('/companies/me', { data: { confirm: 'DELETE', reason, comment: comment || undefined } })
+    .then((r) => r.data);
 }

@@ -236,7 +236,13 @@ const Login = () => {
           if (!isAlreadySignedInError(activateErr)) throw activateErr;
         }
       }
-      await finishWithRole(pendingRole, pendingCompanyName);
+      try {
+        await finishWithRole(pendingRole, pendingCompanyName);
+      } catch {
+        // The code was fine and the account exists — only our backend step
+        // failed. The "Almost there" screen (signed in, no role) lets them retry.
+        setNote('Your account is created, but we could not finish setting it up — please try again.');
+      }
     } catch (err) {
       setNote(firstClerkError(err, 'That code did not work — check it and try again.'));
     } finally {

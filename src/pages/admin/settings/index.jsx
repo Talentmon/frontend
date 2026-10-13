@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import Select from 'components/ui/Select';
-import AdminUserMenu from '../components/AdminUserMenu';
+import AdminAppBar from '../components/AdminAppBar';
 import {
   getMe,
   updateMe,
@@ -278,21 +278,7 @@ const AdminSettings = () => {
         <title>Owner settings · Talentmon Admin</title>
       </Helmet>
 
-      <header className="appbar">
-        <div className="appbar-in">
-          <Link to="/admin" className="brand">
-            <span className="mk">
-              <img src="/assets/images/talentmon.png" alt="Talentmon" />
-            </span>
-            <span>Talent<b>mon</b></span>
-          </Link>
-          <span className="admin-badge">ADMIN</span>
-          <nav className="appnav"><Link to="/admin">Dashboard</Link></nav>
-          <div className="appbar-right">
-            <AdminUserMenu name={profile.name || undefined} email={me?.email} role={me?.role ? ROLE_LABEL[me.role] : undefined} />
-          </div>
-        </div>
-      </header>
+      <AdminAppBar name={profile.name || undefined} email={me?.email} role={me?.role ? ROLE_LABEL[me.role] : undefined} />
 
       <main className="page">
         <div className="wrap">

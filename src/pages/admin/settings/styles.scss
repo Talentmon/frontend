@@ -61,6 +61,8 @@
   .appnav { display: flex; gap: 3px; margin-left: 8px; }
   .appnav a { font-size: .88rem; font-weight: 500; color: var(--adp-text-dim); padding: .5em .8em; border-radius: 8px; }
   .appnav a:hover { color: var(--adp-text-light); background: rgba(255, 255, 255, .05); }
+  .appnav a.active { color: var(--adp-text-light); background: rgba(255, 255, 255, .08); }
+  .appnav .nav-count { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; border-radius: 99px; background: var(--adp-gold); color: var(--adp-ink); font-size: .68rem; font-weight: 700; vertical-align: 1px; }
   .appbar-right { margin-left: auto; position: relative; }
 
   .page { padding: 26px 0 70px; }

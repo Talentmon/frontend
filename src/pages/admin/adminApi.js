@@ -83,3 +83,56 @@ export const creditValidityToBackend = (value) => (value === 'never' ? null : Nu
 export const creditValidityToFrontend = (months) => (months ? String(months) : 'never');
 
 export const ROLE_LABEL = { OWNER: 'Owner (full access)', ADMIN: 'Admin', ANALYST: 'Analyst (read-only)' };
+
+// ---- Companies page (directory + returning-company matches) ----
+/** status: 'active' | 'deleted'. Returns { items, counts: { active, deleted, pendingMatches }, limit }. */
+export function getCompanyDirectory({ status, search }) {
+  return apiClient.get('/admin/company-directory', { params: { status, search: search || undefined } }).then((r) => r.data);
+}
+export function getCompanyMatches() {
+  return apiClient.get('/admin/company-matches').then((r) => r.data);
+}
+export function getPendingMatchCount() {
+  return apiClient.get('/admin/company-matches/pending-count').then((r) => r.data?.pending ?? 0);
+}
+/** Same company — moves the deleted company's reviews. Returns { movedReviews, reviewsReviewedTwice }. */
+export function confirmCompanyMatch(id) {
+  return apiClient.post(`/admin/company-matches/${id}/confirm`).then((r) => r.data);
+}
+export function rejectCompanyMatch(id) {
+  return apiClient.post(`/admin/company-matches/${id}/reject`).then((r) => r.data);
+}
+
+export const COMPANY_SIZE_LABEL = { SMALL: '1–50', MID: '51–200', LARGE: '201–1000', ENTERPRISE: '1000+' };
+
+// Mirrors CompanyDeletionReason (and the company-side DELETION_REASONS labels).
+export const DELETION_REASON_LABEL = {
+  FOUND_PEOPLE: 'Found the people they needed',
+  TOO_EXPENSIVE: 'Too expensive',
+  NOT_ENOUGH_CANDIDATES: 'Not enough suitable candidates',
+  OTHER_PLATFORM: 'Uses another platform',
+  NEW_PROFILE: 'Wants to start a new profile',
+  OTHER: 'Other',
+};
+
+// Mirrors company-match.ts on the backend. Strong signals alone create a suggestion.
+export const MATCH_SIGNAL_LABEL = {
+  EMAIL: 'Same email',
+  EMAIL_DOMAIN: 'Same email domain',
+  WEBSITE: 'Same website',
+  REGISTRATION_NUMBER: 'Same registration no.',
+  TAX_ID: 'Same tax ID',
+  PHONE: 'Same phone',
+  NAME: 'Same name',
+  LINKEDIN: 'Same LinkedIn',
+  ADDRESS: 'Same address',
+  CITY: 'Same city',
+  COUNTRY: 'Same country',
+  INDUSTRY: 'Same industry',
+  SIZE: 'Same size',
+  FOUNDED_YEAR: 'Same founding year',
+};
+export const STRONG_MATCH_SIGNALS = new Set(['EMAIL', 'EMAIL_DOMAIN', 'WEBSITE', 'REGISTRATION_NUMBER', 'TAX_ID', 'PHONE', 'NAME']);
+
+export const shortDate = (value) =>
+  value ? new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';

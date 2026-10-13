@@ -17,6 +17,7 @@ import RefundPolicy from './pages/landing/legal/RefundPolicy';
 // Admin
 import AdminPanel from './pages/admin';
 import AdminSettings from './pages/admin/settings';
+import AdminCompanies from './pages/admin/companies';
 
 // Company-facing
 import BookmarkedCandidatesPage from './pages/company/bookmarked-candidates';
@@ -53,6 +54,7 @@ const Routes = () => {
         {/* Admin */}
         <Route path="/admin" element={<RequireAuth roles={['ADMIN']}><AdminPanel /></RequireAuth>} />
         <Route path="/admin/settings" element={<RequireAuth roles={['ADMIN']}><AdminSettings /></RequireAuth>} />
+        <Route path="/admin/companies" element={<RequireAuth roles={['ADMIN']}><AdminCompanies /></RequireAuth>} />
 
         {/* Company-facing */}
         <Route path="/bookmarked-candidates" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><BookmarkedCandidatesPage /></RequireAuth>} />

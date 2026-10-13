@@ -58,6 +58,12 @@
   .brand .mk img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .brand b { color: var(--adp-gold); }
   .admin-badge { font-family: 'JetBrains Mono', monospace; font-size: .64rem; font-weight: 600; letter-spacing: .1em; color: var(--adp-ink); background: var(--adp-gold); padding: .3em .6em; border-radius: 6px; }
+  .appnav { display: flex; gap: 3px; margin-left: 8px; }
+  .appnav a { font-size: .88rem; font-weight: 500; color: var(--adp-text-dim); padding: .5em .8em; border-radius: 8px; text-decoration: none; }
+  .appnav a:hover { color: var(--adp-text-light); background: rgba(255, 255, 255, .05); }
+  .appnav a.active { color: var(--adp-text-light); background: rgba(255, 255, 255, .08); }
+  .appnav .nav-count { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; border-radius: 99px; background: var(--adp-gold); color: var(--adp-ink); font-size: .68rem; font-weight: 700; vertical-align: 1px; }
+  @media (max-width: 560px) { .appnav a { padding: .5em .55em; font-size: .82rem; } .admin-badge { display: none; } }
   .appbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
 
   .page { padding: 24px 0 70px; }

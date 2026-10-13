@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import AdminUserMenu from './components/AdminUserMenu';
+import AdminAppBar from './components/AdminAppBar';
 import {
   getOverview,
   getPurchases,
@@ -162,20 +162,7 @@ const AdminPanel = () => {
         <title>Owner panel · Talentmon Admin</title>
       </Helmet>
 
-      <header className="appbar">
-        <div className="wrap appbar-in">
-          <a href="/landing-page" className="brand">
-            <span className="mk">
-              <img src="/assets/images/talentmon.png" alt="Talentmon" />
-            </span>
-            <span>Talent<b>mon</b></span>
-          </a>
-          <span className="admin-badge">ADMIN</span>
-          <div className="appbar-right">
-            <AdminUserMenu name={me?.name || undefined} email={me?.email} role={me?.role ? ROLE_LABEL[me.role] : undefined} />
-          </div>
-        </div>
-      </header>
+      <AdminAppBar name={me?.name || undefined} email={me?.email} role={me?.role ? ROLE_LABEL[me.role] : undefined} />
 
       <main className="page">
         <div className="wrap">

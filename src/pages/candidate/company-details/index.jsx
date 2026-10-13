@@ -276,6 +276,8 @@ const CompanyDetails = () => {
                 )}
               </>
             )}
+
+            {company.memberSince && <p className="cpf-since">On Talentmon since {company.memberSince}</p>}
           </article>
         </div>
       </main>

@@ -87,6 +87,8 @@ export function companyToDetails(c) {
     minWageRate: c.minWageRate,
     hiring: c.hiring,
     mine: c.mine,
+    // "On Talentmon since October 2026" — a young profile has no review history yet.
+    memberSince: c.createdAt ? new Date(c.createdAt).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '',
     ...companyVisual(c.id, c.name),
   };
 }

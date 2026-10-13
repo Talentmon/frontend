@@ -505,6 +505,14 @@
     }
   }
 
+  // Deliberately quiet — there for whoever looks, not to draw the eye.
+  .cpf-since {
+    margin-top: 28px;
+    font-size: .76rem;
+    color: var(--cf-slate-2);
+    text-align: right;
+  }
+
   /* reviews */
   .rev {
     display: grid;

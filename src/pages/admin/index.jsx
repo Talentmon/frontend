@@ -13,7 +13,6 @@ import {
   monthLabel,
   barHeight,
   companyVisual,
-  ROLE_LABEL,
 } from './adminApi';
 import './styles.scss';
 
@@ -162,7 +161,7 @@ const AdminPanel = () => {
         <title>Owner panel · Talentmon Admin</title>
       </Helmet>
 
-      <AdminAppBar name={me?.name || undefined} email={me?.email} role={me?.role ? ROLE_LABEL[me.role] : undefined} />
+      <AdminAppBar name={me?.name || undefined} email={me?.email} />
 
       <main className="page">
         <div className="wrap">

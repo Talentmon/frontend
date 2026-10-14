@@ -5,7 +5,7 @@ import { getPendingMatchCount } from '../adminApi';
 
 // Shared top bar of every admin page. The Companies link carries the number
 // of "returning company" suggestions waiting for a yes/no.
-const AdminAppBar = ({ name, email, role, pendingMatches }) => {
+const AdminAppBar = ({ name, email, pendingMatches }) => {
   const [fetchedPending, setFetchedPending] = useState(0);
 
   useEffect(() => {
@@ -33,7 +33,7 @@ const AdminAppBar = ({ name, email, role, pendingMatches }) => {
           </NavLink>
         </nav>
         <div className="appbar-right">
-          <AdminUserMenu name={name} email={email} role={role} />
+          <AdminUserMenu name={name} email={email} />
         </div>
       </div>
     </header>

@@ -278,7 +278,7 @@ const AdminSettings = () => {
         <title>Owner settings · Talentmon Admin</title>
       </Helmet>
 
-      <AdminAppBar name={profile.name || undefined} email={me?.email} role={me?.role ? ROLE_LABEL[me.role] : undefined} />
+      <AdminAppBar name={profile.name || undefined} email={me?.email} />
 
       <main className="page">
         <div className="wrap">

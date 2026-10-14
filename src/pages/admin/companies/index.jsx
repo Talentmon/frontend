@@ -9,7 +9,6 @@ import {
   rejectCompanyMatch,
   companyVisual,
   shortDate,
-  ROLE_LABEL,
   COMPANY_SIZE_LABEL,
   DELETION_REASON_LABEL,
   MATCH_SIGNAL_LABEL,
@@ -365,7 +364,6 @@ const AdminCompanies = () => {
       <AdminAppBar
         name={me?.name || undefined}
         email={me?.email}
-        role={me?.role ? ROLE_LABEL[me.role] : undefined}
         pendingMatches={counts?.pendingMatches}
       />
 

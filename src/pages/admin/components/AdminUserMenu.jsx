@@ -24,13 +24,16 @@ const ITEMS = [
   { label: 'Settings', description: 'Profile, security & platform config', to: '/admin/settings', icon: <SettingsIcon /> },
 ];
 
-const AdminUserMenu = ({ name = 'Marko Owner', role = 'Owner · Platform admin', email = 'owner@talentmon.rs' }) => {
+// Talentmon has a single admin, so no role line — just the name from the
+// admin profile (Settings → profile), or "Admin" until one is entered.
+const AdminUserMenu = ({ name, email }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useClerk();
-  const initial = name?.charAt(0) || 'O';
+  const displayName = name?.trim() || 'Admin';
+  const initial = displayName.charAt(0).toUpperCase();
 
   const handleLogout = async () => {
     setOpen(false);
@@ -49,8 +52,8 @@ const AdminUserMenu = ({ name = 'Marko Owner', role = 'Owner · Platform admin',
 
   return (
     <div className={`admin-user-menu${open ? ' open' : ''}`} ref={ref}>
-      <button type="button" className="aum-trigger" onClick={() => setOpen((v) => !v)} aria-label="Owner account menu">
-        <span className="ut"><b>Owner</b><span>Platform admin</span></span>
+      <button type="button" className="aum-trigger" onClick={() => setOpen((v) => !v)} aria-label="Admin account menu">
+        <span className="ut"><b>{displayName}</b><span>Talentmon admin</span></span>
         <span className="ua">{initial}</span>
         <span className="aum-chev"><ChevronIcon /></span>
       </button>
@@ -60,9 +63,8 @@ const AdminUserMenu = ({ name = 'Marko Owner', role = 'Owner · Platform admin',
           <div className="aum-head">
             <span className="aum-av">{initial}</span>
             <div className="aum-head-t">
-              <b>{name}</b>
+              <b>{displayName}</b>
               <span className="aum-email">{email}</span>
-              <span className="aum-plan"><i className="dot" />{role}</span>
             </div>
           </div>
 

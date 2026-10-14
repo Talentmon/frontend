@@ -66,6 +66,12 @@ const Login = () => {
     }
   }, [currentUserLoading, isSignedIn, role, company, navigate]);
 
+  // The "Almost there" screen starts clean — any note belongs to the step before it.
+  const showRolePicker = !currentUserLoading && isSignedIn && !role;
+  useEffect(() => {
+    if (showRolePicker) setNote('');
+  }, [showRolePicker]);
+
   const switchMode = (m) => {
     setMode(m);
     setStep('form');
@@ -133,8 +139,13 @@ const Login = () => {
       if (!isAlreadySignedInError(err)) throw err;
       // A session from an earlier step (e.g. a signup that didn't finish
       // redirecting) is still active — just re-sync our state instead of
-      // erroring; the auto-redirect effect takes it from here.
-      await refetch();
+      // erroring; the auto-redirect effect takes it from here. If our backend
+      // can't be reached, say so rather than blaming the password.
+      try {
+        await refetch();
+      } catch {
+        setNote('You are signed in, but we could not load your account — please try again in a moment.');
+      }
     }
   };
 
@@ -266,6 +277,10 @@ const Login = () => {
     if (!signInLoaded || !loginCode) return;
     setNote('');
     setSubmitting(true);
+    // Once signed in, the button stays disabled while our backend loads the
+    // account (slow on a cold start) — a second click would only hit
+    // Clerk's "already signed in".
+    let signedIn = false;
     try {
       const result = await signIn.attemptSecondFactor({ strategy: 'email_code', code: loginCode });
       if (result.status !== 'complete') {
@@ -273,11 +288,19 @@ const Login = () => {
         return;
       }
       await setActiveSignIn({ session: result.createdSessionId });
+      signedIn = true;
+      setNote('Signed in — loading your account…');
       // Same as a normal login: the redirect effect above takes it from here.
     } catch (err) {
+      if (isAlreadySignedInError(err)) {
+        signedIn = true;
+        setNote('Signed in — loading your account…');
+        await refetch().catch(() => {});
+        return;
+      }
       setNote(firstClerkError(err, 'That code did not work — check it and try again.'));
     } finally {
-      setSubmitting(false);
+      if (!signedIn) setSubmitting(false);
     }
   };
 
@@ -390,7 +413,7 @@ const Login = () => {
   // Signed in via Clerk but the account never picked a role (e.g. closed the
   // tab mid-signup before verification). Let them finish without re-entering
   // a password — the Clerk session already exists.
-  if (!currentUserLoading && isSignedIn && !role) {
+  if (showRolePicker) {
     return (
       <div className="auth-page" data-role={uiRole}>
         <div className="auth">

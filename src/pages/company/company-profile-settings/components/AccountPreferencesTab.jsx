@@ -100,44 +100,46 @@ const AccountPreferencesTab = ({
         }}
       />
 
-      {/* Language & Region */}
-      <div className={styles.card}>
-        <div className={styles.cardTitle}>Language & region</div>
-        <div className={styles.cardSub}>How the platform is displayed to you</div>
+      <div className={styles.cardPair}>
+        {/* Language & Region */}
+        <div className={styles.card}>
+          <div className={styles.cardTitle}>Language & region</div>
+          <div className={styles.cardSub}>How the platform is displayed to you</div>
 
-        <div className={styles.form2}>
-          <div className={styles.field}>
-            <label className={styles.flabel}>Interface language</label>
-            <input className={styles.finput} type="text" value="English" disabled />
-          </div>
+          <div className={styles.formStack}>
+            <div className={styles.field}>
+              <label className={styles.flabel}>Interface language</label>
+              <input className={styles.finput} type="text" value="English" disabled />
+            </div>
 
-          <div className={styles.field}>
-            <label className={styles.flabel}>Time zone</label>
-            <Select
-              value={preferences?.timezone}
-              onChange={(value) => handlePreferenceChange('timezone', value)}
-              options={timezoneOptions}
-              searchable
-            />
+            <div className={styles.field}>
+              <label className={styles.flabel}>Time zone</label>
+              <Select
+                value={preferences?.timezone}
+                onChange={(value) => handlePreferenceChange('timezone', value)}
+                options={timezoneOptions}
+                searchable
+              />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Billing currency — company-wide, everyone sees it, only the owner changes it */}
-      <div className={styles.card}>
-        <div className={styles.cardTitle}>Billing currency</div>
-        <div className={styles.cardSub}>Credit packages are priced and paid in this currency — for the whole team</div>
+        {/* Billing currency — company-wide, everyone sees it, only the owner changes it */}
+        <div className={styles.card}>
+          <div className={styles.cardTitle}>Billing currency</div>
+          <div className={styles.cardSub}>Credit prices and payments for the whole team</div>
 
-        <div className={styles.form2}>
-          <div className={styles.field}>
-            <label className={styles.flabel}>Currency</label>
-            <Select
-              value={preferences?.currency}
-              onChange={(value) => handlePreferenceChange('currency', value)}
-              options={BILLING_CURRENCY_OPTIONS}
-              disabled={!isOwner}
-            />
-            {!isOwner && <span className={styles.fhint}>Only the account owner can change this.</span>}
+          <div className={styles.formStack}>
+            <div className={styles.field}>
+              <label className={styles.flabel}>Currency</label>
+              <Select
+                value={preferences?.currency}
+                onChange={(value) => handlePreferenceChange('currency', value)}
+                options={BILLING_CURRENCY_OPTIONS}
+                disabled={!isOwner}
+              />
+              {!isOwner && <span className={styles.fhint}>Only the account owner can change this.</span>}
+            </div>
           </div>
         </div>
       </div>

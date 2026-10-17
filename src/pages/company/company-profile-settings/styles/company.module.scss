@@ -291,22 +291,32 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
   }
 }
 
-// Two short cards side by side (Account settings: Language & region + Billing currency).
-.cardPair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  align-items: stretch;
+// A one-control card: title + subtitle on the left, the control on the right
+// (Account settings → Billing currency). Stacks on narrow screens.
+.cardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 24px;
 
-  @media (max-width: 1100px) {
-    grid-template-columns: 1fr;
+  .cardSub { margin-bottom: 0; }
+
+  @media (max-width: 680px) {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
-// Fields one under another — for a card too narrow for .form2.
-.formStack {
+.cardRowText { min-width: 0; }
+
+.cardRowControl {
+  flex: 0 0 260px;
   display: grid;
-  gap: 16px;
+  gap: 6px;
+
+  @media (max-width: 680px) {
+    flex-basis: auto;
+  }
 }
 
 .field {

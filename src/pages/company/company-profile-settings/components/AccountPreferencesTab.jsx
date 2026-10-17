@@ -5,6 +5,7 @@ import Select from 'components/ui/Select';
 import { getTimezoneOptions } from 'utils/timezones';
 import { BILLING_CURRENCY_OPTIONS } from '../companyApi';
 import ChangeEmailModal from './ChangeEmailModal';
+import YourDevicesCard from './YourDevicesCard';
 import styles from '../styles/company.module.scss';
 
 // Billing currency and account deletion are company-wide (owner-only); language and security are each person's own.
@@ -26,6 +27,8 @@ const AccountPreferencesTab = ({
   // On by default: a password usually changes because someone else might know the old one.
   const [pwSignOutOthers, setPwSignOutOthers] = useState(true);
   const [pwBusy, setPwBusy] = useState(false);
+  // Bumped after a password change so the devices list drops the signed-out ones.
+  const [devicesKey, setDevicesKey] = useState(0);
 
   const pwTooShort = pwNew.length > 0 && pwNew.length < 8;
   const pwMismatch = pwConfirm.length > 0 && pwConfirm !== pwNew;
@@ -39,6 +42,7 @@ const AccountPreferencesTab = ({
       setPwNew('');
       setPwConfirm('');
       fireToast?.(pwSignOutOthers ? 'Password updated — other devices were signed out' : 'Password updated');
+      setDevicesKey((k) => k + 1);
     } catch (err) {
       fireToast?.(err?.errors?.[0]?.message || 'Could not update password — check your current password.');
     } finally {
@@ -137,6 +141,8 @@ const AccountPreferencesTab = ({
           </div>
         </div>
       </div>
+
+      <YourDevicesCard fireToast={fireToast} refreshKey={devicesKey} />
 
       {/* Data & Security */}
       <div className={styles.card}>

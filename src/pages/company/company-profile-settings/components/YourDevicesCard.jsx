@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useClerk } from '@clerk/clerk-react';
 import { formatDistanceToNow } from 'date-fns';
 import Icon from 'components/AppIcon';
+import SectionHead from './SectionHead';
 import styles from '../styles/company.module.scss';
 
 const deviceTitle = (activity) => {
@@ -73,8 +74,11 @@ const YourDevicesCard = ({ fireToast, refreshKey }) => {
 
   return (
     <div className={styles.card}>
-      <div className={styles.cardTitle}>Your devices</div>
-      <div className={styles.cardSub}>Where you&apos;re signed in with this login — only you see this list. Sign out anything you don&apos;t recognise.</div>
+      <SectionHead
+        icon="MonitorSmartphone"
+        title="Your devices"
+        subtitle="Where you're signed in with this login — only you see this list. Sign out anything you don't recognise."
+      />
 
       {error && <p className={styles.devNote}>{error}</p>}
       {!error && sessions === null && <p className={styles.devNote}>Loading…</p>}

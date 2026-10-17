@@ -5,6 +5,7 @@ import Select from 'components/ui/Select';
 import { getTimezoneOptions } from 'utils/timezones';
 import { BILLING_CURRENCY_OPTIONS } from '../companyApi';
 import ChangeEmailModal from './ChangeEmailModal';
+import SectionHead from './SectionHead';
 import YourDevicesCard from './YourDevicesCard';
 import styles from '../styles/company.module.scss';
 
@@ -63,26 +64,36 @@ const AccountPreferencesTab = ({
     <div className={styles.stack}>
       {/* Your profile — the name teammates see on what you unlock, save and buy */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Your profile</div>
-        <div className={styles.cardSub}>Shown to your team next to what you unlock, save and buy — without a name they see your email</div>
+        <SectionHead
+          icon="UserRound"
+          title="Your profile"
+          subtitle="Shown to your team next to what you unlock, save and buy — without a name they see your email"
+        />
 
         <div className={styles.form2}>
           <div className={styles.field}>
-            <label className={styles.flabel}>Your name {!isOwner && <span className={styles.req}>*</span>}</label>
-            <input
-              className={nameMissing ? `${styles.finput} ${styles.finvalid}` : styles.finput}
-              type="text"
-              maxLength={100}
-              placeholder="e.g. Ana Jovanović"
-              value={preferences?.name || ''}
-              onChange={(e) => handlePreferenceChange('name', e.target.value)}
-            />
+            <label className={styles.flabel} htmlFor="profileName">Your name {!isOwner && <span className={styles.req}>*</span>}</label>
+            <div className={styles.inputIcon}>
+              <Icon name="User" size={17} />
+              <input
+                id="profileName"
+                className={nameMissing ? `${styles.finput} ${styles.finvalid}` : styles.finput}
+                type="text"
+                maxLength={100}
+                placeholder="e.g. Ana Jovanović"
+                value={preferences?.name || ''}
+                onChange={(e) => handlePreferenceChange('name', e.target.value)}
+              />
+            </div>
             {nameMissing && <span className={styles.ferr}>Your name is required.</span>}
           </div>
           <div className={styles.field}>
-            <label className={styles.flabel}>Login email</label>
+            <label className={styles.flabel} htmlFor="profileEmail">Login email</label>
             <div className={styles.inputAction}>
-              <input className={styles.finput} type="email" value={preferences?.email || ''} disabled />
+              <div className={styles.inputIcon}>
+                <Icon name="Mail" size={17} />
+                <input id="profileEmail" className={styles.finput} type="email" value={preferences?.email || ''} disabled />
+              </div>
               <button type="button" className={styles.btnSm} onClick={() => setShowEmailModal(true)}>Change</button>
             </div>
           </div>
@@ -102,13 +113,15 @@ const AccountPreferencesTab = ({
 
       {/* Language & Region */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Language & region</div>
-        <div className={styles.cardSub}>How the platform is displayed to you</div>
+        <SectionHead icon="Globe" title="Language & region" subtitle="How the platform is displayed to you" />
 
         <div className={styles.form2}>
           <div className={styles.field}>
-            <label className={styles.flabel}>Interface language</label>
-            <input className={styles.finput} type="text" value="English" disabled />
+            <label className={styles.flabel} htmlFor="interfaceLanguage">Interface language</label>
+            <div className={styles.inputIcon}>
+              <Icon name="Languages" size={17} />
+              <input id="interfaceLanguage" className={styles.finput} type="text" value="English" disabled />
+            </div>
           </div>
 
           <div className={styles.field}>
@@ -127,8 +140,7 @@ const AccountPreferencesTab = ({
       <div className={styles.card}>
         <div className={styles.cardRow}>
           <div className={styles.cardRowText}>
-            <div className={styles.cardTitle}>Billing currency</div>
-            <div className={styles.cardSub}>Credit prices and payments for the whole team</div>
+            <SectionHead icon="Wallet" title="Billing currency" subtitle="Credit prices and payments for the whole team" flat />
           </div>
           <div className={styles.cardRowControl}>
             <Select
@@ -147,49 +159,60 @@ const AccountPreferencesTab = ({
 
       {/* Data & Security */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Data & security</div>
-        <div className={styles.cardSub}>Keep your account secure</div>
+        <SectionHead icon="ShieldCheck" title="Data & security" subtitle="Keep your account secure" />
 
-        <div className={styles.form2} style={{ marginBottom: 8 }}>
+        <div className={`${styles.form2} ${styles.pwRow}`}>
           <div className={styles.field}>
-            <label className={styles.flabel}>Current password</label>
-            <input
-              className={styles.finput}
-              type="password"
-              autoComplete="current-password"
-              placeholder="Enter your current password"
-              value={pwCurrent}
-              onChange={(e) => setPwCurrent(e.target.value)}
-            />
+            <label className={styles.flabel} htmlFor="pwCurrent">Current password</label>
+            <div className={styles.inputIcon}>
+              <Icon name="Lock" size={17} />
+              <input
+                id="pwCurrent"
+                className={styles.finput}
+                type="password"
+                autoComplete="current-password"
+                placeholder="Enter your current password"
+                value={pwCurrent}
+                onChange={(e) => setPwCurrent(e.target.value)}
+              />
+            </div>
           </div>
         </div>
 
-        <div className={styles.form2} style={{ marginBottom: 8 }}>
+        <div className={`${styles.form2} ${styles.pwRow}`}>
           <div className={styles.field}>
-            <label className={styles.flabel}>New password</label>
-            <input
-              className={pwTooShort ? `${styles.finput} ${styles.finvalid}` : styles.finput}
-              type="password"
-              autoComplete="new-password"
-              placeholder="At least 8 characters"
-              value={pwNew}
-              onChange={(e) => setPwNew(e.target.value)}
-            />
+            <label className={styles.flabel} htmlFor="pwNew">New password</label>
+            <div className={styles.inputIcon}>
+              <Icon name="Lock" size={17} />
+              <input
+                id="pwNew"
+                className={pwTooShort ? `${styles.finput} ${styles.finvalid}` : styles.finput}
+                type="password"
+                autoComplete="new-password"
+                placeholder="At least 8 characters"
+                value={pwNew}
+                onChange={(e) => setPwNew(e.target.value)}
+              />
+            </div>
             {pwTooShort && <span className={styles.ferr}>Use at least 8 characters.</span>}
           </div>
 
           <div className={styles.field}>
-            <label className={styles.flabel}>Confirm new password</label>
-            <input
-              className={pwMismatch ? `${styles.finput} ${styles.finvalid}` : styles.finput}
-              type="password"
-              autoComplete="new-password"
-              placeholder="Type the new password again"
-              value={pwConfirm}
-              onChange={(e) => setPwConfirm(e.target.value)}
-              onPaste={(e) => e.preventDefault()}
-              onDrop={(e) => e.preventDefault()}
-            />
+            <label className={styles.flabel} htmlFor="pwConfirm">Confirm new password</label>
+            <div className={styles.inputIcon}>
+              <Icon name="Lock" size={17} />
+              <input
+                id="pwConfirm"
+                className={pwMismatch ? `${styles.finput} ${styles.finvalid}` : styles.finput}
+                type="password"
+                autoComplete="new-password"
+                placeholder="Type the new password again"
+                value={pwConfirm}
+                onChange={(e) => setPwConfirm(e.target.value)}
+                onPaste={(e) => e.preventDefault()}
+                onDrop={(e) => e.preventDefault()}
+              />
+            </div>
             {pwMismatch
               ? <span className={styles.ferr}>Passwords do not match.</span>
               : <span className={styles.fhint}>Type it again — pasting is disabled here.</span>}
@@ -198,16 +221,17 @@ const AccountPreferencesTab = ({
 
         <label className={styles.pwOthers}>
           <input type="checkbox" checked={pwSignOutOthers} onChange={(e) => setPwSignOutOthers(e.target.checked)} />
-          <span className={`${styles.bCheck} ${pwSignOutOthers ? styles.checked : ''}`}><Icon name="Check" size={11} /></span>
+          <span className={`${styles.bCheck} ${pwSignOutOthers ? styles.checked : ''}`}><Icon name="Check" size={12} /></span>
           Sign out of all other devices
         </label>
 
-        <div style={{ marginBottom: 18 }}>
+        <div>
           <button
-            className={styles.btnSm}
+            className={`${styles.btnSm} ${styles.btnPw}`}
             disabled={pwBusy || !pwCurrent || !pwNew || !pwConfirm || pwTooShort || pwMismatch}
             onClick={changePassword}
           >
+            <Icon name="KeyRound" size={17} />
             {pwBusy ? 'Updating…' : 'Update password'}
           </button>
         </div>
@@ -229,12 +253,15 @@ const AccountPreferencesTab = ({
 
         {isOwner && (
           <div className={`${styles.dangerRow} ${styles.dangerRowDel}`}>
-            <div className={`${styles.dangerTxt} ${styles.del}`}>
-              <b>Delete account</b>
-              <span>Permanently delete the company account — the whole team loses access</span>
+            <div className={styles.dangerLead}>
+              <Icon name="Trash2" size={22} />
+              <div className={`${styles.dangerTxt} ${styles.del}`}>
+                <b>Delete account</b>
+                <span>Permanently delete the company account — the whole team loses access</span>
+              </div>
             </div>
             <button className={`${styles.btnSm} ${styles.btnSmRed}`} onClick={onDeleteAccount}>
-              <Icon name="Trash2" size={14} />Delete account
+              <Icon name="Trash2" size={16} />Delete account
             </button>
           </div>
         )}

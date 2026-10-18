@@ -11,7 +11,7 @@
     --color-background: #F8FAFC; /* slate-50 */
     --color-foreground: #1E293B; /* slate-800 */
     --color-border: rgba(148, 163, 184, 0.2); /* slate-400 with opacity */
-    --color-input: #FFFFFF; /* white */
+    --color-input: #E4E7EA; /* light grey — border of form fields (Select, Input, Combobox) and outline buttons; was white, so they were invisible on white cards */
     --color-ring: #2563EB; /* blue-600 */
     
     /* Card Colors */

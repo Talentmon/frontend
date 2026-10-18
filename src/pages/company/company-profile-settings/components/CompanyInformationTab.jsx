@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
 import { COMPANY_SIZE_OPTIONS, INDUSTRY_OPTIONS, WORK_MODE_OPTIONS, uploadCompanyLogo } from '../companyApi';
+import SectionHead from './SectionHead';
 import styles from '../styles/company.module.scss';
 import { ACCEPTED_IMAGE_TYPES } from 'utils/resizeImage';
 
@@ -18,6 +19,7 @@ const BENEFITS_LIST = [
   'Team building',
   'Extra days off',
 ];
+const BENEFIT_OPTIONS = BENEFITS_LIST.map((benefit) => ({ value: benefit, label: benefit }));
 
 // `readOnly`: recruiters see the company profile but only the owner edits it (the backend enforces the same).
 const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fireToast, errors = {}, readOnly = false }) => {
@@ -27,18 +29,6 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
   useEffect(() => {
     setLogoPreview(companyData?.logo);
   }, [companyData?.logo]);
-  const [benefitsOpen, setBenefitsOpen] = useState(false);
-  const benefitsRef = useRef(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (benefitsRef.current && !benefitsRef.current.contains(e.target)) {
-        setBenefitsOpen(false);
-      }
-    };
-    if (benefitsOpen) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [benefitsOpen]);
 
   const handleInputChange = (field, value) => {
     onDataChange({ ...companyData, [field]: value }, field);
@@ -52,14 +42,13 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
   const inputClass = (field, base = styles.finput) => (errors[field] ? `${base} ${styles.finvalid}` : base);
   const fieldError = (field) => (errors[field] ? <span className={styles.ferr}>{errors[field]}</span> : null);
   const requiredMark = <span className={styles.req}>*</span>;
-
-  const toggleBenefit = (benefit) => {
-    const current = companyData?.benefits || [];
-    const updated = current.includes(benefit)
-      ? current.filter(b => b !== benefit)
-      : [...current, benefit];
-    handleInputChange('benefits', updated);
-  };
+  // An input with its icon inside, like the Account settings fields.
+  const withIcon = (icon, input) => (
+    <div className={styles.inputIcon}>
+      <Icon name={icon} size={17} />
+      {input}
+    </div>
+  );
 
   const handleLogoUpload = async (event) => {
     const file = event.target?.files?.[0];
@@ -95,8 +84,7 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
 
       {/* Company Logo Section */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Company logo</div>
-        <div className={styles.cardSub}>Shown on your public profile and in search results</div>
+        <SectionHead icon="Image" title="Company logo" subtitle="Shown on your public profile and in search results" />
 
         <div className={styles.logoUp}>
           <div className={styles.logoBox}>
@@ -135,41 +123,44 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
 
       {/* Basic Information */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Basic information</div>
-        <div className={styles.cardSub}>Key details that candidates will see</div>
+        <SectionHead icon="Building2" title="Basic information" subtitle="Key details that candidates will see" />
 
         <div className={styles.form2}>
           <div {...fieldProps('name')}>
             <label className={styles.flabel}>Company name {requiredMark}</label>
-            <input
-              className={inputClass('name')}
-              type="text"
-              placeholder="Enter company name"
-              value={companyData?.name}
-              onChange={(e) => handleInputChange('name', e?.target?.value)}
-              required
-            />
+            {withIcon('Building2', (
+              <input
+                className={inputClass('name')}
+                type="text"
+                placeholder="Enter company name"
+                value={companyData?.name}
+                onChange={(e) => handleInputChange('name', e?.target?.value)}
+                required
+              />
+            ))}
             {fieldError('name')}
           </div>
 
           <div {...fieldProps('foundedYear')}>
             <label className={styles.flabel}>Year founded {requiredMark}</label>
-            <input
-              className={inputClass('foundedYear')}
-              type="number"
-              min={1800}
-              max={new Date().getFullYear()}
-              placeholder="2010"
-              value={companyData?.foundedYear}
-              onChange={(e) => handleInputChange('foundedYear', e?.target?.value)}
-              required
-            />
+            {withIcon('CalendarDays', (
+              <input
+                className={inputClass('foundedYear')}
+                type="number"
+                min={1800}
+                max={new Date().getFullYear()}
+                placeholder="2010"
+                value={companyData?.foundedYear}
+                onChange={(e) => handleInputChange('foundedYear', e?.target?.value)}
+                required
+              />
+            ))}
             {fieldError('foundedYear')}
           </div>
 
           <div className={styles.field}>
             <label className={styles.flabel}>Company email {requiredMark}</label>
-            <input className={styles.finput} type="email" value={companyData?.email || ''} disabled />
+            {withIcon('Mail', <input className={styles.finput} type="email" value={companyData?.email || ''} disabled />)}
             <span className={styles.fhint}>
               {readOnly ? "The account owner's login email." : 'Your login email — change it under Account settings.'}
             </span>
@@ -212,71 +203,80 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
 
           <div {...fieldProps('location')}>
             <label className={styles.flabel}>City {requiredMark}</label>
-            <input
-              className={inputClass('location')}
-              type="text"
-              placeholder="Belgrade"
-              value={companyData?.location}
-              onChange={(e) => handleInputChange('location', e?.target?.value)}
-              required
-            />
+            {withIcon('MapPin', (
+              <input
+                className={inputClass('location')}
+                type="text"
+                placeholder="Belgrade"
+                value={companyData?.location}
+                onChange={(e) => handleInputChange('location', e?.target?.value)}
+                required
+              />
+            ))}
             {fieldError('location')}
           </div>
 
           <div {...fieldProps('country')}>
             <label className={styles.flabel}>Country {requiredMark}</label>
-            <input
-              className={inputClass('country')}
-              type="text"
-              placeholder="Serbia"
-              value={companyData?.country || ''}
-              onChange={(e) => handleInputChange('country', e?.target?.value)}
-              required
-            />
+            {withIcon('Globe', (
+              <input
+                className={inputClass('country')}
+                type="text"
+                placeholder="Serbia"
+                value={companyData?.country || ''}
+                onChange={(e) => handleInputChange('country', e?.target?.value)}
+                required
+              />
+            ))}
             {fieldError('country')}
           </div>
 
           <div {...fieldProps('address')}>
             <label className={styles.flabel}>Address {requiredMark}</label>
-            <input
-              className={inputClass('address')}
-              type="text"
-              placeholder="Knez Mihailova 12, Belgrade"
-              value={companyData?.address}
-              onChange={(e) => handleInputChange('address', e?.target?.value)}
-              required
-            />
+            {withIcon('Map', (
+              <input
+                className={inputClass('address')}
+                type="text"
+                placeholder="Knez Mihailova 12, Belgrade"
+                value={companyData?.address}
+                onChange={(e) => handleInputChange('address', e?.target?.value)}
+                required
+              />
+            ))}
             {fieldError('address')}
           </div>
 
           <div className={styles.field}>
             <label className={styles.flabel}>Company registration number</label>
-            <input
-              className={styles.finput}
-              type="text"
-              placeholder="12345678"
-              value={companyData?.registrationNumber || ''}
-              onChange={(e) => handleInputChange('registrationNumber', e.target.value)}
-            />
+            {withIcon('Hash', (
+              <input
+                className={styles.finput}
+                type="text"
+                placeholder="12345678"
+                value={companyData?.registrationNumber || ''}
+                onChange={(e) => handleInputChange('registrationNumber', e.target.value)}
+              />
+            ))}
           </div>
 
           <div className={styles.field}>
             <label className={styles.flabel}>Tax ID number</label>
-            <input
-              className={styles.finput}
-              type="text"
-              placeholder="123456789"
-              value={companyData?.pib || ''}
-              onChange={(e) => handleInputChange('pib', e.target.value)}
-            />
+            {withIcon('Receipt', (
+              <input
+                className={styles.finput}
+                type="text"
+                placeholder="123456789"
+                value={companyData?.pib || ''}
+                onChange={(e) => handleInputChange('pib', e.target.value)}
+              />
+            ))}
           </div>
         </div>
       </div>
 
       {/* Company Description */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Company description</div>
-        <div className={styles.cardSub}>Tell candidates who you are</div>
+        <SectionHead icon="FileText" title="Company description" subtitle="Tell candidates who you are" />
 
         <div {...fieldProps('shortDescription')} style={{ marginBottom: 16 }}>
           <label className={styles.flabel}>Short description {requiredMark}</label>
@@ -311,60 +311,66 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
 
       {/* Contact Information */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Contact information</div>
-        <div className={styles.cardSub}>How candidates and partners can reach you</div>
+        <SectionHead icon="Contact" title="Contact information" subtitle="How candidates and partners can reach you" />
 
         <div className={styles.form2}>
           <div className={styles.field}>
             <label className={styles.flabel}>Contact email</label>
-            <input
-              className={styles.finput}
-              type="email"
-              placeholder="contact@yoursite.com"
-              value={companyData?.contactEmail}
-              onChange={(e) => handleInputChange('contactEmail', e?.target?.value)}
-            />
+            {withIcon('Mail', (
+              <input
+                className={styles.finput}
+                type="email"
+                placeholder="contact@yoursite.com"
+                value={companyData?.contactEmail}
+                onChange={(e) => handleInputChange('contactEmail', e?.target?.value)}
+              />
+            ))}
           </div>
 
           <div className={styles.field}>
             <label className={styles.flabel}>Phone</label>
-            <input
-              className={styles.finput}
-              type="tel"
-              placeholder="+381 11 123 4567"
-              value={companyData?.phone}
-              onChange={(e) => handleInputChange('phone', e?.target?.value)}
-            />
+            {withIcon('Phone', (
+              <input
+                className={styles.finput}
+                type="tel"
+                placeholder="+381 11 123 4567"
+                value={companyData?.phone}
+                onChange={(e) => handleInputChange('phone', e?.target?.value)}
+              />
+            ))}
           </div>
 
           <div className={styles.field}>
             <label className={styles.flabel}>LinkedIn profile</label>
-            <input
-              className={styles.finput}
-              type="url"
-              placeholder="https://linkedin.com/company/yourcompany"
-              value={companyData?.linkedinUrl}
-              onChange={(e) => handleInputChange('linkedinUrl', e?.target?.value)}
-            />
+            {withIcon('Linkedin', (
+              <input
+                className={styles.finput}
+                type="url"
+                placeholder="https://linkedin.com/company/yourcompany"
+                value={companyData?.linkedinUrl}
+                onChange={(e) => handleInputChange('linkedinUrl', e?.target?.value)}
+              />
+            ))}
           </div>
 
           <div className={styles.field}>
             <label className={styles.flabel}>Website</label>
-            <input
-              className={styles.finput}
-              type="url"
-              placeholder="https://www.yoursite.com"
-              value={companyData?.website}
-              onChange={(e) => handleInputChange('website', e?.target?.value)}
-            />
+            {withIcon('Link2', (
+              <input
+                className={styles.finput}
+                type="url"
+                placeholder="https://www.yoursite.com"
+                value={companyData?.website}
+                onChange={(e) => handleInputChange('website', e?.target?.value)}
+              />
+            ))}
           </div>
         </div>
       </div>
 
       {/* Work Conditions */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Work conditions</div>
-        <div className={styles.cardSub}>Work mode and working hours flexibility</div>
+        <SectionHead icon="Briefcase" title="Work conditions" subtitle="Work mode and working hours flexibility" />
 
         <div className={styles.field} style={{ marginBottom: 18 }}>
           <label className={styles.flabel}>Work mode</label>
@@ -400,53 +406,24 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
 
       {/* Benefits */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Benefits</div>
-        <div className={styles.cardSub}>Choose the benefits you offer employees</div>
+        <SectionHead icon="Gift" title="Benefits" subtitle="Choose the benefits you offer employees" />
 
-        <div className={styles.field} ref={benefitsRef}>
+        <div className={styles.field}>
           <label className={styles.flabel}>Benefits</label>
-          <button
-            type="button"
-            className={`${styles.bDropTrigger} ${benefitsOpen ? styles.open : ''}`}
-            onClick={() => setBenefitsOpen(o => !o)}
-          >
-            <span>
-              {(companyData?.benefits?.length || 0) === 0
-                ? 'Choose benefits...'
-                : `${companyData.benefits.length} benefit${companyData.benefits.length === 1 ? '' : 's'} selected`}
-            </span>
-            <Icon
-              name="ChevronDown"
-              size={16}
-              style={{ transform: benefitsOpen ? 'rotate(180deg)' : 'none', transition: 'transform .2s', color: '#566776' }}
-            />
-          </button>
-
-          {benefitsOpen && (
-            <div className={styles.bDropPanel}>
-              {BENEFITS_LIST.map(benefit => {
-                const checked = (companyData?.benefits || []).includes(benefit);
-                return (
-                  <div
-                    key={benefit}
-                    className={styles.bItem}
-                    onClick={() => toggleBenefit(benefit)}
-                  >
-                    <div className={`${styles.bCheck} ${checked ? styles.checked : ''}`}>
-                      <Icon name="Check" size={11} />
-                    </div>
-                    <span>{benefit}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+          <Select
+            multiple
+            value={companyData?.benefits || []}
+            onChange={(benefits) => handleInputChange('benefits', benefits)}
+            options={BENEFIT_OPTIONS}
+            placeholder="Choose benefits..."
+            multipleLabel={(count) => `${count} benefits selected`}
+          />
         </div>
       </div>
 
-      {/* Save Button */}
+      {/* Phones/tablets only — on desktop the page header's Save is always in view */}
       {!readOnly && (
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div className={styles.saveBottom}>
           <button className={styles.btnPrimary} onClick={onSave} disabled={isSaving}>
             <Icon name="Save" size={16} />{isSaving ? 'Saving...' : 'Save changes'}
           </button>

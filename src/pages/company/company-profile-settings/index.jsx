@@ -43,6 +43,7 @@ const CompanyProfileSettings = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const toastTimer = useRef(null);
+  const headRef = useRef(null);
 
   const [companyData, setCompanyData] = useState(null);
   const [reputationData, setReputationData] = useState(null);
@@ -244,6 +245,18 @@ const CompanyProfileSettings = () => {
     }
   };
 
+  // The page header is sticky on desktop; the side menu sits right under it,
+  // so it needs the header's real height (it grows when the buttons wrap).
+  useEffect(() => {
+    const head = headRef.current;
+    if (!head) return undefined;
+    const sync = () => head.parentElement?.style.setProperty('--settings-head-h', `${head.offsetHeight}px`);
+    sync();
+    const observer = new ResizeObserver(sync);
+    observer.observe(head);
+    return () => observer.disconnect();
+  }, [loading]);
+
   if (loading) {
     return (
       <div className={styles.page}>
@@ -259,8 +272,8 @@ const CompanyProfileSettings = () => {
     <div className={styles.page}>
       <Header />
       <main className="pt-16 max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '70px' }}>
-        {/* Page Header */}
-        <div className={styles.head}>
+        {/* Page Header — stays put on desktop while the cards scroll under it */}
+        <div className={styles.head} ref={headRef}>
           <div>
             <h1>Company profile settings</h1>
             <p>Manage your company information, reputation, and account settings</p>
@@ -270,10 +283,11 @@ const CompanyProfileSettings = () => {
             <button className={styles.btnGhost} onClick={() => setShowPreview(true)}>
               <Icon name="Eye" size={16} />Preview profile
             </button>
-            {/* Recruiters can only save their own settings — the company profile is owner-only. */}
+            {/* Recruiters can only save their own settings — the company profile is owner-only.
+                Desktop only: on phones/tablets the header scrolls away, so each tab has its Save at the bottom. */}
             {(isCompanyOwner || activeTab === 'preferences') && (
               <button
-                className={styles.btnPrimary}
+                className={`${styles.btnPrimary} ${styles.saveTop}`}
                 onClick={activeTab === 'preferences' ? handleSavePreferences : handleSaveCompany}
                 disabled={isSaving || isSavingPrefs}
               >

@@ -4,12 +4,21 @@
 // via the trigger's getBoundingClientRect) instead of being an absolutely
 // positioned child - some pages (e.g. candidate-profile/edit) wrap this in a
 // card with `overflow: hidden` for rounded corners, which would otherwise
-// clip the list as soon as it grows past the card edge.
+// clip the list as soon as it grows past the card edge. Near the bottom of
+// the window it opens upward instead, so it never runs off-screen.
 import React, { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, Check, Search, X } from "lucide-react";
 import { cn } from "../../utils/cn";
 import Input from "./Input";
+
+// The list is at most max-h-60 (240px) plus padding, and a search box when
+// searchable. Open upward when that won't fit below but there's more room above.
+const opensUp = (rect, searchable) => {
+    const listHeight = 256 + (searchable ? 56 : 0);
+    const below = window.innerHeight - rect.bottom;
+    return below < listHeight && rect.top > below;
+};
 
 const Select = React.forwardRef(({
     className,
@@ -31,6 +40,7 @@ const Select = React.forwardRef(({
     name,
     onChange,
     onOpenChange,
+    multipleLabel, // (count) => text shown when 2+ options are picked, e.g. "3 benefits selected"
     ...props
 }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -60,7 +70,7 @@ const Select = React.forwardRef(({
             const selectedOptions = options?.filter(opt => value?.includes(opt?.value));
             if (selectedOptions?.length === 0) return placeholder;
             if (selectedOptions?.length === 1) return selectedOptions?.[0]?.label;
-            return `${selectedOptions?.length} items selected`;
+            return multipleLabel ? multipleLabel(selectedOptions.length) : `${selectedOptions?.length} items selected`;
         }
 
         const selectedOption = options?.find(opt => opt?.value === value);
@@ -230,7 +240,16 @@ const Select = React.forwardRef(({
                 {isOpen && rect && createPortal(
                     <div
                         ref={listRef}
-                        style={{ position: "fixed", top: rect.bottom + 4, left: rect.left, width: "max-content", minWidth: rect.width, maxWidth: "90vw" }}
+                        style={{
+                            position: "fixed",
+                            ...(opensUp(rect, searchable)
+                                ? { bottom: window.innerHeight - rect.top + 4 }
+                                : { top: rect.bottom + 4 }),
+                            left: rect.left,
+                            width: "max-content",
+                            minWidth: rect.width,
+                            maxWidth: "90vw",
+                        }}
                         className={cn("z-50 bg-white text-black border border-border rounded-[9px] shadow-md p-1", listClassName)}
                     >
                         {searchable && (

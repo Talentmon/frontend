@@ -10,6 +10,7 @@ import {
   getTransferPreview,
   transferOwnership,
 } from '../companyApi';
+import SectionHead from './SectionHead';
 import TransferOwnershipModal from './TransferOwnershipModal';
 import styles from '../styles/company.module.scss';
 
@@ -175,11 +176,11 @@ const TeamManagementTab = ({ fireToast, onOwnershipTransferred }) => {
   return (
     <div className={styles.stack}>
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Team members</div>
-        <div className={styles.cardSub}>
-          Everyone shares this company profile and credit balance, but each person signs in with their own account — and
-          every unlock, bookmark and purchase shows who made it.
-        </div>
+        <SectionHead
+          icon="Users"
+          title="Team members"
+          subtitle="Everyone shares this company profile and credit balance, but each person signs in with their own account — and every unlock, bookmark and purchase shows who made it."
+        />
 
         {loading ? (
           <div className={styles.emptyTeam}>Loading…</div>
@@ -248,11 +249,11 @@ const TeamManagementTab = ({ fireToast, onOwnershipTransferred }) => {
 
       {isCompanyOwner ? (
         <div className={styles.card}>
-          <div className={styles.cardTitle}>Invite member</div>
-          <div className={styles.cardSub}>
-            They&apos;ll get an email with a link to set their name and password and join this company — the link is valid for
-            7 days. Each person can belong to only one company.
-          </div>
+          <SectionHead
+            icon="UserPlus"
+            title="Invite member"
+            subtitle="They'll get an email with a link to set their name and password and join this company — the link is valid for 7 days. Each person can belong to only one company."
+          />
 
           {seatLimit !== undefined && (
             <div className={`${styles.seatInfo}${seatsFull ? ` ${styles.full}` : ''}`}>
@@ -275,15 +276,19 @@ const TeamManagementTab = ({ fireToast, onOwnershipTransferred }) => {
 
           <form className={styles.inviteRow} onSubmit={handleInvite}>
             <div className={styles.field}>
-              <label className={styles.flabel}>Email</label>
-              <input
-                className={styles.finput}
-                type="email"
-                placeholder="colleague@company.com"
-                value={inviteEmail}
-                disabled={seatsFull}
-                onChange={(e) => { setInviteEmail(e.target.value); setInviteError(''); }}
-              />
+              <label className={styles.flabel} htmlFor="inviteEmail">Email</label>
+              <div className={styles.inputIcon}>
+                <Icon name="Mail" size={17} />
+                <input
+                  id="inviteEmail"
+                  className={styles.finput}
+                  type="email"
+                  placeholder="colleague@company.com"
+                  value={inviteEmail}
+                  disabled={seatsFull}
+                  onChange={(e) => { setInviteEmail(e.target.value); setInviteError(''); }}
+                />
+              </div>
             </div>
             <div className={styles.field} style={{ maxWidth: 180 }}>
               <label className={styles.flabel}>Role</label>

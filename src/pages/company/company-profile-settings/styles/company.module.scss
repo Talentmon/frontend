@@ -29,12 +29,19 @@ $sh-card: 0 1px 2px rgba(11, 26, 44, .04), 0 18px 40px -30px rgba(11, 26, 44, .4
 $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, .5);
 
 // ===== Page shell =====
-.page {
+$site-header-h: 64px; // the fixed top bar (components/ui/Header, h-16)
+$sticky-from: 921px;  // the two-column layout; below it everything scrolls
+
+@mixin page-bg {
   background:
     radial-gradient(1100px 460px at 78% -8%, rgba(230, 169, 60, .07), transparent 60%),
     radial-gradient(900px 480px at 8% 4%, rgba(33, 64, 94, .06), transparent 58%),
     $paper;
   background-attachment: fixed;
+}
+
+.page {
+  @include page-bg;
   min-height: 100vh;
 }
 
@@ -46,6 +53,21 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
   margin-bottom: 22px;
   padding-top: 26px;
   flex-wrap: wrap;
+
+  // Desktop: title, subtitle and Preview/Save stay under the site bar while
+  // the cards scroll beneath. Same fixed background as the page, so it's
+  // seamless; the bottom padding takes over the margin so the cards are
+  // covered right up to the header.
+  @media (min-width: $sticky-from) {
+    @include page-bg;
+    position: sticky;
+    top: $site-header-h;
+    z-index: 20;
+    // Reaches into the page gutter (main's 22px padding) so the shadows of the
+    // cards passing underneath don't peek out at the sides.
+    margin: 0 -22px;
+    padding: 26px 22px 22px;
+  }
 
   h1 {
     font-size: 1.7rem;
@@ -63,6 +85,19 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
 .headR {
   display: flex;
   gap: 10px;
+
+  // Save sits in the sticky header on desktop only; below that the header
+  // scrolls away, so each tab shows its own Save at the bottom (.saveBottom).
+  .saveTop {
+    @media (max-width: #{$sticky-from - 1px}) { display: none; }
+  }
+}
+
+.saveBottom {
+  display: flex;
+  justify-content: flex-end;
+
+  @media (min-width: $sticky-from) { display: none; }
 }
 
 .btnGhost {
@@ -146,7 +181,8 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
   border-radius: $r-lg;
   padding: 10px;
   position: sticky;
-  top: 84px;
+  // Right under the sticky page header (its height is measured in index.jsx).
+  top: calc(#{$site-header-h} + var(--settings-head-h, 0px));
   box-shadow: 0 16px 40px -34px rgba(11, 26, 44, .4);
 
   @media (max-width: 920px) {
@@ -358,7 +394,7 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
     box-shadow: 0 0 0 3px rgba(230, 169, 60, .18);
   }
 
-  &::placeholder { color: $ink; }
+  &::placeholder { color: $slate-2; }
 }
 
 .ftext {
@@ -821,13 +857,6 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
   &.bad { color: $red; }
 }
 
-.reviewsHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-}
-
 .linkBtn {
   font-size: .85rem;
   font-weight: 600;
@@ -968,6 +997,7 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
 // ===== Data & security card =====
 .secHead {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 14px;
   padding-bottom: 18px;
@@ -995,7 +1025,10 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
 
 .secIcon { display: grid; place-items: center; flex: none; color: $ink; }
 
-.secText { min-width: 0; }
+// Takes the row; drops an `aside` onto its own line when the card gets narrow.
+.secText { flex: 1 1 200px; min-width: 0; }
+
+.secAside { margin-left: auto; flex: none; align-self: center; }
 
 // Header beside a control in the same row — no divider below it.
 .secHeadFlat {
@@ -2061,67 +2094,7 @@ $red-deep: #b53e3e;
   padding-top: 14px;
 }
 
-// ===== Benefits dropdown =====
-.bDropWrap { position: relative; }
-
-.bDropTrigger {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 1.5px solid $line;
-  background: $paper-2;
-  border-radius: $r-sm;
-  padding: .74em .9em;
-  font-size: .9rem;
-  color: $ink;
-  font-family: inherit;
-  transition: border-color .18s, box-shadow .18s, background-color .18s;
-  cursor: pointer;
-  text-align: left;
-
-  &:hover { border-color: $slate-2; }
-
-  &.open {
-    border-color: $gold;
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
-    background: $white;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, .18);
-  }
-}
-
-.bDropPanel {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background: $white;
-  border: 1.5px solid $gold;
-  border-top: none;
-  border-bottom-left-radius: $r-sm;
-  border-bottom-right-radius: $r-sm;
-  z-index: 20;
-  box-shadow: 0 14px 32px -10px rgba(11, 26, 44, .22);
-  max-height: 272px;
-  overflow-y: auto;
-}
-
-.bItem {
-  display: flex;
-  align-items: center;
-  gap: .7em;
-  padding: 10px 14px;
-  font-size: .88rem;
-  color: $ink;
-  cursor: pointer;
-  transition: background-color .13s;
-  user-select: none;
-
-  &:hover { background: $amber-bg; }
-  &:not(:last-child) { border-bottom: 1px solid $line-soft; }
-}
-
+// Checkbox box (used by "Sign out of all other devices").
 .bCheck {
   width: 17px;
   height: 17px;
@@ -2257,7 +2230,9 @@ $red-deep: #b53e3e;
   padding: 14px 0;
   border-top: 1px solid $line;
 
-  &:first-of-type { border-top: none; padding-top: 0; }
+  // The card header's divider already separates the first member.
+  &:first-of-type,
+  .secHead + & { border-top: none; padding-top: 0; }
 }
 
 .teamAvatar {
@@ -2299,6 +2274,18 @@ $red-deep: #b53e3e;
   gap: 8px;
   align-items: center;
   flex: none;
+}
+
+// Phones: badges and actions drop under the name instead of pushing the row
+// wider than the screen.
+@media (max-width: 600px) {
+  .teamRow { flex-wrap: wrap; }
+
+  .teamBadges {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    padding-left: 54px; // under the name: avatar 40px + 14px gap
+  }
 }
 
 .roleBadge {

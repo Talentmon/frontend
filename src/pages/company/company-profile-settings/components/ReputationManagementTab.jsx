@@ -1,5 +1,6 @@
 import React from 'react';
 import Icon from 'components/AppIcon';
+import SectionHead from './SectionHead';
 import styles from '../styles/company.module.scss';
 
 const ReputationManagementTab = ({ reputationData }) => {
@@ -44,7 +45,7 @@ const ReputationManagementTab = ({ reputationData }) => {
     <div className={styles.stack}>
       {/* Overall Rating */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>Overall reputation</div>
+        <SectionHead icon="Star" title="Overall reputation" subtitle="How candidates rate working with you" />
 
         <div className={styles.repTop}>
           <div className={styles.repScore}>
@@ -77,13 +78,12 @@ const ReputationManagementTab = ({ reputationData }) => {
 
       {/* Recent Reviews */}
       <div className={styles.card}>
-        <div className={styles.reviewsHead}>
-          <div>
-            <div className={styles.cardTitle} style={{ marginBottom: 0 }}>Recent ratings</div>
-            <div className={styles.cardSub} style={{ margin: '4px 0 0 14px' }}>What candidates say about being hired by you</div>
-          </div>
-          <button className={styles.linkBtn}>Show all ratings</button>
-        </div>
+        <SectionHead
+          icon="MessageSquareQuote"
+          title="Recent ratings"
+          subtitle="What candidates say about being hired by you"
+          aside={<button className={styles.linkBtn}>Show all ratings</button>}
+        />
 
         {reputationData?.recentReviews?.length === 0 && (
           <p style={{ color: '#8693A0', fontSize: '.9rem', padding: '18px 0' }}>No ratings yet.</p>

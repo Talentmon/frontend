@@ -10,6 +10,7 @@ import YourDevicesCard from './YourDevicesCard';
 import styles from '../styles/company.module.scss';
 
 // Billing currency and account deletion are company-wide (owner-only); language and security are each person's own.
+// Saved with the page header's Save button on desktop, the one at the bottom on phones.
 const AccountPreferencesTab = ({
   preferences,
   onPreferencesChange,
@@ -267,8 +268,8 @@ const AccountPreferencesTab = ({
         )}
       </div>
 
-      {/* Save Button */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      {/* Phones/tablets only — on desktop the page header's Save is always in view */}
+      <div className={styles.saveBottom}>
         <button className={styles.btnPrimary} onClick={onSave} disabled={isSaving}>
           <Icon name="Save" size={16} />{isSaving ? 'Saving...' : 'Save settings'}
         </button>

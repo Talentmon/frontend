@@ -155,6 +155,8 @@ export function getMyReviews() {
  * candidate satisfaction, retention rate, successful hires are not tracked
  * anywhere and were dropped from the tab rather than faked).
  */
+const reviewDate = (value) => new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
 export function reviewsToReputationData(data) {
   const reviews = data.reviews || [];
   const recommendCounted = reviews.filter((r) => r.recommend !== null).length;
@@ -165,14 +167,15 @@ export function reviewsToReputationData(data) {
     totalReviews: data.totalReviews,
     ratingBreakdown: data.ratingBreakdown,
     recommendationRate: recommendCounted ? Math.round((recommendYes / recommendCounted) * 100) : 0,
-    recentReviews: reviews.slice(0, 5).map((r) => ({
+    // All of them, newest first — the tab shows two and expands to the rest.
+    reviews: reviews.map((r) => ({
       position: r.roleTitle || 'Position not specified',
       department: r.department || '',
       rating: Math.round((r.ratingProcess + r.ratingComms + r.ratingCulture + r.ratingBenefits) / 4),
       comment: r.comment || '',
       minWageRespected: r.minWageRespected,
-      hiredDate: r.hire?.hireDate ? new Date(r.hire.hireDate).toLocaleDateString() : '—',
-      reviewDate: new Date(r.createdAt).toLocaleDateString(),
+      hiredDate: r.hire?.hireDate ? reviewDate(r.hire.hireDate) : '—',
+      reviewDate: reviewDate(r.createdAt),
     })),
   };
 }

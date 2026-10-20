@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Icon from 'components/AppIcon';
 import SectionHead from './SectionHead';
 import styles from '../styles/company.module.scss';
 
+// Newest ratings shown before "Show all ratings".
+const PREVIEW_COUNT = 2;
+
 const ReputationManagementTab = ({ reputationData }) => {
+  const [showAll, setShowAll] = useState(false);
+  const reviews = reputationData?.reviews || [];
+
   const renderStars = (rating, size = 16) => {
     const stars = [];
     const fullStars = Math.round(rating);
@@ -82,13 +88,17 @@ const ReputationManagementTab = ({ reputationData }) => {
           icon="MessageSquareQuote"
           title="Recent ratings"
           subtitle="What candidates say about being hired by you"
-          aside={<button className={styles.linkBtn}>Show all ratings</button>}
+          aside={reviews.length > PREVIEW_COUNT && (
+            <button type="button" className={styles.linkBtn} onClick={() => setShowAll((v) => !v)}>
+              {showAll ? 'Show fewer' : `Show all ratings (${reviews.length})`}
+            </button>
+          )}
         />
 
-        {reputationData?.recentReviews?.length === 0 && (
+        {reviews.length === 0 && (
           <p style={{ color: '#8693A0', fontSize: '.9rem', padding: '18px 0' }}>No ratings yet.</p>
         )}
-        {reputationData?.recentReviews?.map((review, index) => (
+        {(showAll ? reviews : reviews.slice(0, PREVIEW_COUNT)).map((review, index) => (
           <ReviewCard key={index} review={review} />
         ))}
       </div>

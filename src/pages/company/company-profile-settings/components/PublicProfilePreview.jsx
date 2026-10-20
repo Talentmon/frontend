@@ -226,7 +226,7 @@ const PublicProfilePreview = ({ companyData, reputationData, isVisible, onClose 
                 <span className={styles.dRevLine} />
               </div>
               <div className={styles.dRevGrid}>
-                {reputationData?.recentReviews?.slice(0, 2)?.map((review, index) => (
+                {reputationData?.reviews?.slice(0, 2)?.map((review, index) => (
                   <div key={index} className={styles.dRevCard}>
                     <div className={styles.dRevTop}>
                       <div>

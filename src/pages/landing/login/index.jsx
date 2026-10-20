@@ -875,7 +875,7 @@ const Login = () => {
                       <label className="remember">
                         <input type="checkbox" name="terms" />
                         <span className="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2"><path d="M20 6 9 17l-5-5" /></svg></span>
-                        I agree to the <a href="#terms" onClick={(e) => e.stopPropagation()}>Terms</a> and <a href="#privacy" onClick={(e) => e.stopPropagation()}>Privacy Policy</a>.
+                        I agree to the <a href="/terms-of-service" target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>Terms</a> and <a href="/privacy-policy" target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()}>Privacy Policy</a>.
                       </label>
                       {errors.terms && <span className="field-hint error">{errors.terms}</span>}
                     </div>
@@ -908,7 +908,7 @@ const Login = () => {
                 </div>
 
                 {mode === 'login' && (
-                  <p className="legal">By continuing you agree to our <a href="#terms">Terms</a> and <a href="#privacy">Privacy Policy</a>.</p>
+                  <p className="legal">By continuing you agree to our <a href="/terms-of-service" target="_blank" rel="noreferrer">Terms</a> and <a href="/privacy-policy" target="_blank" rel="noreferrer">Privacy Policy</a>.</p>
                 )}
               </>
             )}

@@ -1,8 +1,22 @@
 import React from 'react';
 import LegalLayout from './LegalLayout';
 
+const KEY_POINTS = [
+  'Talentmon lets companies search an anonymized pool of candidates and spend a credit to unlock a full profile.',
+  'Credits are bought in one-time packages, never expire, and there is no subscription.',
+  'Payments are handled by Paddle, our Merchant of Record, including invoices and VAT.',
+  'Unlocked candidate data is for your own recruiting only: no scraping, reselling or sharing outside your organization.',
+  "Candidates own their profiles and their reviews of companies. A company can't edit or remove reviews.",
+  'You can delete your account at any time. Unused credits are forfeited when a company account is deleted.',
+];
+
 const TermsOfService = () => (
-  <LegalLayout title="Terms of Service" updated="October 2026">
+  <LegalLayout
+    title="Terms of Service"
+    subtitle="The rules for using Talentmon, for companies and candidates alike."
+    updated="October 2026"
+    keyPoints={KEY_POINTS}
+  >
     <p>
       These Terms govern your use of Talentmon (the "Service"), a platform where companies search an
       anonymized pool of candidates and spend credits to unlock full candidate profiles. The Service is
@@ -89,12 +103,6 @@ const TermsOfService = () => (
     <p>
       We may update these Terms from time to time. Continued use of the Service after a change means you
       accept the updated Terms.
-    </p>
-
-    <h2>11. Contact</h2>
-    <p>
-      Talentmon LTD (Talentmon d.o.o.), Republic of Serbia —{' '}
-      <a href="mailto:talentmon.app@gmail.com">talentmon.app@gmail.com</a>
     </p>
   </LegalLayout>
 );

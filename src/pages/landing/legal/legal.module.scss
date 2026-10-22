@@ -1,0 +1,640 @@
+// Public legal pages (Terms, Privacy, Refund) — same ink/gold look and fonts
+// as the landing pages, scoped through CSS Modules.
+$ink: #0B1A2C;
+$ink-2: #10243A;
+$ink-3: #21405E;
+$foot: #08151F;
+$paper: #F2F3F1;
+$white: #FFFFFF;
+$gold: #E6A93C;
+$gold-2: #F2C871;
+$gold-deep: #C98A1F;
+$amber-bg: rgba(230, 169, 60, .12);
+$slate: #566776;
+$slate-2: #8693A0;
+$line: #E1E4E0;
+$line-soft: #ECEEEB;
+$text: #2c3542;
+$text-light: #E9F0F7;
+$text-dim: #9BAEC0;
+$ease: cubic-bezier(.2, .7, .2, 1);
+
+$sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+$display: 'Bricolage Grotesque', sans-serif;
+$mono: 'JetBrains Mono', monospace;
+$nav-h: 68px;
+$two-col-from: 981px;
+
+.page {
+  min-height: 100vh;
+  background: $paper;
+  color: $ink;
+  font-family: $sans;
+  -webkit-font-smoothing: antialiased;
+
+  ::selection { background: $gold; color: $ink; }
+}
+
+// Zero-specificity reset, so .brand, .tab and the rest can set their own colours.
+:where(.page) a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+// ===== Nav =====
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(11, 26, 44, .9);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, .07);
+
+  .wrap {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    height: $nav-h;
+  }
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: .6em;
+  font-family: 'Baloo 2', $display;
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  letter-spacing: -.01em;
+  color: $text-light;
+
+  b { color: $gold; }
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  overflow: hidden;
+
+  img { width: 100%; height: 100%; object-fit: cover; display: block; }
+}
+
+.navLinks {
+  display: flex;
+  gap: 4px;
+  margin-left: auto;
+
+  a {
+    padding: .5em 1em;
+    border-radius: 99px;
+    font-size: .9rem;
+    font-weight: 600;
+    color: $text-dim;
+    transition: color .2s, background-color .2s;
+
+    &:hover { color: $text-light; background: rgba(255, 255, 255, .06); }
+  }
+
+  @media (max-width: 700px) { display: none; }
+}
+
+.navBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: .62em 1.2em;
+  border-radius: 9px;
+  background: $gold;
+  color: #241704 !important;
+  font-size: .9rem;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background-color .2s, transform .2s $ease;
+
+  &:hover { background: $gold-2; transform: translateY(-1px); }
+
+  @media (max-width: 700px) { margin-left: auto; }
+}
+
+// ===== Title band =====
+.hero {
+  position: relative;
+  overflow: hidden;
+  color: $white;
+  background:
+    radial-gradient(640px 300px at 88% -20%, rgba(230, 169, 60, .22), transparent 62%),
+    radial-gradient(520px 260px at 0% 120%, rgba(59, 111, 176, .22), transparent 60%),
+    linear-gradient(160deg, $ink 0%, $ink-2 60%, #132c46 100%);
+  padding: 56px 0 0;
+}
+
+.heroText {
+  max-width: 760px;
+
+  h1 {
+    font-family: $display;
+    font-size: clamp(2.1rem, 4.4vw, 3rem);
+    font-weight: 750;
+    letter-spacing: -.025em;
+    line-height: 1.05;
+    margin: 12px 0 12px;
+  }
+
+  p {
+    font-size: 1.06rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, .7);
+  }
+}
+
+.eyebrow {
+  font-family: $mono;
+  font-size: .72rem;
+  font-weight: 500;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: $gold;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.metaPill,
+.metaBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: .45em;
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: .8rem;
+  font-weight: 600;
+  border: 1px solid rgba(255, 255, 255, .14);
+}
+
+.metaPill {
+  background: rgba(255, 255, 255, .06);
+  color: rgba(255, 255, 255, .82);
+
+  svg { color: $gold-2; }
+}
+
+.metaBtn {
+  background: transparent;
+  color: rgba(255, 255, 255, .7);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color .2s, border-color .2s, background-color .2s;
+
+  &:hover { color: $white; border-color: rgba(255, 255, 255, .35); background: rgba(255, 255, 255, .05); }
+}
+
+// Document switcher sitting on the band's bottom edge.
+.tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 40px;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar { display: none; }
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: .5em;
+  flex: none;
+  padding: 13px 18px;
+  border-radius: 12px 12px 0 0;
+  font-size: .9rem;
+  font-weight: 600;
+  color: $text-dim;
+  transition: color .2s, background-color .2s;
+
+  &:hover { color: $text-light; background: rgba(255, 255, 255, .05); }
+}
+
+.tabOn,
+.tabOn:hover {
+  background: $paper;
+  color: $ink;
+
+  svg { color: $gold-deep; }
+}
+
+// Phones: "Terms / Privacy / Refunds" so all three tabs fit.
+.tabShort { display: none; }
+
+@media (max-width: 560px) {
+  .tabs { gap: 2px; }
+  .tab { padding: 12px 14px; }
+  .tabLong { display: none; }
+  .tabShort { display: inline; }
+}
+
+// ===== Layout =====
+.layout {
+  display: grid;
+  grid-template-columns: 230px minmax(0, 1fr);
+  gap: 48px;
+  align-items: start;
+  padding-top: 40px;
+  padding-bottom: 96px;
+
+  @media (max-width: #{$two-col-from - 1px}) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding-top: 24px;
+  }
+}
+
+.side {
+  position: sticky;
+  top: $nav-h + 28px;
+
+  @media (max-width: #{$two-col-from - 1px}) { display: none; }
+}
+
+.sideTitle {
+  margin: 0 0 12px 12px;
+  font-family: $mono;
+  font-size: .7rem;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: $slate-2;
+}
+
+.tocList {
+  display: grid;
+  gap: 1px;
+  border-left: 1px solid $line;
+
+  button {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    width: 100%;
+    margin-left: -1px;
+    padding: 7px 12px;
+    border-left: 2px solid transparent;
+    background: none;
+    font: inherit;
+    font-size: .86rem;
+    line-height: 1.4;
+    color: $slate;
+    text-align: left;
+    cursor: pointer;
+    transition: color .2s, border-color .2s;
+
+    &:hover { color: $ink; }
+  }
+
+  .tocOn {
+    border-left-color: $gold;
+    color: $ink;
+    font-weight: 700;
+
+    .tocNum { color: $gold-deep; }
+  }
+}
+
+.tocNum {
+  flex: none;
+  min-width: 1.2em;
+  font-family: $mono;
+  font-size: .74rem;
+  color: $slate-2;
+}
+
+// ===== Document sheet =====
+.doc {
+  min-width: 0;
+  max-width: 800px;
+  padding: 48px 56px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, .04), 0 30px 60px -44px rgba(11, 26, 44, .45);
+
+  @media (max-width: 760px) { padding: 28px 22px; border-radius: 16px; }
+}
+
+// Phones/tablets: the table of contents folds into the top of the sheet.
+.tocMobile {
+  display: none;
+  margin-bottom: 24px;
+  border: 1px solid $line;
+  border-radius: 12px;
+
+  summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px;
+    font-size: .9rem;
+    font-weight: 700;
+    cursor: pointer;
+    list-style: none;
+
+    &::-webkit-details-marker { display: none; }
+    svg:first-child { color: $gold-deep; }
+  }
+
+  .tocList {
+    margin: 0 14px 12px;
+  }
+
+  &[open] .tocCaret { transform: rotate(180deg); }
+
+  @media (max-width: #{$two-col-from - 1px}) { display: block; }
+}
+
+.tocCaret {
+  margin-left: auto;
+  color: $slate-2;
+  transition: transform .2s;
+}
+
+// ===== Key points =====
+.keyPoints {
+  position: relative;
+  margin-bottom: 40px;
+  padding: 24px 26px 20px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(242, 200, 113, .16), rgba(230, 169, 60, .08));
+  border: 1px solid rgba(230, 169, 60, .35);
+
+  ul {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  li {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    font-size: .95rem;
+    line-height: 1.6;
+    color: $text;
+
+    svg { flex: none; margin-top: 4px; color: $gold-deep; }
+  }
+}
+
+.keyHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.keyIcon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: $gold;
+  color: $ink;
+}
+
+.keyTitle {
+  font-family: $display;
+  font-size: 1.12rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.keyNote {
+  margin: 14px 0 0;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(201, 138, 31, .35);
+  font-size: .8rem;
+  color: $slate;
+}
+
+// ===== Legal text =====
+.body {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: $text;
+
+  > p:first-child {
+    font-size: 1.06rem;
+    color: $ink;
+  }
+
+  p { margin: 0 0 16px; }
+
+  h2 {
+    scroll-margin-top: $nav-h + 24px;
+    margin: 40px 0 12px;
+    padding-top: 32px;
+    border-top: 1px solid $line-soft;
+    font-family: $display;
+    font-size: 1.32rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    line-height: 1.25;
+    color: $ink;
+  }
+
+  ul {
+    margin: 0 0 16px;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  li {
+    position: relative;
+    margin-bottom: 8px;
+    padding-left: 22px;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 4px;
+      top: .72em;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $gold;
+    }
+  }
+
+  b, strong { color: $ink; font-weight: 700; }
+
+  a {
+    color: $gold-deep;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(201, 138, 31, .35);
+    text-underline-offset: 3px;
+    transition: text-decoration-color .2s;
+
+    &:hover { text-decoration-color: $gold-deep; }
+  }
+}
+
+// ===== Contact card =====
+.contact {
+  scroll-margin-top: $nav-h + 24px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 18px;
+  margin-top: 44px;
+  padding: 24px 26px;
+  border-radius: 16px;
+  color: $white;
+  background:
+    radial-gradient(420px 200px at 100% 0%, rgba(230, 169, 60, .2), transparent 62%),
+    linear-gradient(140deg, $ink, $ink-2);
+}
+
+.contactIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, $gold-2, $gold);
+  color: $ink;
+}
+
+.contactText {
+  flex: 1 1 240px;
+  min-width: 0;
+
+  h3 {
+    font-family: $display;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0 0 2px;
+  }
+
+  p {
+    margin: 0;
+    font-size: .88rem;
+    color: rgba(255, 255, 255, .66);
+  }
+}
+
+.contactBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: .5em;
+  max-width: 100%;
+  padding: .72em 1.2em;
+  border-radius: 9px;
+  background: $gold;
+  color: #241704 !important;
+  font-size: .9rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  transition: background-color .2s, transform .2s $ease;
+
+  &:hover { background: $gold-2; transform: translateY(-1px); }
+}
+
+// ===== Footer =====
+.foot {
+  background: $foot;
+  color: $text-dim;
+  padding: 56px 0 30px;
+}
+
+.footGrid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 38px;
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+
+  @media (max-width: 900px) { grid-template-columns: 1fr 1fr; gap: 30px; }
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.footTag {
+  max-width: 290px;
+  margin-top: 14px;
+  font-size: .9rem;
+  line-height: 1.6;
+  color: $slate-2;
+}
+
+.footCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 11px;
+
+  h4 {
+    margin: 0 0 5px;
+    font-size: .76rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: $text-light;
+  }
+
+  a, span {
+    font-size: .9rem;
+    color: $slate-2;
+    overflow-wrap: anywhere;
+  }
+
+  a { transition: color .2s; &:hover { color: $text-light; } }
+}
+
+.footBottom {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 10px 24px;
+  padding-top: 24px;
+  font-size: .8rem;
+  color: $slate-2;
+}
+
+// ===== Print: just the document =====
+@media print {
+  .nav, .tabs, .meta, .side, .tocMobile, .foot { display: none !important; }
+
+  // Keep the email on paper, as plain text.
+  .contactBtn {
+    padding: 0;
+    background: none !important;
+    color: $ink !important;
+    svg { display: none; }
+  }
+
+  .page, .hero { background: $white !important; color: $ink !important; }
+  .hero { padding: 0 0 12px; }
+  .heroText p { color: $slate !important; }
+  .layout { display: block; padding: 0; }
+  .doc { max-width: none; padding: 0; border: 0; box-shadow: none; }
+  .keyPoints { background: none; border-color: $line; }
+  .contact { background: none !important; color: $ink !important; padding: 16px 0 0; border-top: 1px solid $line; border-radius: 0; }
+  .contactText p { color: $slate !important; }
+  .contactIcon { display: none; }
+  .body h2 { break-after: avoid; }
+}

@@ -1,8 +1,22 @@
 import React from 'react';
 import LegalLayout from './LegalLayout';
 
+const KEY_POINTS = [
+  'We collect what we need to run Talentmon: account details, CV and company profile data, sign-in and usage data.',
+  'Candidate profiles stay anonymous (no name, contact details or employers) until a company unlocks them.',
+  'We never see or store your full card number. Payments are handled by Paddle.',
+  "We don't sell your data. We share it only with the providers that run the service, listed in section 6.",
+  'We use only the cookies needed to keep you signed in. No advertising or tracking cookies.',
+  'You can access, correct or delete your data at any time.',
+];
+
 const PrivacyPolicy = () => (
-  <LegalLayout title="Privacy Policy" updated="October 2026">
+  <LegalLayout
+    title="Privacy Policy"
+    subtitle="What we collect, why we need it, and what happens to it."
+    updated="October 2026"
+    keyPoints={KEY_POINTS}
+  >
     <p>
       This policy explains what information Talentmon collects, why, and how it's used. It applies to both
       candidate and company accounts. Talentmon LTD (Talentmon d.o.o.), registered in the Republic of Serbia,
@@ -91,12 +105,6 @@ const PrivacyPolicy = () => (
     <p>
       You can access, correct, or delete your data at any time through your account, or by contacting us
       directly.
-    </p>
-
-    <h2>10. Contact</h2>
-    <p>
-      Talentmon LTD (Talentmon d.o.o.), Republic of Serbia —{' '}
-      <a href="mailto:talentmon.app@gmail.com">talentmon.app@gmail.com</a>
     </p>
   </LegalLayout>
 );

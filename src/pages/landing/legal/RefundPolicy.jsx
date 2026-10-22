@@ -1,8 +1,21 @@
 import React from 'react';
 import LegalLayout from './LegalLayout';
 
+const KEY_POINTS = [
+  'Credits you haven’t spent can be refunded within 14 days of purchase.',
+  'Credits already spent on unlocking a profile are not refundable.',
+  'Unused credits are forfeited when a company account is deleted, so request a refund first.',
+  'Charged but no credits added? Contact us and we’ll correct the balance or refund you.',
+  'Email us or use the Paddle receipt link. Approved refunds arrive within 5–10 business days.',
+];
+
 const RefundPolicy = () => (
-  <LegalLayout title="Refund Policy" updated="October 2026">
+  <LegalLayout
+    title="Refund Policy"
+    subtitle="When you can get your money back for Credits, and how to ask for it."
+    updated="October 2026"
+    keyPoints={KEY_POINTS}
+  >
     <p>
       Talentmon is operated by Talentmon LTD (Talentmon d.o.o.), Republic of Serbia. All credit purchases on
       Talentmon are processed by Paddle.com Market Limited, our reseller and Merchant of Record. Paddle handles

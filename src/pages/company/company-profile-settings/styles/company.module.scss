@@ -483,6 +483,19 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   margin: 0;
 }
 
+.onboardGuide {
+  display: inline-flex;
+  align-items: center;
+  gap: .35em;
+  margin-top: 6px;
+  font-size: .84rem;
+  font-weight: 600;
+  color: $gold-deep;
+  transition: gap .2s $ease, color .2s;
+
+  &:hover { color: $ink; gap: .55em; }
+}
+
 .onboardMissing {
   display: flex;
   flex-wrap: wrap;

@@ -25,6 +25,7 @@ import CreditManagement from './pages/company/credit-management';
 import CandidateSearchDashboard from './pages/company/candidate-search-dashboard';
 import PurchasedProfiles from './pages/company/purchased-profiles';
 import CompanyProfileSettings from './pages/company/company-profile-settings';
+import CompanyHelp from './pages/company/help';
 
 // Candidate-facing
 import CandidateProfile from './pages/candidate/candidate-profile';
@@ -62,6 +63,8 @@ const Routes = () => {
         <Route path="/candidate-search-dashboard" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CandidateSearchDashboard /></RequireAuth>} />
         <Route path="/purchased-profiles" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><PurchasedProfiles /></RequireAuth>} />
         <Route path="/company-profile-settings" element={<RequireAuth roles={['COMPANY']}><CompanyProfileSettings /></RequireAuth>} />
+        {/* No requireCompleteProfile: the guide is most useful while the profile is still being filled in */}
+        <Route path="/help" element={<RequireAuth roles={['COMPANY']}><CompanyHelp /></RequireAuth>} />
 
         {/* Candidate-facing */}
         <Route path="/candidate-profile" element={<RequireAuth roles={['CANDIDATE']}><CandidateProfile /></RequireAuth>} />

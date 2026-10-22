@@ -309,6 +309,10 @@ const CompanyProfileSettings = () => {
                 Fill in the required fields marked with <span className={styles.req}>*</span> and save.
                 Search, Bookmarked, Purchased and Credits unlock as soon as your profile is complete.
               </p>
+              <button type="button" className={styles.onboardGuide} onClick={() => navigate('/help')}>
+                Not sure where to start? Read the guide
+                <Icon name="ArrowRight" size={14} />
+              </button>
               {companyData.missingFields.length > 0 && (
                 <div className={styles.onboardMissing}>
                   <span>Still missing:</span>

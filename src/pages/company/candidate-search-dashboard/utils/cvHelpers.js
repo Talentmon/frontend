@@ -60,7 +60,7 @@ export const jobTypeLabels = {
   freelance: 'Freelance'
 };
 
-// Deterministic "Candidate · TC-XXXX" style code shown instead of the real
-// name until the profile is unlocked, matching the candidate-profile page's
+// "Candidate · TC-XXXX" code shown instead of the real name until the profile
+// is unlocked — the backend's anonCode, same as the candidate-profile page's
 // anonymous view.
-export const candidateCode = (candidate) => `TC-${7700 + (candidate?.id ?? 0)}`;
+export const candidateCode = (candidate) => candidate?.anonCode || 'TC-····';

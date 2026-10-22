@@ -2052,7 +2052,8 @@ $push-bp: 1320px;
   color: $ink;
 }
 
-.cand span {
+// Only the position line — a bare `.cand span` also caught the avatar and the company name.
+.cand > div > span {
   display: block;
   font-size: 0.82rem;
   color: $slate;

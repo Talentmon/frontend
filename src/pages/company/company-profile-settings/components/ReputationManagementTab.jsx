@@ -48,7 +48,7 @@ const ReputationManagementTab = ({ reputationData }) => {
 
               return (
                 <div key={star} className={styles.repRow}>
-                  <span className={styles.repRowLab}>{star}<Icon name="Star" size={11} /></span>
+                  <span className={styles.repRowLab}><span className={styles.repRowDigit}>{star}</span><Icon name="Star" size={11} /></span>
                   <span className={styles.repBar}><i style={{ width: `${percentage}%` }} /></span>
                   <span className={styles.repNum}>{count}</span>
                 </div>

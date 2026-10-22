@@ -668,13 +668,22 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
 }
 
 .repRowLab {
-  width: 18px;
+  width: 24px;
   color: $slate;
   display: flex;
   align-items: center;
-  gap: 2px;
+  justify-content: flex-end;
+  gap: 3px;
 
-  svg { color: $gold; }
+  // flex: none — a wide digit must not squeeze the star narrower than the "1" row's
+  svg { color: $gold; flex: none; }
+}
+
+// Fixed box with the digit centred, so 5…1 share one centre line.
+.repRowDigit {
+  flex: none;
+  width: 10px;
+  text-align: center;
 }
 
 .repBar {

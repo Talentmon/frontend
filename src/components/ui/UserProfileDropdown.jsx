@@ -25,12 +25,6 @@ const UserProfileDropdown = () => {
       path: '/help',
       icon: 'HelpCircle',
       description: 'Get assistance'
-    },
-    {
-      name: 'Documentation',
-      path: '/docs',
-      icon: 'FileText',
-      description: 'API and guides'
     }
   ];
 
@@ -55,6 +49,11 @@ const UserProfileDropdown = () => {
     setIsOpen(false);
     await signOut();
     navigate('/login');
+  };
+
+  const handleNavigate = (path) => {
+    setIsOpen(false);
+    navigate(path);
   };
 
   const isActivePath = (path) => {
@@ -112,20 +111,19 @@ const UserProfileDropdown = () => {
           {/* Menu Items */}
           <div className="p-2">
             {menuItems?.map((item) => (
-              <a
+              <button
                 key={item?.path}
-                href={item?.path}
-                onClick={() => setIsOpen(false)}
-                className={`flex items-center space-x-3 px-3 py-3 rounded-lg text-sm transition-all duration-200 hover:bg-muted ${
+                onClick={() => handleNavigate(item?.path)}
+                className={`flex items-center space-x-3 w-full px-3 py-3 rounded-lg text-sm transition-all duration-200 hover:bg-muted ${
                   isActivePath(item?.path) ? 'bg-muted' : ''
                 }`}
               >
                 <Icon name={item?.icon} size={18} color="var(--color-muted-foreground)" />
-                <div className="flex-1">
+                <div className="flex-1 text-left">
                   <div className="font-medium text-popover-foreground">{item?.name}</div>
                   <div className="text-xs text-muted-foreground">{item?.description}</div>
                 </div>
-              </a>
+              </button>
             ))}
           </div>
 

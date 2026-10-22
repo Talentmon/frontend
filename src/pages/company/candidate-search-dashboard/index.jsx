@@ -10,6 +10,7 @@ import BuyCreditsModal from './components/BuyCreditsModal';
 import Toast from './components/Toast';
 import styles from './styles/dashboard.module.scss';
 import { addNotification } from 'utils/notificationStore';
+import { formatCredits } from 'utils/formatCredits';
 import {
   searchCandidates,
   candidateToFrontend,
@@ -191,7 +192,7 @@ const CandidateSearchDashboard = () => {
         time: 'Just now'
       });
 
-      showToast(`Candidate unlocked · ${UNLOCK_COST} Credits spent`);
+      showToast(`Candidate unlocked · ${formatCredits(UNLOCK_COST)} spent`);
     } catch (err) {
       showToast(err?.response?.data?.message || 'Could not unlock this profile — please try again.');
       throw err;

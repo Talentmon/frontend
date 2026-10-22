@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Icon from 'components/AppIcon';
+import { formatCredits } from 'utils/formatCredits';
 import styles from '../styles/purchased.module.scss';
 
 const STATUS_LABEL = {
@@ -137,7 +138,7 @@ const PurchaseHistorySidebar = ({
               key={i}
               className={styles.sparkCol}
               style={{ height: `${Math.max((m?.credits / maxCredits) * 100, 6)}%` }}
-              title={`${m?.month}: ${m?.credits} Credits`}
+              title={`${m?.month}: ${formatCredits(m?.credits)}`}
             />
           ))}
         </div>

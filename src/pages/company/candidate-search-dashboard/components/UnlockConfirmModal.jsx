@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
+import { formatCredits } from 'utils/formatCredits';
 import styles from '../styles/dashboard.module.scss';
 
 const UnlockConfirmModal = ({ candidate, creditCost, balance, onConfirm, onClose }) => {
@@ -62,11 +63,11 @@ const UnlockConfirmModal = ({ candidate, creditCost, balance, onConfirm, onClose
               </div>
               <div className={styles.unlockRow}>
                 <span className={styles.k}>Price</span>
-                <span className={`${styles.v} ${styles.vGold}`}>{creditCost} Credits</span>
+                <span className={`${styles.v} ${styles.vGold}`}>{formatCredits(creditCost)}</span>
               </div>
               <div className={styles.unlockRow}>
                 <span className={styles.k}>Balance after</span>
-                <span className={styles.v}>{Math.max(balance - creditCost, 0)} Credits</span>
+                <span className={styles.v}>{formatCredits(Math.max(balance - creditCost, 0))}</span>
               </div>
             </div>
 

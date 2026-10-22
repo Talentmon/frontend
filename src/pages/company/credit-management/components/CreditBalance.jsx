@@ -1,5 +1,6 @@
 import React from 'react';
 import Icon from 'components/AppIcon';
+import { creditWord } from 'utils/formatCredits';
 import styles from '../styles/credits.module.scss';
 
 const CreditBalance = ({ balance, isLowBalance }) => {
@@ -18,7 +19,7 @@ const CreditBalance = ({ balance, isLowBalance }) => {
 
       <div className={`${styles.balBigVal} ${isLowBalance ? styles.warn : ''}`}>
         {balance?.toLocaleString('sr-RS')}
-        <span>Credits</span>
+        <span>{creditWord(balance)}</span>
       </div>
       <div className={styles.balBigMeta}>1 Credit = 1 unlock</div>
 

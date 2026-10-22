@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
+import { formatCredits } from 'utils/formatCredits';
 import { formatPrice, getTransactions, transactionToFrontend } from '../creditsApi';
 import styles from '../styles/credits.module.scss';
 
@@ -103,12 +104,12 @@ const TransactionHistory = () => {
 
                   <div className={styles.ha}>
                     <div className={`${styles.haAmt} ${styles[cls]}`}>
-                      {transaction?.amount > 0 ? '+' : ''}{transaction?.amount} Credits
+                      {transaction?.amount > 0 ? '+' : ''}{formatCredits(transaction?.amount)}
                     </div>
                     {transaction?.cost && (
                       <div className={styles.haCost}>{formatPrice(transaction?.cost, transaction?.currency)}</div>
                     )}
-                    <div className={styles.haBal}>Balance: {transaction?.balanceAfter} Credits</div>
+                    <div className={styles.haBal}>Balance: {formatCredits(transaction?.balanceAfter)}</div>
                   </div>
                 </div>
               );

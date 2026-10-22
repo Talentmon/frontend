@@ -8,6 +8,7 @@ import AutoRenewalSettings from './components/AutoRenewalSettings';
 import PaymentMethods from './components/PaymentMethods';
 import Icon from 'components/AppIcon';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
+import { creditWord, formatCredits } from 'utils/formatCredits';
 import { formatPrice, getBalance, getUsageAnalytics } from './creditsApi';
 import styles from './styles/credits.module.scss';
 
@@ -84,7 +85,7 @@ const CreditManagement = () => {
                 <div className={styles.qstats}>
                   <div className={styles.qstat}>
                     <span className={styles.qstatL}>Used this month</span>
-                    <span className={styles.qstatV}>{quickStats ? `${quickStats.usedThisMonth} Credits` : '—'}</span>
+                    <span className={styles.qstatV}>{quickStats ? formatCredits(quickStats.usedThisMonth) : '—'}</span>
                   </div>
                   <div className={styles.qstat}>
                     <span className={styles.qstatL}>Profiles unlocked</span>
@@ -92,7 +93,7 @@ const CreditManagement = () => {
                   </div>
                   <div className={styles.qstat}>
                     <span className={styles.qstatL}>Average monthly spend</span>
-                    <span className={styles.qstatV}>{quickStats ? `${quickStats.avgUsed} Credits` : '—'}</span>
+                    <span className={styles.qstatV}>{quickStats ? formatCredits(quickStats.avgUsed) : '—'}</span>
                   </div>
                   <div className={styles.qstat}>
                     <span className={styles.qstatL}>Hires this month</span>
@@ -160,7 +161,7 @@ const CreditManagement = () => {
             <div className={`${styles.balChip} ${isLowBalance ? styles.low : ''}`}>
               <span className={styles.coin}></span>
               <span>{currentBalance?.toLocaleString('sr-RS')}</span>
-              <span className={styles.balChipUnit}>Credits</span>
+              <span className={styles.balChipUnit}>{creditWord(currentBalance)}</span>
             </div>
 
             <button className={styles.btnPrimary} onClick={() => setActiveTab('purchase')}>
@@ -206,7 +207,7 @@ const CreditManagement = () => {
                 <h2 className={styles.modalTitle}>Payment successful</h2>
                 <p className={styles.modalSub}>
                   {purchaseResult.credited
-                    ? <>Your <b>+{selectedPackage?.credits} Credits</b> are now available.</>
+                    ? <>Your <b>+{formatCredits(selectedPackage?.credits)}</b> {selectedPackage?.credits === 1 ? 'is' : 'are'} now available.</>
                     : 'Your card was charged — credits will appear on your balance shortly.'}
                 </p>
                 <div className={styles.modalActions}>

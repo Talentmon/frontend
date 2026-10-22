@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
+import { creditWord, formatCredits } from 'utils/formatCredits';
 import dashboardStyles from '../../candidate-search-dashboard/styles/dashboard.module.scss';
 import styles from '../styles/bookmarked.module.scss';
 
@@ -107,7 +108,7 @@ const BulkActionsToolbar = ({
 
             {selectedCandidates?.length > 0 && (
               <span className={styles.bulkInfo}>
-                {selectedCandidates?.length} not unlocked • {unlockCost} Credits needed
+                {selectedCandidates?.length} not unlocked • {formatCredits(unlockCost)} needed
               </span>
             )}
           </div>
@@ -159,7 +160,7 @@ const BulkActionsToolbar = ({
             </div>
 
             <p className={dashboardStyles.unlockSub}>
-              You have <b>{creditBalance}</b> Credits, but unlocking all {selectedCount} selected candidates needs <b>{unlockCost}</b>.
+              You have <b>{creditBalance}</b> {creditWord(creditBalance)}, but unlocking all {selectedCount} selected candidates needs <b>{unlockCost}</b>.
             </p>
 
             <div className={dashboardStyles.unlockNote}>
@@ -225,11 +226,11 @@ const BulkActionsToolbar = ({
               </div>
               <div className={dashboardStyles.unlockRow}>
                 <span className={dashboardStyles.k}>Price</span>
-                <span className={`${dashboardStyles.v} ${dashboardStyles.vGold}`}>{unlockCost} Credits</span>
+                <span className={`${dashboardStyles.v} ${dashboardStyles.vGold}`}>{formatCredits(unlockCost)}</span>
               </div>
               <div className={dashboardStyles.unlockRow}>
                 <span className={dashboardStyles.k}>Balance after</span>
-                <span className={dashboardStyles.v}>{Math.max(creditBalance - unlockCost, 0)} Credits</span>
+                <span className={dashboardStyles.v}>{formatCredits(Math.max(creditBalance - unlockCost, 0))}</span>
               </div>
             </div>
 

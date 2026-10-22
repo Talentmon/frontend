@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
 import { useCurrentUser } from 'lib/CurrentUserContext';
+import { formatCredits } from 'utils/formatCredits';
 import { formatPrice, getAutoRenewal, updateAutoRenewal, listPackages, packageToFrontend } from '../creditsApi';
 import styles from '../styles/credits.module.scss';
 
@@ -33,7 +34,7 @@ const AutoRenewalSettings = () => {
 
   const packageOptions = packages.map((p) => ({
     value: p.id,
-    label: `${p.name} (${p.credits} Credits · ${formatPrice(p.price, p.currency)})`,
+    label: `${p.name} (${formatCredits(p.credits)} · ${formatPrice(p.price, p.currency)})`,
   }));
   const selectedPkgObj = useMemo(() => packages.find((p) => p.id === selectedPackage), [packages, selectedPackage]);
 
@@ -153,9 +154,9 @@ const AutoRenewalSettings = () => {
                 <div>
                   <b style={{ display: 'block', marginBottom: 4 }}>Settings preview:</b>
                   <ul>
-                    <li>• When balance drops to {thresholdAmount} Credits</li>
+                    <li>• When balance drops to {formatCredits(thresholdAmount)}</li>
                     <li>• {
-                      selectedPkgObj ? `${selectedPkgObj.credits} Credits (${formatPrice(selectedPkgObj.price, selectedPkgObj.currency)})` : '—'
+                      selectedPkgObj ? `${formatCredits(selectedPkgObj.credits)} (${formatPrice(selectedPkgObj.price, selectedPkgObj.currency)})` : '—'
                     } will be purchased automatically</li>
                     <li>• Notifications: {
                       emailNotifications && smsNotifications ? 'Email and SMS' :

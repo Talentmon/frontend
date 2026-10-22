@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
+import { creditWord } from 'utils/formatCredits';
 import { getUsageAnalytics } from '../creditsApi';
 
 /** "€", "$", "£", "CN¥" — the symbol Intl uses for the currency in en-US. */
@@ -134,7 +135,7 @@ const UsageAnalytics = () => {
               <span className={`${styles.recIcon} ${styles.r1}`}><Icon name="TrendingUp" size={16} /></span>
               <div className={styles.recBody}>
                 <b>Track your trend</b>
-                <span>{averageMonthlyUsage} Credits/month on average over this period.</span>
+                <span>{averageMonthlyUsage} {creditWord(averageMonthlyUsage)}/month on average over this period.</span>
               </div>
             </div>
 

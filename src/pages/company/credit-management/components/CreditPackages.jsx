@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
+import { creditWord } from 'utils/formatCredits';
 import { formatPrice, getPackageBookmarkBonuses, listPackages, packageToFrontend } from '../creditsApi';
 import styles from '../styles/credits.module.scss';
 
@@ -78,7 +79,7 @@ const CreditPackages = ({ onPurchase }) => {
             <div className={styles.pkgCredits}>
               <Icon name="Coins" size={20} />
               <b>{pkg?.credits}</b>
-              <span>Credits</span>
+              <span>{creditWord(pkg?.credits)}</span>
             </div>
 
             {pkg?.bookmarkBonus > 0 && (

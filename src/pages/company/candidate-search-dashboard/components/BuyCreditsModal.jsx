@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Icon from 'components/AppIcon';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
+import { creditWord, formatCredits } from 'utils/formatCredits';
 import { formatPrice } from 'pages/company/credit-management/creditsApi';
 import styles from '../styles/dashboard.module.scss';
 
@@ -26,7 +27,7 @@ const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => 
           {done ? (
             <>
               <h3 className={styles.modalTitle}>Payment successful</h3>
-              <p className={styles.buyBal}>Your credits have been added.</p>
+              <p className={styles.buyBal}>Your Credits have been added.</p>
               <div className={styles.buyConfirmActions}>
                 <button className={styles.btnGo} onClick={onClose}>
                   Done
@@ -35,7 +36,7 @@ const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => 
             </>
           ) : (
             <>
-              <h3 className={styles.modalTitle}>Buy {selectedPackage?.credits} credits</h3>
+              <h3 className={styles.modalTitle}>Buy {formatCredits(selectedPackage?.credits)}</h3>
               <p className={styles.buyBal}>
                 <b>{formatPrice(selectedPackage?.price, selectedPackage?.currency)}</b> · {formatPrice(selectedPackage?.pricePerCredit, selectedPackage?.currency, { cents: true })} / unlock
               </p>
@@ -66,7 +67,7 @@ const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => 
 
         <h3 className={styles.modalTitle}>Buy Credits</h3>
         <p className={styles.buyBal}>
-          Current balance: <b>{balance}</b> credits · 1 credit = 1 unlock
+          Current balance: <b>{balance}</b> {creditWord(balance)} · 1 Credit = 1 unlock
         </p>
 
         {packages?.length === 0 ? (
@@ -80,7 +81,7 @@ const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => 
                 onClick={() => setSelectedPackage(pkg)}
               >
                 <div className={styles.pkgLeft}>
-                  <b>{pkg?.credits} credits</b>
+                  <b>{formatCredits(pkg?.credits)}</b>
                   {pkg?.popular && <span className={styles.pkgBadge}>POPULAR</span>}
                   <span className={styles.pkgUnit}>{formatPrice(pkg?.pricePerCredit, pkg?.currency, { cents: true })} / unlock</span>
                 </div>

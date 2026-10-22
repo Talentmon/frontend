@@ -3,15 +3,9 @@ import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import Stars from '../../../candidate/company-details/Stars';
 import { COMPANY_SIZE_OPTIONS } from '../companyApi';
+import ReviewCard from './ReviewCard';
 import styles from '../styles/company.module.scss';
 import './previewStars.css';
-
-const CATS = [
-  { key: 'process', label: 'Hiring process' },
-  { key: 'comms', label: 'Communication' },
-  { key: 'culture', label: 'Work culture' },
-  { key: 'benefits', label: 'Benefits' },
-];
 
 // green on a high percentage, amber in the middle, red at 60% and below
 const wageRateClass = (pct) => (pct <= 60 ? 'red' : pct < 85 ? 'amber' : 'green');
@@ -227,35 +221,7 @@ const PublicProfilePreview = ({ companyData, reputationData, isVisible, onClose 
               </div>
               <div className={styles.dRevGrid}>
                 {reputationData?.reviews?.slice(0, 2)?.map((review, index) => (
-                  <div key={index} className={styles.dRevCard}>
-                    <div className={styles.dRevTop}>
-                      <div>
-                        <div className={styles.dRevRole}>{review?.position}</div>
-                        <div className={styles.dRevDept}>{review?.department}</div>
-                      </div>
-                      <div className={styles.dRevOverall}>
-                        <span className={styles.dRevNum}>{(review?.rating ?? 0).toFixed(1)}</span>
-                        <span className="ppStars sm"><Stars rating={review?.rating ?? 0} /></span>
-                      </div>
-                    </div>
-
-                    {review?.cats && (
-                      <div className={styles.dRevCats}>
-                        {CATS.map((cat) => (
-                          <div key={cat.key} className={styles.dRevCat}>
-                            <span className={styles.dRevCatLabel}>{cat.label}</span>
-                            <span className="ppStars sm"><Stars rating={review.cats[cat.key] ?? 0} /></span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    <p className={styles.dRevText}>{review?.comment}</p>
-                    <div className={`${styles.dRevWage} ${review?.minWageRespected ? styles.ok : styles.bad}`}>
-                      {review?.minWageRespected ? '✓ Minimum salary from profile: honored' : '✗ Minimum salary from profile: not honored'}
-                    </div>
-                    <div className={styles.dRevDate}>{review?.reviewDate}</div>
-                  </div>
+                  <ReviewCard key={index} review={review} />
                 ))}
               </div>
             </>

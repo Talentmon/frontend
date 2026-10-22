@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Icon from 'components/AppIcon';
 import SectionHead from './SectionHead';
+import ReviewCard from './ReviewCard';
 import styles from '../styles/company.module.scss';
 
 // Newest ratings shown before "Show all ratings".
@@ -26,26 +27,6 @@ const ReputationManagementTab = ({ reputationData }) => {
     }
     return stars;
   };
-
-  const ReviewCard = ({ review }) => (
-    <div className={styles.review}>
-      <div className={styles.reviewTop}>
-        <div>
-          <b>{review?.position}</b>
-          <div className={styles.reviewRole}>{review?.department}</div>
-        </div>
-        <span className={styles.reviewStars}>{'★'.repeat(review?.rating)}{'☆'.repeat(5 - review?.rating)}</span>
-      </div>
-      <p className={styles.reviewText}>{review?.comment}</p>
-      <div className={`${styles.reviewWage} ${review?.minWageRespected ? styles.ok : styles.bad}`}>
-        {review?.minWageRespected ? '✓ Minimum salary from profile: honored' : '✗ Minimum salary from profile: not honored'}
-      </div>
-      <div className={styles.reviewMeta}>
-        <span>Hired: {review?.hiredDate}</span>
-        <span>{review?.reviewDate}</span>
-      </div>
-    </div>
-  );
 
   return (
     <div className={styles.stack}>
@@ -98,9 +79,13 @@ const ReputationManagementTab = ({ reputationData }) => {
         {reviews.length === 0 && (
           <p style={{ color: '#8693A0', fontSize: '.9rem', padding: '18px 0' }}>No ratings yet.</p>
         )}
-        {(showAll ? reviews : reviews.slice(0, PREVIEW_COUNT)).map((review, index) => (
-          <ReviewCard key={index} review={review} />
-        ))}
+        {reviews.length > 0 && (
+          <div className={`${styles.dRevGrid} ${styles.dRevGridTight}`}>
+            {(showAll ? reviews : reviews.slice(0, PREVIEW_COUNT)).map((review, index) => (
+              <ReviewCard key={index} review={review} />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

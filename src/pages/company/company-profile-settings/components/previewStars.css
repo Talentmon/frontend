@@ -13,9 +13,14 @@
   display: block;
   overflow: hidden;
 }
+/* review card: overall rating / per-category rating */
 .ppStars.sm svg {
-  width: 13px;
-  height: 13px;
+  width: 14px;
+  height: 14px;
+}
+.ppStars.xs svg {
+  width: 12px;
+  height: 12px;
 }
 .ppStars svg.empty {
   fill: currentColor;

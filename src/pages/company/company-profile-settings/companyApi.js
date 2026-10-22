@@ -1,6 +1,7 @@
 import apiClient from 'lib/apiClient';
 import { ACCEPTED_IMAGE_TYPES, resizeImageToWebp } from 'utils/resizeImage';
 import { INDUSTRY_NAMES } from 'utils/industries';
+import { shortDate } from 'utils/formatDate';
 
 export const INDUSTRY_OPTIONS = INDUSTRY_NAMES.map((name) => ({ value: name, label: name }));
 
@@ -150,32 +151,34 @@ export function getMyReviews() {
 }
 
 /**
- * Maps `GET /companies/me/reviews` onto the shape ReputationManagementTab
- * expects. Only real, computable fields — no fabricated stats (hiring time,
- * candidate satisfaction, retention rate, successful hires are not tracked
+ * Maps `GET /companies/me/reviews` onto the shape ReputationManagementTab and
+ * the preview expect. Only real, computable fields — no fabricated stats
+ * (hiring time, candidate satisfaction, retention rate are not tracked
  * anywhere and were dropped from the tab rather than faked).
  */
-const reviewDate = (value) => new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-
 export function reviewsToReputationData(data) {
   const reviews = data.reviews || [];
-  const recommendCounted = reviews.filter((r) => r.recommend !== null).length;
-  const recommendYes = reviews.filter((r) => r.recommend === true).length;
 
   return {
     overallRating: data.averageRating,
     totalReviews: data.totalReviews,
     ratingBreakdown: data.ratingBreakdown,
-    recommendationRate: recommendCounted ? Math.round((recommendYes / recommendCounted) * 100) : 0,
+    recommendationRate: data.recommendRate ?? 0,
+    // null until the first review — the preview then hides "Profile salary", like the public page.
+    minWageRate: data.minWageRate ?? null,
+    successfulHires: data.hires ?? 0,
     // All of them, newest first — the tab shows two and expands to the rest.
+    // Same fields and values as the candidate-side card (companiesApi.reviewToFrontend).
+    // No hire date: a company knows when it hired whom, so it would reveal the anonymous author.
     reviews: reviews.map((r) => ({
       position: r.roleTitle || 'Position not specified',
       department: r.department || '',
-      rating: Math.round((r.ratingProcess + r.ratingComms + r.ratingCulture + r.ratingBenefits) / 4),
+      rating: (r.ratingProcess + r.ratingComms + r.ratingCulture + r.ratingBenefits) / 4,
+      cats: { process: r.ratingProcess, comms: r.ratingComms, culture: r.ratingCulture, benefits: r.ratingBenefits },
       comment: r.comment || '',
       minWageRespected: r.minWageRespected,
-      hiredDate: r.hire?.hireDate ? reviewDate(r.hire.hireDate) : '—',
-      reviewDate: reviewDate(r.createdAt),
+      recommend: r.recommend,
+      reviewDate: shortDate(r.createdAt),
     })),
   };
 }

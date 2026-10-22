@@ -1,4 +1,5 @@
 import apiClient from 'lib/apiClient';
+import { shortDate } from 'utils/formatDate';
 
 // Same curated gradient set the old company mock data used — kept for visual
 // parity now that companies are real DB rows with no stored "color" field.
@@ -102,7 +103,8 @@ export function reviewToFrontend(r) {
     cats: { process: r.ratingProcess, comms: r.ratingComms, culture: r.ratingCulture, benefits: r.ratingBenefits },
     text: r.comment || '',
     minWageRespected: r.minWageRespected,
-    date: new Date(r.createdAt).toLocaleDateString(),
+    // Same as the company's own Reputation tab and preview.
+    date: shortDate(r.createdAt),
     recommend: r.recommend,
   };
 }

@@ -521,6 +521,10 @@
   }
   .rev-card {
     position: relative;
+    // Column so the salary line + footer sit at the bottom: cards in one grid row
+    // are equally tall, and those lines then line up whatever the text length.
+    display: flex;
+    flex-direction: column;
     border: 1px solid var(--cf-line);
     border-radius: var(--cf-r-md);
     padding: 16px 18px 16px 20px;
@@ -648,10 +652,12 @@
   }
   .rev-wage {
     display: inline-flex;
+    align-self: flex-start;
     align-items: center;
     gap: 5px;
     font-size: 0.76rem;
     font-weight: 600;
+    margin-top: auto;
     margin-bottom: 8px;
     &.ok {
       color: var(--cf-green);

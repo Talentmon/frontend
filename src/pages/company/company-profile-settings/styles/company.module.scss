@@ -790,73 +790,6 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   &.down { color: $blue; }
 }
 
-.review {
-  position: relative;
-  padding: 4px 0 14px 18px;
-  margin-bottom: 14px;
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 3px;
-    bottom: 13px;
-    width: 3px;
-    border-radius: 3px;
-    background: linear-gradient(180deg, $gold-2, $gold-deep);
-  }
-
-  &:last-child { margin-bottom: 0; }
-}
-
-.reviewTop {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-
-  b { font-weight: 600; font-size: .95rem; color: $ink; }
-}
-
-.reviewRole {
-  font-size: .78rem;
-  color: $slate;
-}
-
-.reviewStars {
-  color: $gold;
-  font-size: .85rem;
-  letter-spacing: 1px;
-  white-space: nowrap;
-  flex: none;
-}
-
-.reviewText {
-  font-size: .86rem;
-  color: #334;
-  margin: 6px 0;
-}
-
-.reviewMeta {
-  display: flex;
-  justify-content: space-between;
-  font-size: .74rem;
-  color: $slate-2;
-  font-family: 'JetBrains Mono', monospace;
-}
-
-.reviewWage {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: .76rem;
-  font-weight: 600;
-  margin: 2px 0 8px;
-
-  &.ok { color: $green; }
-  &.bad { color: $red; }
-}
-
 .linkBtn {
   font-size: .85rem;
   font-weight: 600;
@@ -1556,6 +1489,10 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
 
 .dRevCard {
   position: relative;
+  // Column so the salary line + footer sit at the bottom: cards in one grid row
+  // are equally tall, and those lines then line up whatever the text length.
+  display: flex;
+  flex-direction: column;
   border: 1px solid $line;
   border-radius: $r-md;
   padding: 16px 18px 16px 20px;
@@ -1622,8 +1559,13 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   align-items: stretch;
   margin: 12px 0;
   padding: 12px 6px;
-  background: $paper-2;
+  background: #f2f3f1; // same grey as the candidate company page
   border-radius: $r-sm;
+
+  @media (max-width: 560px) {
+    flex-wrap: wrap;
+    row-gap: 12px;
+  }
 }
 
 .dRevCat {
@@ -1638,6 +1580,22 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   border-left: 1px dashed $line;
 
   &:first-child { border-left: none; }
+
+  @media (max-width: 560px) {
+    flex: 1 1 45%;
+    border-left: none;
+
+    &:nth-child(odd) { border-right: 1px dashed $line; }
+  }
+}
+
+// Settings column cards are ~60px narrower than on the public page — tighter
+// gaps keep every category label on one line.
+.dRevGridTight .dRevCat {
+  @media (min-width: 561px) {
+    flex: 1 1 auto;
+    padding: 0 4px;
+  }
 }
 
 .dRevCatLabel {
@@ -1655,14 +1613,25 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
 
 .dRevWage {
   display: inline-flex;
+  align-self: flex-start;
   align-items: center;
   gap: 5px;
   font-size: .76rem;
   font-weight: 600;
+  margin-top: auto;
   margin-bottom: 8px;
 
   &.ok { color: $green; }
   &.bad { color: $red; }
+}
+
+.dRevFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 4px;
 }
 
 .dRevDate {
@@ -1670,6 +1639,19 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   font-size: .74rem;
   color: $slate-2;
   letter-spacing: .02em;
+}
+
+.dRevRec {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: .78rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 99px;
+
+  &.yes { color: $green; background: rgba(47, 158, 105, .1); }
+  &.no { color: $red; background: rgba(192, 70, 61, .1); }
 }
 
 @media (max-width: 560px) {

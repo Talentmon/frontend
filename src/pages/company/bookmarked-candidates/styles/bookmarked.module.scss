@@ -977,20 +977,92 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 }
 
+// Reorder/select: the card stays put on hover. `article` lifts these over the
+// shared card's own :hover; unlocked/active cards keep their coloured ring.
+article.stillCard:hover {
+  transform: none;
+}
+
+article.stillCardPlain:hover {
+  box-shadow: 0 16px 36px -30px rgba(11, 26, 44, 0.4);
+}
+
+// Select mode: the whole card is the checkbox.
+.slotSelect {
+  cursor: pointer;
+  user-select: none;
+  border-radius: 18px;
+
+  &:focus-visible {
+    outline: none;
+  }
+
+  &:hover > article,
+  &:focus-visible > article {
+    border-color: $gold;
+    box-shadow:
+      0 0 0 1px $gold,
+      0 16px 36px -30px rgba(11, 26, 44, 0.4);
+  }
+}
+
+.slotSelect.slotSelected > article {
+  border-color: $gold-deep;
+  background:
+    linear-gradient(rgba(230, 169, 60, 0.07), rgba(230, 169, 60, 0.07)),
+    $white;
+  box-shadow:
+    0 0 0 1.5px $gold-deep,
+    0 24px 44px -28px rgba(230, 169, 60, 0.4);
+}
+
+// The card's own buttons while select mode owns the clicks.
+.mutedInSelect {
+  opacity: 0.35;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+// Same tile and spot as the reorder drag handle; the saved date moves aside for both.
 .selectBox {
   position: absolute;
-  top: 14px;
-  left: 14px;
+  top: 12px;
+  left: 12px;
   z-index: 10;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: $amber-bg;
+  border: 1.5px solid $amber-bd;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition:
+    border-color 0.18s,
+    background-color 0.18s,
+    box-shadow 0.18s;
 
-  input[type="checkbox"] {
-    width: 19px;
-    height: 19px;
-    accent-color: $gold-deep;
-    cursor: pointer;
-    border-radius: 5px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  &:hover {
+    border-color: $gold-deep;
+    box-shadow: 0 4px 12px rgba(230, 169, 60, 0.35);
   }
+
+  // The slot toggles the selection; the box only shows it.
+  input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: $gold-deep;
+    pointer-events: none;
+  }
+}
+
+.selectBoxOn {
+  background: $gold;
+  border-color: $gold-deep;
+
+  input[type="checkbox"] { accent-color: $ink; }
 }
 
 .dragHandle {

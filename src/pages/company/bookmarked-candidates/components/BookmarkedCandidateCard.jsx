@@ -22,7 +22,8 @@ const BookmarkedCandidateCard = ({
   creditBalance,
   isNotesOpen = false,
   onToggleNotes,
-  reorderMode = false
+  reorderMode = false,
+  selectionMode = false
 }) => {
   const [notes, setNotes] = useState(candidate?.notes || '');
   const [isEditingNotes, setIsEditingNotes] = useState(!candidate?.notes);
@@ -59,6 +60,13 @@ const BookmarkedCandidateCard = ({
   };
 
   const isUnlocked = !!candidate?.isPurchased;
+  // In select mode a click anywhere on the card selects it, so the card's own buttons step aside.
+  const mutedClass = selectionMode ? styles.mutedInSelect : '';
+  const skipTab = selectionMode ? -1 : undefined;
+  // Reorder and select: no hover lift — in reorder only the handle moves things, in select the slot shows hover.
+  const stillClass = reorderMode || selectionMode
+    ? `${styles.stillCard} ${!isUnlocked && !isActive ? styles.stillCardPlain : ''}`
+    : '';
 
   const description = candidate?.description || '';
   const truncatedDesc = description?.length > 300
@@ -96,10 +104,10 @@ const BookmarkedCandidateCard = ({
   );
 
   return (
-    <article className={`${dashboardStyles.card} ${isUnlocked ? dashboardStyles.unlocked : ''} ${isActive ? dashboardStyles.active : ''}`}>
+    <article className={`${dashboardStyles.card} ${isUnlocked ? dashboardStyles.unlocked : ''} ${isActive ? dashboardStyles.active : ''} ${stillClass}`}>
       {/* Top row: saved date (left) + available badge & remove (right) */}
       <div className={styles.cardTop}>
-        <span className={`${styles.savedDate} ${reorderMode ? styles.savedDateShifted : ''}`}>
+        <span className={`${styles.savedDate} ${reorderMode || selectionMode ? styles.savedDateShifted : ''}`}>
           Saved {formatDate(candidate?.bookmarkedDate)}{candidate?.bookmarkedBy ? ` by ${candidate.bookmarkedBy}` : ''}
           {candidate?.pocket === 'PERSONAL' && <span className={styles.personalTag}>Personal</span>}
         </span>
@@ -116,7 +124,8 @@ const BookmarkedCandidateCard = ({
           {candidate?.canRemove !== false && (
             <button
               onClick={() => onRemoveBookmark(candidate?.id)}
-              className={styles.bcRemove}
+              className={`${styles.bcRemove} ${mutedClass}`}
+              tabIndex={skipTab}
               title="Remove from saved"
               aria-label="Remove from saved"
             >
@@ -208,13 +217,14 @@ const BookmarkedCandidateCard = ({
       )}
 
       {/* Actions */}
-      <div className={dashboardStyles.cardActions}>
+      <div className={`${dashboardStyles.cardActions} ${mutedClass}`}>
         {!isUnlocked ? (
           <>
             <button
               className={dashboardStyles.unlockBtn}
               onClick={() => onUnlockProfile(candidate?.id)}
               disabled={creditBalance < candidate?.unlockCost}
+              tabIndex={skipTab}
             >
               <Icon name="Unlock" size={16} />
               Unlock
@@ -225,18 +235,24 @@ const BookmarkedCandidateCard = ({
               aria-label="View CV"
               title="View CV"
               aria-pressed={isActive}
+              tabIndex={skipTab}
             >
               <Icon name="Eye" size={16} />
             </button>
           </>
         ) : (
-          <button className={`${dashboardStyles.unlockBtn} ${dashboardStyles.done}`} onClick={handlePreviewClick}>
+          <button
+            className={`${dashboardStyles.unlockBtn} ${dashboardStyles.done}`}
+            onClick={handlePreviewClick}
+            tabIndex={skipTab}
+          >
             <Icon name="Eye" size={16} />
             View profile
           </button>
         )}
         <button
           onClick={onToggleNotes}
+          tabIndex={skipTab}
           className={`${dashboardStyles.cardBookmark} ${notes ? dashboardStyles.on : ''}`}
           title="Notes"
           aria-label="Notes"
@@ -258,6 +274,7 @@ const BookmarkedCandidateCard = ({
               <>
                 <textarea
                   ref={notesTextareaRef}
+                  tabIndex={skipTab}
                   value={notes}
                   onChange={handleNotesChange}
                   placeholder="Add a note about the candidate..."
@@ -266,6 +283,7 @@ const BookmarkedCandidateCard = ({
                 />
                 <button
                   className={styles.bcNotesSave}
+                  tabIndex={skipTab}
                   onClick={handleSaveNotes}
                   disabled={!notes.trim()}
                 >
@@ -277,12 +295,13 @@ const BookmarkedCandidateCard = ({
               <>
                 <p className={styles.bcNotesText}>{notes}</p>
                 <div className={styles.bcNotesActions}>
-                  <button className={styles.bcNotesEdit} onClick={() => setIsEditingNotes(true)}>
+                  <button className={styles.bcNotesEdit} onClick={() => setIsEditingNotes(true)} tabIndex={skipTab}>
                     <Icon name="Pencil" size={13} />
                     Edit
                   </button>
                   <button
                     className={`${styles.bcNotesDelete} ${styles.tooltip}`}
+                    tabIndex={skipTab}
                     onClick={handleDeleteNotes}
                     data-tooltip="Delete note"
                     aria-label="Delete note"

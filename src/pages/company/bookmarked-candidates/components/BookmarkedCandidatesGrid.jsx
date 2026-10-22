@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Icon from 'components/AppIcon';
 import BookmarkedCandidateCard from './BookmarkedCandidateCard';
 import styles from '../styles/bookmarked.module.scss';
@@ -57,6 +57,25 @@ const BookmarkedCandidatesGrid = ({
     setExpandedNotesId((prev) => (prev === candidateId ? null : candidateId));
   };
 
+  // Select mode turns the whole card into the click target, so an open note editor would just be in the way.
+  useEffect(() => {
+    if (selectionMode) setExpandedNotesId(null);
+  }, [selectionMode]);
+
+  // In select mode the card itself is the checkbox: click or Space/Enter toggles it.
+  const selectableSlotProps = (candidateId, label, isSelected) => ({
+    role: 'checkbox',
+    'aria-checked': isSelected,
+    'aria-label': `Select ${label || 'candidate'}`,
+    tabIndex: 0,
+    onClick: () => handleCandidateSelection(candidateId, !isSelected),
+    onKeyDown: (e) => {
+      if (e.key !== ' ' && e.key !== 'Enter') return;
+      e.preventDefault();
+      handleCandidateSelection(candidateId, !isSelected);
+    },
+  });
+
   // Only the cards sharing a grid row with the expanded card should stop
   // stretching to its height — every other row stays normally equal-height.
   const recomputeRowSiblings = useCallback(() => {
@@ -103,56 +122,66 @@ const BookmarkedCandidatesGrid = ({
 
   return (
     <div className={styles.cgrid}>
-      {candidates?.map((candidate) => (
-        <div
-          key={candidate?.id}
-          ref={(el) => {
-            if (el) slotRefs.current.set(candidate?.id, el);
-            else slotRefs.current.delete(candidate?.id);
-          }}
-          className={`${styles.cardSlot} ${draggedId === candidate?.id ? styles.dragging : ''}`}
-          style={rowSiblingIds?.has(candidate?.id) ? { alignSelf: 'start' } : undefined}
-          onDragEnter={reorderMode ? () => handleDragEnter(candidate?.id) : undefined}
-          onDragOver={reorderMode ? handleDragOver : undefined}
-          onDrop={reorderMode ? (e) => e.preventDefault() : undefined}
-        >
-          {selectionMode && (
-            <div className={styles.selectBox}>
-              <input
-                type="checkbox"
-                checked={selectedCandidates?.includes(candidate?.id)}
-                onChange={(e) => handleCandidateSelection(candidate?.id, e?.target?.checked)}
-              />
-            </div>
-          )}
+      {candidates?.map((candidate) => {
+        const isSelected = !!selectedCandidates?.includes(candidate?.id);
+        const slotClass = [
+          styles.cardSlot,
+          draggedId === candidate?.id && styles.dragging,
+          reorderMode && styles.slotReorder,
+          selectionMode && styles.slotSelect,
+          selectionMode && isSelected && styles.slotSelected,
+        ].filter(Boolean).join(' ');
 
-          {reorderMode && (
-            <div
-              className={styles.dragHandle}
-              draggable
-              onDragStart={(e) => handleDragStart(e, candidate?.id)}
-              onDragEnd={handleDragEnd}
-              title="Drag to reorder"
-              aria-label="Drag to reorder"
-            >
-              <Icon name="GripVertical" size={20} />
-            </div>
-          )}
+        return (
+          <div
+            key={candidate?.id}
+            ref={(el) => {
+              if (el) slotRefs.current.set(candidate?.id, el);
+              else slotRefs.current.delete(candidate?.id);
+            }}
+            className={slotClass}
+            style={rowSiblingIds?.has(candidate?.id) ? { alignSelf: 'start' } : undefined}
+            onDragEnter={reorderMode ? () => handleDragEnter(candidate?.id) : undefined}
+            onDragOver={reorderMode ? handleDragOver : undefined}
+            onDrop={reorderMode ? (e) => e.preventDefault() : undefined}
+            {...(selectionMode ? selectableSlotProps(candidate?.id, candidate?.position, isSelected) : {})}
+          >
+            {/* Just the visual tick — the whole slot handles the click */}
+            {selectionMode && (
+              <span className={`${styles.selectBox} ${isSelected ? styles.selectBoxOn : ''}`} aria-hidden="true">
+                <input type="checkbox" checked={isSelected} readOnly tabIndex={-1} />
+              </span>
+            )}
 
-          <BookmarkedCandidateCard
-            candidate={candidate}
-            onRemoveBookmark={onRemoveBookmark}
-            onUnlockProfile={onUnlockProfile}
-            onUpdateNotes={onUpdateNotes}
-            onPreviewCandidate={onPreviewCandidate}
-            isActive={activePreviewId === candidate?.id}
-            creditBalance={creditBalance}
-            isNotesOpen={expandedNotesId === candidate?.id}
-            onToggleNotes={() => handleToggleNotes(candidate?.id)}
-            reorderMode={reorderMode}
-          />
-        </div>
-      ))}
+            {reorderMode && (
+              <div
+                className={styles.dragHandle}
+                draggable
+                onDragStart={(e) => handleDragStart(e, candidate?.id)}
+                onDragEnd={handleDragEnd}
+                title="Drag to reorder"
+                aria-label="Drag to reorder"
+              >
+                <Icon name="GripVertical" size={20} />
+              </div>
+            )}
+
+            <BookmarkedCandidateCard
+              candidate={candidate}
+              onRemoveBookmark={onRemoveBookmark}
+              onUnlockProfile={onUnlockProfile}
+              onUpdateNotes={onUpdateNotes}
+              onPreviewCandidate={onPreviewCandidate}
+              isActive={activePreviewId === candidate?.id}
+              creditBalance={creditBalance}
+              isNotesOpen={expandedNotesId === candidate?.id}
+              onToggleNotes={() => handleToggleNotes(candidate?.id)}
+              reorderMode={reorderMode}
+              selectionMode={selectionMode}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };

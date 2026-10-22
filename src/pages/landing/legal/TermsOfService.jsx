@@ -3,7 +3,7 @@ import LegalLayout from './LegalLayout';
 
 const KEY_POINTS = [
   'Talentmon lets companies search an anonymized pool of candidates and spend a credit to unlock a full profile.',
-  'Credits are bought in one-time packages, never expire, and there is no subscription.',
+  'Credits are bought in one-time packages, never expire and are not refundable. There is no subscription.',
   'Payments are handled by Paddle, our Merchant of Record, including invoices and VAT.',
   'Unlocked candidate data is for your own recruiting only: no scraping, reselling or sharing outside your organization.',
   "Candidates own their profiles and their reviews of companies. A company can't edit or remove reviews.",
@@ -35,7 +35,8 @@ const TermsOfService = () => (
     <p>
       Companies unlock candidate profiles by spending credits, purchased in packages for a one-time price.
       Credits do not expire and there is no subscription or recurring billing — you only pay when you choose
-      to buy more credits.
+      to buy more credits. Credit purchases are final and non-refundable, as described in our{' '}
+      <a href="/refund-policy">Refund Policy</a>.
     </p>
 
     <h2>3. Payment processing</h2>
@@ -79,9 +80,9 @@ const TermsOfService = () => (
     </p>
     <p>
       When a company account is deleted, its profile is removed from the Service and every team member loses
-      access. Any unused credits are forfeited and are not refunded — if you're eligible for a refund under our{' '}
-      <a href="/refund-policy">Refund Policy</a>, request it before deleting the account. Some records are kept
-      after deletion, as described in our <a href="/privacy-policy">Privacy Policy</a>.
+      access. Any unused credits are forfeited and are not refunded (see our{' '}
+      <a href="/refund-policy">Refund Policy</a>). Some records are kept after deletion, as described in our{' '}
+      <a href="/privacy-policy">Privacy Policy</a>.
     </p>
 
     <h2>8. Disclaimer and limitation of liability</h2>

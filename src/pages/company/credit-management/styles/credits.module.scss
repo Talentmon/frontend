@@ -349,6 +349,13 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   @media (prefers-reduced-motion: reduce) {
     animation: none;
   }
+
+  // New company, no Credits yet: a welcome, not a warning — gold, no pulse.
+  &.welcome {
+    background: rgba(230, 169, 60, .16);
+    color: $gold;
+    animation: none;
+  }
 }
 
 .balAlertText {

@@ -28,6 +28,8 @@ const SparkleIcon = () => (
 
 const CreditManagement = () => {
   const [currentBalance, setCurrentBalance] = useState(0);
+  // null until the balance loads, false for a new company that has never had Credits.
+  const [hasCreditHistory, setHasCreditHistory] = useState(null);
   const [quickStats, setQuickStats] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -47,13 +49,19 @@ const CreditManagement = () => {
   const { buy, busy, error: checkoutError } = usePaddleCheckout({
     onSuccess: ({ balance, credited }) => {
       if (balance != null) setCurrentBalance(balance);
+      setHasCreditHistory(true);
       setPurchaseResult({ credited });
       showToast(credited ? 'Credits added to your balance!' : 'Payment confirmed — credits are on their way.');
     },
   });
 
   useEffect(() => {
-    getBalance().then((d) => setCurrentBalance(d.balance)).catch(() => {});
+    getBalance()
+      .then((d) => {
+        setCurrentBalance(d.balance);
+        setHasCreditHistory(d.hasCreditHistory);
+      })
+      .catch(() => {});
     getUsageAnalytics(6)
       .then(({ monthlyUsage, hiresInvestment }) => {
         const thisMonth = monthlyUsage[monthlyUsage.length - 1];
@@ -90,7 +98,12 @@ const CreditManagement = () => {
       case 'overview':
         return (
           <div>
-            <CreditBalance balance={currentBalance} isLowBalance={isLowBalance} onBuy={() => setActiveTab('purchase')} />
+            <CreditBalance
+              balance={currentBalance}
+              isLowBalance={hasCreditHistory !== null && isLowBalance}
+              isNewCompany={hasCreditHistory === false}
+              onBuy={() => setActiveTab('purchase')}
+            />
 
             <div className={styles.ovGrid}>
               <section className={styles.ovPanel} aria-labelledby="quick-stats-title">

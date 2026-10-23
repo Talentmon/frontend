@@ -25,8 +25,9 @@ const BalanceArt = () => (
   </svg>
 );
 
-const CreditBalance = ({ balance, isLowBalance, onBuy }) => {
+const CreditBalance = ({ balance, isLowBalance, isNewCompany, onBuy }) => {
   const isEmpty = !(balance > 0);
+  const isWelcome = isEmpty && isNewCompany;
 
   return (
     <section className={styles.balCard} aria-labelledby="credit-balance-title">
@@ -55,13 +56,15 @@ const CreditBalance = ({ balance, isLowBalance, onBuy }) => {
 
       {isLowBalance && (
         <div className={styles.balAlert} role="status">
-          <span className={styles.balAlertIcon} aria-hidden="true">
-            <Icon name="AlertTriangle" size={16} />
+          <span className={`${styles.balAlertIcon} ${isWelcome ? styles.welcome : ''}`} aria-hidden="true">
+            <Icon name={isWelcome ? 'Sparkles' : 'AlertTriangle'} size={16} />
           </span>
           <p className={styles.balAlertText}>
-            {isEmpty
-              ? <><strong>You’re out of Credits.</strong> Buy Credits to keep unlocking profiles.</>
-              : <><strong>You’re running low on Credits.</strong> Top up to keep unlocking profiles.</>}
+            {isWelcome
+              ? <><strong>Ready to find your next hire?</strong> Get your first Credits and unlock the candidates you like.</>
+              : isEmpty
+                ? <><strong>You’re out of Credits.</strong> Buy Credits to keep unlocking profiles.</>
+                : <><strong>You’re running low on Credits.</strong> Top up to keep unlocking profiles.</>}
           </p>
         </div>
       )}

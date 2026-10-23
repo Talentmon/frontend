@@ -721,17 +721,19 @@ $pkg-rows: 1179px;
   }
 }
 
+// Rows only between phone and full width; on a phone the packages are full-width cards again.
+$pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
+
 .pkg {
   background: $white;
   border: 2px solid $line;
   border-radius: $r-lg;
-  padding: 30px 18px 22px;
+  padding: 26px 18px 20px;
   display: grid;
-  grid-template-areas: "name" "cost" "credits" "bonus" "btn";
+  grid-template-areas: "head" "big" "box" "save" "bonus" "btn";
   // The bonus row takes the slack, so every Buy button sits at the bottom.
-  grid-template-rows: auto auto auto 1fr auto;
-  justify-items: center;
-  text-align: center;
+  grid-template-rows: auto auto auto auto 1fr auto;
+  text-align: left;
   position: relative;
   transition:
     transform 0.25s $ease,
@@ -750,32 +752,18 @@ $pkg-rows: 1179px;
     background: rgba(230, 169, 60, 0.04);
   }
 
-  // Row: name, Credits and bonus on the left; price in the middle; Buy on the right.
-  @media (max-width: $pkg-rows) {
-    grid-template-columns: 1fr auto auto;
+  // Row: name, Credits and bonus on the left; price box and saving in the middle; Buy on the right.
+  @media #{$pkg-rows-mq} {
+    grid-template-columns: minmax(0, 1fr) 210px auto;
     grid-template-areas:
-      "name    cost btn"
-      "credits cost btn"
-      "bonus   cost btn";
+      "head  box  btn"
+      "big   box  btn"
+      "bonus save btn";
     grid-template-rows: auto;
-    column-gap: 28px;
-    row-gap: 8px;
+    column-gap: 24px;
+    row-gap: 6px;
     align-items: center;
-    justify-items: start;
-    text-align: left;
     padding: 20px 22px;
-  }
-
-  // Phone: Buy drops below as a full-width button.
-  @media (max-width: 560px) {
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "name    cost"
-      "credits cost"
-      "bonus   bonus"
-      "btn     btn";
-    column-gap: 14px;
-    padding: 20px 16px 16px;
   }
 }
 
@@ -792,83 +780,128 @@ $pkg-rows: 1179px;
   border-radius: 99px;
   white-space: nowrap;
 
-  @media (max-width: $pkg-rows) {
+  @media #{$pkg-rows-mq} {
     left: 20px;
     transform: none;
   }
 }
 
-.pkgName {
-  grid-area: name;
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: $ink;
-  margin-bottom: 6px;
+// Name on the left, "Save N%" pill on the right.
+.pkgHead {
+  grid-area: head;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
 
-  @media (max-width: $pkg-rows) {
-    margin-bottom: 0;
+  @media #{$pkg-rows-mq} {
+    justify-content: flex-start;
+    gap: 12px;
   }
 }
 
-.pkgCost {
-  grid-area: cost;
+.pkgName {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: $ink;
+}
 
-  @media (max-width: $pkg-rows) {
-    text-align: right;
-    justify-self: end;
+.pkgSaveBadge {
+  flex: none;
+  background: $green-bg;
+  color: #1f7a50;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.3em 0.7em;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+
+// The headline: how many Credits.
+.pkgBig {
+  grid-area: big;
+  display: flex;
+  align-items: baseline;
+  gap: 0.4em;
+  margin: 12px 0 14px;
+
+  b {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-weight: 800;
+    font-size: 3rem;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: $ink;
   }
+
+  span {
+    font-size: 1rem;
+    color: $slate;
+  }
+
+  @media #{$pkg-rows-mq} {
+    margin: 0;
+
+    b {
+      font-size: 2.2rem;
+    }
+  }
+}
+
+// Grey box: what the package costs.
+.pkgBox {
+  grid-area: box;
+  background: #f2f5f8;
+  border-radius: 12px;
+  padding: 12px 14px;
 }
 
 .pkgPrice {
   font-family: "Bricolage Grotesque", sans-serif;
   font-weight: 800;
-  font-size: 2.4rem;
-  line-height: 1.15;
+  font-size: 1.6rem;
+  line-height: 1.2;
   color: $ink;
-
-  @media (max-width: 560px) {
-    font-size: 1.75rem;
-  }
 }
 
 .pkgPriceSub {
   font-size: 0.82rem;
   color: $slate;
+  margin-top: 2px;
 }
 
-// Saving per unlock against the 1-Credit package.
+// "✓ Save N% vs Buy 1" under the price box.
 .pkgSavings {
-  font-size: 0.82rem;
-  color: $green;
-  font-weight: 700;
-  margin-top: 3px;
+  grid-area: save;
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+  margin: 12px 0 14px;
+  font-size: 0.85rem;
+  color: #33424f;
+
+  svg {
+    flex: none;
+    color: $green;
+  }
+
+  @media #{$pkg-rows-mq} {
+    margin: 0;
+  }
 }
 
-.pkgCredits {
-  grid-area: credits;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  background: $mist;
-  padding: 0.5em 0.9em;
-  border-radius: $r-sm;
-  margin: 18px 0;
-
-  b {
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: $ink;
+// The empty line only lines cards up side by side: gone in rows, just a gap above Buy on a phone.
+.pkgSavingsEmpty {
+  @media #{$pkg-rows-mq} {
+    display: none;
   }
 
-  span {
-    color: $ink;
-    font-size: 0.9rem;
-    letter-spacing: 0.05rem;
-  }
-
-  @media (max-width: $pkg-rows) {
-    margin: 0;
+  @media (max-width: 560px) {
+    height: 0;
+    overflow: hidden;
+    margin: 14px 0 0;
   }
 }
 
@@ -907,8 +940,9 @@ $pkg-rows: 1179px;
     user-select: none;
   }
 
-  @media (max-width: $pkg-rows) {
+  @media #{$pkg-rows-mq} {
     width: auto;
+    justify-self: start;
     align-self: center;
     justify-content: flex-start;
     margin-bottom: 0;
@@ -934,15 +968,10 @@ $pkg-rows: 1179px;
     border-color 0.2s,
     background-color 0.2s;
 
-  @media (max-width: $pkg-rows) {
+  @media #{$pkg-rows-mq} {
     width: auto;
     padding: 0.7em 1.4em;
     white-space: nowrap;
-  }
-
-  @media (max-width: 560px) {
-    width: 100%;
-    margin-top: 6px;
   }
 
   &:hover {

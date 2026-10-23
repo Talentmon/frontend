@@ -76,21 +76,29 @@ const CreditPackages = ({ onPurchase }) => {
                 <div className={styles.pkgBadge}>Most popular</div>
               )}
 
-              <div className={styles.pkgName}>{pkg.name}</div>
-
-              <div className={styles.pkgCost}>
-                <div className={styles.pkgPrice}>{formatPrice(pkg.price, pkg.currency)}</div>
-                <div className={styles.pkgPriceSub}>{formatPrice(pkg.pricePerCredit, pkg.currency, { cents: true })} per unlock</div>
-                {/* Kept even when empty so every card's Credits chip sits on the same line. */}
-                <div className={styles.pkgSavings}>
-                  {savings > 0 ? `Save ${savings}% vs ${basePackage.name}` : ' '}
-                </div>
+              <div className={styles.pkgHead}>
+                <span className={styles.pkgName}>{pkg.name}</span>
+                {savings > 0 && <span className={styles.pkgSaveBadge}>Save {savings}%</span>}
               </div>
 
-              <div className={styles.pkgCredits}>
-                <Icon name="Coins" size={20} />
+              <div className={styles.pkgBig}>
                 <b>{pkg.credits}</b>
                 <span>{creditWord(pkg.credits)}</span>
+              </div>
+
+              <div className={styles.pkgBox}>
+                <div className={styles.pkgPrice}>{formatPrice(pkg.price, pkg.currency)}</div>
+                <div className={styles.pkgPriceSub}>{formatPrice(pkg.pricePerCredit, pkg.currency, { cents: true })} per unlock</div>
+              </div>
+
+              {/* Kept even when empty so every card's bonus and button line up. */}
+              <div className={`${styles.pkgSavings} ${savings > 0 ? '' : styles.pkgSavingsEmpty}`}>
+                {savings > 0 ? (
+                  <>
+                    <Icon name="Check" size={16} />
+                    Save {savings}% vs {basePackage.name}
+                  </>
+                ) : ' '}
               </div>
 
               {pkg.bookmarkBonus > 0 && (

@@ -3,6 +3,16 @@ import { Helmet } from 'react-helmet';
 import Icon from 'components/AppIcon';
 import './styles.scss';
 
+// Same cards as the company Purchase tab, in EUR. Kept in step by hand with the
+// packages in backend/prisma/seed.ts; bonus bookmarks last 6 months.
+const PLANS = [
+  { name: 'Buy 1', credits: 1, price: '€25', perUnlock: '€25.00' },
+  { name: 'Starter', credits: 10, price: '€199', perUnlock: '€19.90', save: 20 },
+  { name: 'Growth', credits: 30, price: '€569', perUnlock: '€18.97', save: 24, bonus: 5, popular: true },
+  { name: 'Scale', credits: 50, price: '€929', perUnlock: '€18.58', save: 25, bonus: 10 },
+  { name: 'Agency', credits: 100, price: '€1,829', perUnlock: '€18.29', save: 26, bonus: 20 },
+];
+
 const STATUS_OPTIONS = [
   { value: 'new', label: 'New' },
   { value: 'contacted', label: 'Contacted' },
@@ -762,46 +772,48 @@ const LandingPage = () => {
             <span className="chip"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" strokeLinecap="round" /></svg>Credits never expire</span>
           </div>
           <div className="plans">
-            <div className="plan fx">
-              <span className="plan-name">Buy 1</span>
-              <p className="plan-desc">Try it out, no commitment.</p>
-              <div className="plan-credits"><span className="num">1</span><span className="lab">credit</span></div>
-              <div className="plan-price"><b>€25</b> one-time</div>
-              <div className="plan-unlocks">€25.00 / unlock</div>
-              <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(1); }} className="btn btn-ghost">Buy 1 credit</a>
-            </div>
-            <div className="plan fx">
-              <span className="plan-name">Starter</span>
-              <p className="plan-desc">For a single open role.</p>
-              <div className="plan-credits"><span className="num">10</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€199</b> one-time</div>
-              <div className="plan-unlocks">€19.90 / unlock</div>
-              <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(10); }} className="btn btn-ghost">Buy 10 credits</a>
-            </div>
-            <div className="plan pop fx">
-              <span className="plan-name">Growth</span>
-              <p className="plan-desc">For teams hiring across roles.</p>
-              <div className="plan-credits"><span className="num">30</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€569</b> one-time</div>
-              <div className="plan-unlocks">€18.97 / unlock</div>
-              <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(30); }} className="btn btn-gold">Buy 30 credits</a>
-            </div>
-            <div className="plan fx">
-              <span className="plan-name">Scale</span>
-              <p className="plan-desc">For busy recruiting teams.</p>
-              <div className="plan-credits"><span className="num">50</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€929</b> one-time</div>
-              <div className="plan-unlocks">€18.58 / unlock</div>
-              <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(50); }} className="btn btn-ghost">Buy 50 credits</a>
-            </div>
-            <div className="plan fx">
-              <span className="plan-name">Agency</span>
-              <p className="plan-desc">For agencies &amp; high-volume hiring.</p>
-              <div className="plan-credits"><span className="num">100</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€1,829</b> one-time</div>
-              <div className="plan-unlocks">€18.29 / unlock</div>
-              <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(100); }} className="btn btn-ghost">Buy 100 credits</a>
-            </div>
+            {PLANS.map((plan) => (
+              <div key={plan.name} className={`plan fx${plan.popular ? ' pop' : ''}`}>
+                <div className="plan-head">
+                  <span className="plan-name">{plan.name}</span>
+                  {plan.save && <span className="plan-save-badge">Save {plan.save}%</span>}
+                </div>
+                <div className="plan-credits">
+                  <b>{plan.credits}</b>
+                  <span>{plan.credits === 1 ? 'Credit' : 'Credits'}</span>
+                </div>
+                <div className="plan-box">
+                  <div className="plan-price">{plan.price}</div>
+                  <div className="plan-unlocks">{plan.perUnlock} per unlock</div>
+                </div>
+                {/* Kept even when empty so every card's bonus and button line up. */}
+                <div className={`plan-save${plan.save ? '' : ' plan-save-empty'}`}>
+                  {plan.save ? (
+                    <>
+                      <Icon name="Check" size={16} />
+                      Save {plan.save}% vs Buy 1
+                    </>
+                  ) : ' '}
+                </div>
+                {plan.bonus && (
+                  <div className="plan-bonus">
+                    <Icon name="Bookmark" size={20} />
+                    <span>
+                      <span>+{plan.bonus} bonus bookmarks</span>
+                      {/* An invisible "+" so this line starts under the number, not the sign. */}
+                      <span><span className="plan-bonus-indent" aria-hidden="true">+</span>for 6 months</span>
+                    </span>
+                  </div>
+                )}
+                <a
+                  href="#heroBalance"
+                  onClick={(e) => { e.preventDefault(); handleBuyCredits(plan.credits); }}
+                  className={`btn ${plan.popular ? 'btn-gold' : 'btn-ghost'}`}
+                >
+                  <Icon name="ShoppingCart" size={16} />Buy now
+                </a>
+              </div>
+            ))}
           </div>
           <div className="price-incl fx">
             <span>Every package includes</span>

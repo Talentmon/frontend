@@ -419,19 +419,35 @@
   /* ============================ CREDITS / PRICING ============================ */
   .price-sec { background: var(--lp-paper); }
   .tokmodel { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-bottom: 56px; .chip { display: flex; align-items: center; gap: .6em; background: var(--lp-white); border: 1px solid var(--lp-line); border-radius: 99px; padding: .65em 1.1em; font-size: .9rem; font-weight: 500; color: var(--lp-ink); svg { width: 17px; height: 17px; color: var(--lp-gold-deep); } } }
-  .plans { display: grid; grid-template-columns: repeat(5, 1fr); gap: 18px; align-items: stretch; }
+  // Five equal cards only at full width (their bonus line needs it); three below that.
+  .plans { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 18px; align-items: stretch; @media (max-width: 1180px) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   .plan {
-    background: var(--lp-white); border: 1px solid var(--lp-line); border-radius: var(--lp-r-lg); padding: 28px 24px; display: flex; flex-direction: column; transition: transform .3s var(--lp-ease), box-shadow .3s;
+    background: var(--lp-white); border: 1px solid var(--lp-line); border-radius: var(--lp-r-lg); padding: 26px 18px 20px; display: flex; flex-direction: column; text-align: left; transition: transform .3s var(--lp-ease), box-shadow .3s;
     &:hover { transform: translateY(-4px); box-shadow: 0 26px 50px -30px rgba(11, 26, 44, .35); }
     &.pop {
       border-color: var(--lp-gold); box-shadow: 0 0 0 1px var(--lp-gold), 0 30px 60px -34px rgba(230, 169, 60, .55); position: relative;
       &::before { content: "Most popular"; position: absolute; top: -13px; left: 50%; transform: translateX(-50%); background: var(--lp-gold); color: #241704; font-size: .72rem; font-weight: 700; letter-spacing: .04em; padding: .4em 1em; border-radius: 99px; font-family: 'Plus Jakarta Sans'; white-space: nowrap; }
     }
-    .plan-name { font-family: 'Bricolage Grotesque'; font-weight: 700; font-size: 1.18rem; }
-    .plan-desc { font-size: .85rem; color: var(--lp-slate); margin: 4px 0 20px; min-height: 2.6em; }
-    .plan-credits { display: flex; align-items: baseline; gap: .4em; font-family: 'JetBrains Mono', monospace; .num { font-size: 2.4rem; font-weight: 600; color: var(--lp-ink); letter-spacing: -.02em; } .lab { font-size: .82rem; color: var(--lp-slate); } }
-    .plan-price { font-size: 1rem; color: var(--lp-slate); margin: 10px 0 5px; b { color: var(--lp-ink); font-weight: 700; font-family: 'Bricolage Grotesque'; font-size: 1.7rem; } }
-    .plan-unlocks { font-size: .82rem; color: var(--lp-gold-deep); font-weight: 600; font-family: 'JetBrains Mono', monospace; margin-bottom: 24px; }
+    // Same card as the company Purchase tab: name + "Save N%", Credits, price box, saving, bonus, Buy.
+    .plan-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 26px; }
+    .plan-name { font-family: 'Bricolage Grotesque'; font-weight: 700; font-size: 1.15rem; color: var(--lp-ink); }
+    .plan-save-badge { flex: none; background: rgba(60, 200, 130, .13); color: #1f7a50; font-size: .72rem; font-weight: 700; padding: .3em .7em; border-radius: 99px; white-space: nowrap; }
+    .plan-credits { display: flex; align-items: baseline; gap: .4em; margin: 12px 0 14px; b { font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 3rem; line-height: 1; letter-spacing: -.02em; color: var(--lp-ink); } span { font-size: 1rem; color: var(--lp-slate); } }
+    .plan-box { background: #F2F5F8; border-radius: 12px; padding: 12px 14px; }
+    .plan-price { font-family: 'Bricolage Grotesque'; font-weight: 800; font-size: 1.6rem; line-height: 1.2; color: var(--lp-ink); }
+    .plan-unlocks { font-size: .82rem; color: var(--lp-slate); margin-top: 2px; }
+    .plan-save { display: flex; align-items: center; gap: .45em; margin: 12px 0 14px; font-size: .85rem; color: #33424f; svg { flex: none; color: #2f9e69; } }
+    // The empty line only lines cards up side by side; in a single column it's just the gap above Buy.
+    .plan-save-empty { @media (max-width: 480px) { height: 0; overflow: hidden; margin: 14px 0 0; } }
+    // Big icon beside two lines; the second starts under the number, not the "+".
+    .plan-bonus {
+      display: flex; align-items: center; justify-content: center; gap: .55em; margin-bottom: 18px; padding: .55em .6em;
+      border-radius: var(--lp-r-sm); background: rgba(230, 169, 60, .14); color: var(--lp-gold-deep);
+      font-size: .78rem; font-weight: 600; line-height: 1.4; text-align: left;
+      > span { display: flex; flex-direction: column; white-space: nowrap; }
+      svg { flex: none; }
+      .plan-bonus-indent { visibility: hidden; user-select: none; }
+    }
     .btn { margin-top: auto; justify-content: center; width: 100%; }
     .btn-ghost:hover { border-color: var(--lp-gold-deep); background: rgba(230, 169, 60, .1); color: var(--lp-gold-deep); }
   }

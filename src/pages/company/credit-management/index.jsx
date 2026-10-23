@@ -8,7 +8,7 @@ import AutoRenewalSettings from './components/AutoRenewalSettings';
 import PaymentMethods from './components/PaymentMethods';
 import Icon from 'components/AppIcon';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
-import { creditWord, formatCredits } from 'utils/formatCredits';
+import { creditWord, formatCredits, LOW_CREDIT_BALANCE } from 'utils/formatCredits';
 import { formatPrice, getBalance, getUsageAnalytics } from './creditsApi';
 import styles from './styles/credits.module.scss';
 
@@ -36,7 +36,7 @@ const CreditManagement = () => {
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef(null);
 
-  const isLowBalance = currentBalance < 50;
+  const isLowBalance = currentBalance <= LOW_CREDIT_BALANCE;
 
   const showToast = (message) => {
     setToastMsg(message);

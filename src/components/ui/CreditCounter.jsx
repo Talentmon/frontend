@@ -3,6 +3,7 @@ import Icon from '../AppIcon';
 import Button from './Button';
 import BuyCreditsModal from 'pages/company/candidate-search-dashboard/components/BuyCreditsModal';
 import { getBalance, listPackages, packageToFrontend } from 'pages/company/credit-management/creditsApi';
+import { LOW_CREDIT_BALANCE } from 'utils/formatCredits';
 
 const CreditCounter = () => {
   const [creditBalance, setCreditBalance] = useState(0);
@@ -13,7 +14,7 @@ const CreditCounter = () => {
     getBalance().then((r) => setCreditBalance(r.balance)).catch(() => {});
   }, []);
 
-  const isLowBalance = creditBalance < 50;
+  const isLowBalance = creditBalance <= LOW_CREDIT_BALANCE;
 
   const handlePurchaseClick = () => {
     setShowPurchaseModal(true);

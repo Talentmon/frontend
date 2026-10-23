@@ -10,7 +10,7 @@ export function listPackages() {
 export const formatPrice = (amount, currency, { cents = false } = {}) =>
   formatMoney(amount, currency || 'EUR', cents ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {});
 
-/** priceCents/currency are the only real backend fields — pricePerCredit is derived, nothing else is invented (no fake "savings %" with no baseline to compare against). */
+/** priceCents/currency are the only real backend fields — pricePerCredit is derived, nothing else is invented (the Purchase tab's "Save N%" is measured against the 1-Credit package). */
 export function packageToFrontend(p) {
   return {
     id: p.id,
@@ -25,8 +25,8 @@ export function packageToFrontend(p) {
 }
 
 /**
- * Extra bookmarks each package adds for *this* company (depends on company
- * size) and how many months they last — `{ validMonths, packages: [{ packageId, bookmarks }] }`.
+ * Extra bookmarks each package adds (same for every company size) and how
+ * many months they last — `{ validMonths, packages: [{ packageId, bookmarks }] }`.
  */
 export function getPackageBookmarkBonuses() {
   return apiClient.get('/companies/me/bookmarks/package-bonuses').then((r) => r.data);

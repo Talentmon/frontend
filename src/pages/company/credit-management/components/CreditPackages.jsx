@@ -4,19 +4,32 @@ import { creditWord } from 'utils/formatCredits';
 import { formatPrice, getPackageBookmarkBonuses, listPackages, packageToFrontend } from '../creditsApi';
 import styles from '../styles/credits.module.scss';
 
-const commonFeatures = [
-  'Full candidate search',
-  'Unlimited filtering',
-  'Save candidates',
-  'Candidate notes',
-  'PDF print',
-  'Email alerts'
+/** Whole-percent saving per unlock against the 1-Credit package, rounded down so it's never overstated. */
+const savingsPercent = (pkg, base) => {
+  if (!base || pkg.id === base.id) return 0;
+  return Math.floor((1 - pkg.pricePerCredit / base.pricePerCredit) * 100 + 1e-9);
+};
+
+// The strip under the packages. Prices are VAT-inclusive in Paddle (tax_mode internal) and no card data is stored here.
+const payNotes = [
+  { icon: 'ShieldCheck', chip: 'chipGreen', title: 'Prices include VAT', text: 'The price you see is the price you pay.' },
+  { icon: 'Lock', chip: 'chipBlue', title: 'Secure card payment', text: 'Processed by Paddle.' },
+  { icon: 'Infinity', chip: 'chipAmber', title: 'Credits never expire', text: 'Use them whenever you need them.' },
 ];
 
-const buildFeatures = (credits) => [
-  `Unlock ${credits} profile${credits > 1 ? 's' : ''}`,
-  ...commonFeatures,
-];
+// What a Credit pays for on the left, what costs nothing on the right.
+const PackagesHead = () => (
+  <div className={styles.pkgsHead}>
+    <div className={styles.pkgsTitle}>
+      <h2>Choose a Credits package</h2>
+      <p><b>1 Credit unlocks one candidate</b>: full profile with contact details.</p>
+    </div>
+    <div className={styles.pkgsFree}>
+      <Icon name="CheckCircle2" size={18} />
+      <span>Searching, filtering, CV previews, bookmarking and notes are <b>free</b>.</span>
+    </div>
+  </div>
+);
 
 const CreditPackages = ({ onPurchase }) => {
   const [packages, setPackages] = useState([]);
@@ -39,80 +52,82 @@ const CreditPackages = ({ onPurchase }) => {
       .finally(() => setLoading(false));
   }, []);
 
-  const handlePurchase = (pkg) => {
-    onPurchase(pkg);
-  };
-
   if (loading) {
     return (
       <div>
-        <div className={styles.pkgsHead}>
-          <h2>Choose a Credits package</h2>
-          <p>Buy Credits to unlock candidate profiles</p>
-        </div>
+        <PackagesHead />
         <p style={{ color: '#8693A0' }}>Loading packages…</p>
       </div>
     );
   }
 
+  const basePackage = packages.find((pkg) => pkg.credits === 1);
+
   return (
     <div>
-      <div className={styles.pkgsHead}>
-        <h2>Choose a Credits package</h2>
-        <p>Buy Credits to unlock candidate profiles</p>
-      </div>
+      <PackagesHead />
 
-      <div className={styles.pkgs}>
-        {packages?.map((pkg) => (
-          <div
-            key={pkg?.id}
-            className={`${styles.pkg} ${pkg?.popular ? styles.pop : ''}`}
-          >
-            {pkg?.popular && (
-              <div className={styles.pkgBadge}>Most popular</div>
-            )}
+      <div className={styles.pkgs} style={{ '--pkg-count': packages.length }}>
+        {packages.map((pkg) => {
+          const savings = savingsPercent(pkg, basePackage);
+          return (
+            <div key={pkg.id} className={`${styles.pkg} ${pkg.popular ? styles.pop : ''}`}>
+              {pkg.popular && (
+                <div className={styles.pkgBadge}>Most popular</div>
+              )}
 
-            <div className={styles.pkgName}>{pkg?.name}</div>
-            <div className={styles.pkgPrice}>{formatPrice(pkg?.price, pkg?.currency)}</div>
-            <div className={styles.pkgPriceSub}>{formatPrice(pkg?.pricePerCredit, pkg?.currency, { cents: true })} per unlock</div>
+              <div className={styles.pkgName}>{pkg.name}</div>
 
-            <div className={styles.pkgCredits}>
-              <Icon name="Coins" size={20} />
-              <b>{pkg?.credits}</b>
-              <span>{creditWord(pkg?.credits)}</span>
-            </div>
-
-            {pkg?.bookmarkBonus > 0 && (
-              <div className={styles.pkgBonus}>
-                <Icon name="Bookmark" size={15} />
-                <span>+{pkg.bookmarkBonus} extra bookmarks for {pkg.bookmarkBonusMonths} months</span>
+              <div className={styles.pkgCost}>
+                <div className={styles.pkgPrice}>{formatPrice(pkg.price, pkg.currency)}</div>
+                <div className={styles.pkgPriceSub}>{formatPrice(pkg.pricePerCredit, pkg.currency, { cents: true })} per unlock</div>
+                {/* Kept even when empty so every card's Credits chip sits on the same line. */}
+                <div className={styles.pkgSavings}>
+                  {savings > 0 ? `Save ${savings}% vs ${basePackage.name}` : ' '}
+                </div>
               </div>
-            )}
 
-            <ul className={styles.pkgFeatures}>
-              {buildFeatures(pkg?.credits)?.map((feature, index) => (
-                <li key={index} className={styles.pkgFeature}>
-                  <Icon name="Check" size={16} />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
+              <div className={styles.pkgCredits}>
+                <Icon name="Coins" size={20} />
+                <b>{pkg.credits}</b>
+                <span>{creditWord(pkg.credits)}</span>
+              </div>
 
-            <button
-              className={`${styles.pkgBtn} ${pkg?.popular ? styles.pop : ''}`}
-              onClick={(e) => { e.stopPropagation(); handlePurchase(pkg); }}
-            >
-              <Icon name="ShoppingCart" size={16} />Buy now
-            </button>
-          </div>
+              {pkg.bookmarkBonus > 0 && (
+                <div className={styles.pkgBonus}>
+                  <Icon name="Bookmark" size={20} />
+                  <span>
+                    <span>+{pkg.bookmarkBonus} bonus bookmarks</span>
+                    {/* An invisible "+" so this line starts under the number, not the sign. */}
+                    <span><span className={styles.pkgBonusIndent} aria-hidden="true">+</span>for {pkg.bookmarkBonusMonths} months</span>
+                  </span>
+                </div>
+              )}
+
+              <button
+                className={`${styles.pkgBtn} ${pkg.popular ? styles.pop : ''}`}
+                onClick={() => onPurchase(pkg)}
+              >
+                <Icon name="ShoppingCart" size={16} />Buy now
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      <ul className={styles.paynote}>
+        {payNotes.map((note) => (
+          <li key={note.title}>
+            <span className={`${styles.chip} ${styles[note.chip]}`} aria-hidden="true">
+              <Icon name={note.icon} size={18} />
+            </span>
+            <span className={styles.paynoteText}>
+              <b>{note.title}</b>
+              <span>{note.text}</span>
+            </span>
+          </li>
         ))}
-      </div>
-
-      <div className={styles.paynote}>
-        <div><Icon name="ShieldCheck" size={15} /><span>Prices include VAT</span></div>
-        <div><Icon name="Clock" size={15} /><span>Credits never expire</span></div>
-        <div><Icon name="CreditCard" size={15} /><span>Secure card payment</span></div>
-      </div>
+      </ul>
     </div>
   );
 };

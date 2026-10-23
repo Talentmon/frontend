@@ -766,8 +766,8 @@ const LandingPage = () => {
               <span className="plan-name">Buy 1</span>
               <p className="plan-desc">Try it out, no commitment.</p>
               <div className="plan-credits"><span className="num">1</span><span className="lab">credit</span></div>
-              <div className="plan-price"><b>€20</b> one-time</div>
-              <div className="plan-unlocks">€20.00 / unlock</div>
+              <div className="plan-price"><b>€25</b> one-time</div>
+              <div className="plan-unlocks">€25.00 / unlock</div>
               <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(1); }} className="btn btn-ghost">Buy 1 credit</a>
             </div>
             <div className="plan fx">
@@ -782,24 +782,24 @@ const LandingPage = () => {
               <span className="plan-name">Growth</span>
               <p className="plan-desc">For teams hiring across roles.</p>
               <div className="plan-credits"><span className="num">30</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€589</b> one-time</div>
-              <div className="plan-unlocks">€19.63 / unlock</div>
+              <div className="plan-price"><b>€569</b> one-time</div>
+              <div className="plan-unlocks">€18.97 / unlock</div>
               <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(30); }} className="btn btn-gold">Buy 30 credits</a>
             </div>
             <div className="plan fx">
               <span className="plan-name">Scale</span>
               <p className="plan-desc">For busy recruiting teams.</p>
               <div className="plan-credits"><span className="num">50</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€979</b> one-time</div>
-              <div className="plan-unlocks">€19.58 / unlock</div>
+              <div className="plan-price"><b>€929</b> one-time</div>
+              <div className="plan-unlocks">€18.58 / unlock</div>
               <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(50); }} className="btn btn-ghost">Buy 50 credits</a>
             </div>
             <div className="plan fx">
               <span className="plan-name">Agency</span>
               <p className="plan-desc">For agencies &amp; high-volume hiring.</p>
               <div className="plan-credits"><span className="num">100</span><span className="lab">credits</span></div>
-              <div className="plan-price"><b>€1,949</b> one-time</div>
-              <div className="plan-unlocks">€19.49 / unlock</div>
+              <div className="plan-price"><b>€1,829</b> one-time</div>
+              <div className="plan-unlocks">€18.29 / unlock</div>
               <a href="#heroBalance" onClick={(e) => { e.preventDefault(); handleBuyCredits(100); }} className="btn btn-ghost">Buy 100 credits</a>
             </div>
           </div>

@@ -1,28 +1,28 @@
 // Gold/ink theme for the credit management page.
 // Scoped via CSS Modules so it can't leak into the rest of the Tailwind-based app.
-$ink: #0B1A2C;
-$ink-2: #10243A;
-$paper: #EEF0F2;
-$white: #FFFFFF;
-$gold: #E6A93C;
-$gold-2: #F2C871;
-$gold-deep: #C98A1F;
-$amber-bg: rgba(230, 169, 60, .14);
+$ink: #0b1a2c;
+$ink-2: #10243a;
+$paper: #eef0f2;
+$white: #ffffff;
+$gold: #e6a93c;
+$gold-2: #f2c871;
+$gold-deep: #c98a1f;
+$amber-bg: rgba(230, 169, 60, 0.14);
 $slate: #566776;
-$slate-2: #8693A0;
-$line: #E4E7EA;
-$mist: #E8ECF0;
+$slate-2: #8693a0;
+$line: #e4e7ea;
+$mist: #e8ecf0;
 $green: #2f9e69;
-$green-bg: rgba(60, 200, 130, .13);
-$green-bd: rgba(60, 200, 130, .34);
+$green-bg: rgba(60, 200, 130, 0.13);
+$green-bd: rgba(60, 200, 130, 0.34);
 $blue: #3b6fb0;
-$blue-bg: rgba(59, 111, 176, .12);
+$blue-bg: rgba(59, 111, 176, 0.12);
 $red: #cf4b4b;
-$red-bg: rgba(207, 75, 75, .1);
+$red-bg: rgba(207, 75, 75, 0.1);
 $r-lg: 18px;
 $r-md: 13px;
 $r-sm: 9px;
-$ease: cubic-bezier(.2, .7, .2, 1);
+$ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 
 // ===== Page shell =====
 .page {
@@ -47,7 +47,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 
   p {
     color: $slate;
-    font-size: .95rem;
+    font-size: 0.95rem;
     margin-top: 3px;
   }
 }
@@ -61,17 +61,17 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 .balChip {
   display: flex;
   align-items: center;
-  gap: .5em;
+  gap: 0.5em;
   background: $white;
   border: 1px solid $line;
   border-radius: $r-sm;
-  padding: .6em 1em;
-  font-family: 'JetBrains Mono', monospace;
+  padding: 0.6em 1em;
+  font-family: "JetBrains Mono", monospace;
   font-weight: 600;
   color: $ink;
 
   &.low {
-    border-color: rgba(230, 169, 60, .5);
+    border-color: rgba(230, 169, 60, 0.5);
     background: $amber-bg;
     color: $gold-deep;
   }
@@ -93,31 +93,36 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 .btnPrimary {
   display: inline-flex;
   align-items: center;
-  gap: .5em;
+  gap: 0.5em;
   background: $gold;
   color: #241704;
   font-weight: 700;
-  font-size: .9rem;
+  font-size: 0.9rem;
   border-radius: $r-sm;
-  padding: .72em 1.2em;
-  transition: .18s;
+  padding: 0.72em 1.2em;
+  transition: 0.18s;
 
-  &:hover { background: $gold-2; }
+  &:hover {
+    background: $gold-2;
+  }
 }
 
 .btnGhost {
   display: inline-flex;
   align-items: center;
-  gap: .4em;
-  padding: .72em 1.3em;
+  gap: 0.4em;
+  padding: 0.72em 1.3em;
   border: 1.5px solid $line;
   border-radius: $r-sm;
   font-weight: 600;
   color: $slate;
   background: $white;
-  transition: .18s;
+  transition: 0.18s;
 
-  &:hover { border-color: $ink; color: $ink; }
+  &:hover {
+    border-color: $ink;
+    color: $ink;
+  }
 }
 
 // ===== Tabs =====
@@ -132,16 +137,18 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 .tab {
   display: flex;
   align-items: center;
-  gap: .5em;
-  padding: .85em 1.1em;
-  font-size: .92rem;
+  gap: 0.5em;
+  padding: 0.85em 1.1em;
+  font-size: 0.92rem;
   font-weight: 600;
   color: $slate;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
-  transition: .2s;
+  transition: 0.2s;
 
-  &:hover { color: $ink; }
+  &:hover {
+    color: $ink;
+  }
 
   &.on {
     color: $gold-deep;
@@ -150,12 +157,18 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 }
 
 .panel {
-  animation: fade .3s $ease;
+  animation: fade 0.3s $ease;
 }
 
 @keyframes fade {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 // ===== Generic card =====
@@ -166,7 +179,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   border: 1px solid $line;
   border-radius: $r-lg;
   padding: 24px;
-  box-shadow: 0 16px 40px -34px rgba(11, 26, 44, .4);
+  box-shadow: 0 16px 40px -34px rgba(11, 26, 44, 0.4);
 }
 
 .cardSm {
@@ -177,7 +190,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 }
 
 .cardTitle {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: "Bricolage Grotesque", sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
   color: $ink;
@@ -185,7 +198,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 }
 
 .cardSub {
-  font-size: .86rem;
+  font-size: 0.86rem;
   color: $slate;
   margin-bottom: 18px;
 }
@@ -245,14 +258,14 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   font-size: 15px;
   line-height: 1.4;
   font-weight: 600;
-  color: #E9F0F7;
+  color: #e9f0f7;
 }
 
 .balSub {
   margin-top: 4px;
   font-size: 14px;
   line-height: 1.5;
-  color: #9BAEC0;
+  color: #9baec0;
 }
 
 .balAmount {
@@ -263,12 +276,12 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 }
 
 .balValue {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-size: 80px;
-  line-height: .84;
+  line-height: 0.84;
   font-weight: 800;
-  letter-spacing: -.04em;
-  color: #F0B552;
+  letter-spacing: -0.04em;
+  color: #f0b552;
 
   @media (max-width: 640px) {
     font-size: 64px;
@@ -301,9 +314,11 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   color: $ink;
   font-size: 15px;
   font-weight: 600;
-  transition: background .18s;
+  transition: background 0.18s;
 
-  &:hover { background: #F0B552; }
+  &:hover {
+    background: #f0b552;
+  }
 }
 
 .balRate {
@@ -312,7 +327,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   gap: 8px;
   font-size: 14px;
   line-height: 1.4;
-  color: #9BAEC0;
+  color: #9baec0;
 }
 
 .balRateDot {
@@ -327,8 +342,8 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   align-items: center;
   gap: 14px;
   padding: 10px 36px;
-  background: rgba(245, 158, 11, .08);
-  border-top: 1px solid rgba(245, 158, 11, .24);
+  background: rgba(245, 158, 11, 0.08);
+  border-top: 1px solid rgba(245, 158, 11, 0.24);
 
   @media (max-width: 640px) {
     padding: 10px 24px;
@@ -342,9 +357,9 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   display: grid;
   place-items: center;
   border-radius: 50%;
-  background: rgba(245, 158, 11, .16);
-  color: #F59E0B;
-  animation: balPulse 1.6s ease-out .8s 3 both;
+  background: rgba(245, 158, 11, 0.16);
+  color: #f59e0b;
+  animation: balPulse 1.6s ease-out 0.8s 3 both;
 
   @media (prefers-reduced-motion: reduce) {
     animation: none;
@@ -352,7 +367,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 
   // New company, no Credits yet: a welcome, not a warning — gold, no pulse.
   &.welcome {
-    background: rgba(230, 169, 60, .16);
+    background: rgba(230, 169, 60, 0.16);
     color: $gold;
     animation: none;
   }
@@ -363,7 +378,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   min-width: 0;
   font-size: 14px;
   line-height: 1.5;
-  color: #9BAEC0;
+  color: #9baec0;
 
   strong {
     font-weight: 600;
@@ -372,8 +387,12 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 }
 
 @keyframes balPulse {
-  from { box-shadow: 0 0 0 0 rgba(245, 158, 11, .5); }
-  to { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
+  from {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.5);
+  }
+  to {
+    box-shadow: 0 0 0 12px rgba(245, 158, 11, 0);
+  }
 }
 
 // ===== Overview: Quick stats + Recommendations panels =====
@@ -392,7 +411,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   background: $white;
   border: 1px solid $line;
   border-radius: 16px;
-  box-shadow: 0 1px 2px rgba(11, 26, 44, .04);
+  box-shadow: 0 1px 2px rgba(11, 26, 44, 0.04);
 }
 
 .ovPanelHead {
@@ -401,16 +420,18 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   align-items: center;
   gap: 18px;
   padding: 0 4px;
-  color: #D4931F;
+  color: #d4931f;
 
-  svg { flex: none; }
+  svg {
+    flex: none;
+  }
 }
 
 .ovPanelTitle {
   font-size: 17px;
   line-height: 1.4;
   font-weight: 700;
-  letter-spacing: -.01em;
+  letter-spacing: -0.01em;
   color: $ink;
 }
 
@@ -428,16 +449,28 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   height: 42px;
 }
 
-.chipAmber { background: #FAECD3; color: #D4931F; }
-.chipBlue { background: #DBE8FC; color: #2563EB; }
-.chipIndigo { background: #E5E7FB; color: #6B77E8; }
-.chipGreen { background: #DCF0E4; color: #12794A; }
+.chipAmber {
+  background: #faecd3;
+  color: #d4931f;
+}
+.chipBlue {
+  background: #dbe8fc;
+  color: #2563eb;
+}
+.chipIndigo {
+  background: #e5e7fb;
+  color: #6b77e8;
+}
+.chipGreen {
+  background: #dcf0e4;
+  color: #12794a;
+}
 
 .chipCoin {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #F0B552, #D4931F);
+  background: linear-gradient(135deg, #f0b552, #d4931f);
 }
 
 .ovStats {
@@ -455,7 +488,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   gap: 16px;
   padding: 8px 16px 8px 10px;
   border-radius: 12px;
-  background: #F4F7FA;
+  background: #f4f7fa;
 }
 
 .ovStatLabel {
@@ -477,15 +510,17 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   font-size: 18px;
   line-height: 1.2;
   font-weight: 700;
-  letter-spacing: -.01em;
+  letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
   color: $ink;
 
-  &.positive { color: #12794A; }
+  &.positive {
+    color: #12794a;
+  }
 }
 
 .ovStatUnit {
-  color: #2B4A6A;
+  color: #2b4a6a;
 }
 
 .ovRecs {
@@ -507,16 +542,18 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   align-items: center;
   gap: 16px;
   padding: 10px 16px 10px 12px;
-  border: 1px solid #E6EBF0;
+  border: 1px solid #e6ebf0;
   border-radius: 12px;
-  background: #F8FAFC;
+  background: #f8fafc;
   color: $ink;
   text-align: left;
-  transition: background .18s, border-color .18s;
+  transition:
+    background 0.18s,
+    border-color 0.18s;
 
   &:hover {
-    background: #F1F5F9;
-    border-color: #D7DFE8;
+    background: #f1f5f9;
+    border-color: #d7dfe8;
   }
 
   &:hover .ovRecArrow {
@@ -528,7 +565,9 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 .ovRecArrow {
   flex: none;
   color: $slate-2;
-  transition: color .18s, transform .18s;
+  transition:
+    color 0.18s,
+    transform 0.18s;
 }
 
 .ovRecText {
@@ -563,7 +602,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 
 .rec {
   display: flex;
-  gap: .8em;
+  gap: 0.8em;
   align-items: flex-start;
 }
 
@@ -575,53 +614,110 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   place-items: center;
   flex: none;
 
-  &.r1 { background: $green-bg; color: $green; }
-  &.r2 { background: $amber-bg; color: $gold-deep; }
-  &.r3 { background: $blue-bg; color: $blue; }
+  &.r1 {
+    background: $green-bg;
+    color: $green;
+  }
+  &.r2 {
+    background: $amber-bg;
+    color: $gold-deep;
+  }
+  &.r3 {
+    background: $blue-bg;
+    color: $blue;
+  }
 }
 
 .recBody {
   b {
     display: block;
-    font-size: .92rem;
+    font-size: 0.92rem;
     color: $ink;
   }
 
   span {
-    font-size: .82rem;
+    font-size: 0.82rem;
     color: $slate;
   }
 }
 
 // ===== Buy packages =====
-.pkgsHead {
-  text-align: center;
-  padding: 20px;
-  margin-bottom: 18px;
+// Below the page's full content width (1180px) the packages turn into full-width rows —
+// five cards only fit their bonus line at full width.
+$pkg-rows: 1179px;
 
-  h2, h3 {
-    font-size: 1.3rem;
+// Title and what a Credit buys beside the green "free" note, one divider under both.
+.pkgsHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  padding: 6px 0 20px;
+  border-bottom: 1px solid $line;
+  // Room for the "Most popular" badge that sticks out above its card.
+  margin-bottom: 30px;
+}
+
+.pkgsTitle {
+  flex: 1 1 auto;
+  min-width: 0;
+
+  h2 {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
     color: $ink;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
 
   p {
+    font-size: 0.9rem;
     color: $slate;
-    font-size: .92rem;
+
+    b {
+      font-weight: 700;
+      color: $ink;
+    }
+  }
+}
+
+.pkgsFree {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  background: $green-bg;
+  border: 1px solid $green-bd;
+  border-radius: $r-md;
+  padding: 0.7em 1em;
+  color: #1f6e4a;
+  font-size: 0.86rem;
+  line-height: 1.45;
+
+  svg {
+    color: $green;
+    flex: none;
+  }
+  b {
+    font-weight: 700;
+  }
+
+  @media (max-width: $pkg-rows) {
+    flex-basis: 100%;
   }
 }
 
 .pkgs {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  // All packages on one row; --pkg-count is the number of active packages.
+  grid-template-columns: repeat(var(--pkg-count, 5), minmax(0, 1fr));
+  gap: 14px;
 
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media (max-width: 680px) {
+  @media (max-width: $pkg-rows) {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 }
 
@@ -629,24 +725,57 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   background: $white;
   border: 2px solid $line;
   border-radius: $r-lg;
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
+  padding: 30px 18px 22px;
+  display: grid;
+  grid-template-areas: "name" "cost" "credits" "bonus" "btn";
+  // The bonus row takes the slack, so every Buy button sits at the bottom.
+  grid-template-rows: auto auto auto 1fr auto;
+  justify-items: center;
   text-align: center;
   position: relative;
-  cursor: pointer;
-  transition: transform .25s $ease, box-shadow .25s, border-color .2s;
+  transition:
+    transform 0.25s $ease,
+    box-shadow 0.25s,
+    border-color 0.2s;
 
   &:hover {
     transform: translateY(-3px);
-    box-shadow: 0 24px 44px -30px rgba(11, 26, 44, .4);
-    border-color: rgba(230, 169, 60, .5);
+    box-shadow: 0 24px 44px -30px rgba(11, 26, 44, 0.4);
+    border-color: rgba(230, 169, 60, 0.5);
   }
 
   &.pop {
     border-color: $gold;
     box-shadow: 0 0 0 1px $gold;
-    background: rgba(230, 169, 60, .04);
+    background: rgba(230, 169, 60, 0.04);
+  }
+
+  // Row: name, Credits and bonus on the left; price in the middle; Buy on the right.
+  @media (max-width: $pkg-rows) {
+    grid-template-columns: 1fr auto auto;
+    grid-template-areas:
+      "name    cost btn"
+      "credits cost btn"
+      "bonus   cost btn";
+    grid-template-rows: auto;
+    column-gap: 28px;
+    row-gap: 8px;
+    align-items: center;
+    justify-items: start;
+    text-align: left;
+    padding: 20px 22px;
+  }
+
+  // Phone: Buy drops below as a full-width button.
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name    cost"
+      "credits cost"
+      "bonus   bonus"
+      "btn     btn";
+    column-gap: 14px;
+    padding: 20px 16px 16px;
   }
 }
 
@@ -657,48 +786,74 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   transform: translateX(-50%);
   background: $gold;
   color: #241704;
-  font-size: .68rem;
+  font-size: 0.68rem;
   font-weight: 700;
-  padding: .35em .9em;
+  padding: 0.35em 0.9em;
   border-radius: 99px;
   white-space: nowrap;
+
+  @media (max-width: $pkg-rows) {
+    left: 20px;
+    transform: none;
+  }
 }
 
 .pkgName {
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-size: 1.15rem;
+  grid-area: name;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.25rem;
   font-weight: 700;
   color: $ink;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+
+  @media (max-width: $pkg-rows) {
+    margin-bottom: 0;
+  }
+}
+
+.pkgCost {
+  grid-area: cost;
+
+  @media (max-width: $pkg-rows) {
+    text-align: right;
+    justify-self: end;
+  }
 }
 
 .pkgPrice {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: "Bricolage Grotesque", sans-serif;
   font-weight: 800;
-  font-size: 2.1rem;
+  font-size: 2.4rem;
+  line-height: 1.15;
   color: $ink;
+
+  @media (max-width: 560px) {
+    font-size: 1.75rem;
+  }
 }
 
 .pkgPriceSub {
-  font-size: .78rem;
+  font-size: 0.82rem;
   color: $slate;
 }
 
+// Saving per unlock against the 1-Credit package.
 .pkgSavings {
-  font-size: .85rem;
+  font-size: 0.82rem;
   color: $green;
-  font-weight: 600;
-  margin-top: 2px;
+  font-weight: 700;
+  margin-top: 3px;
 }
 
 .pkgCredits {
+  grid-area: credits;
   display: inline-flex;
   align-items: center;
-  gap: .5em;
+  gap: 0.5em;
   background: $mist;
-  padding: .5em 1em;
+  padding: 0.5em 0.9em;
   border-radius: $r-sm;
-  margin: 16px auto;
+  margin: 18px 0;
 
   b {
     font-weight: 700;
@@ -707,65 +862,92 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   }
 
   span {
-    color: $slate;
-    font-size: .85rem;
+    color: $ink;
+    font-size: 0.9rem;
+    letter-spacing: 0.05rem;
+  }
+
+  @media (max-width: $pkg-rows) {
+    margin: 0;
   }
 }
 
-// Bonus bookmarks a package adds (depends on company size).
+// Bonus bookmarks a package adds (same for every company size): a big icon
+// beside two lines, the second starting under the number rather than the "+".
 .pkgBonus {
+  grid-area: bonus;
+  align-self: start;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: .45em;
+  gap: 0.55em;
   background: $amber-bg;
   color: $gold-deep;
   border-radius: $r-sm;
-  padding: .5em .8em;
-  margin: -4px 0 14px;
-  font-size: .8rem;
-  font-weight: 600;
-
-  svg { flex: none; }
-}
-
-.pkgFeatures {
-  list-style: none;
-  text-align: left;
-  display: grid;
-  gap: 8px;
+  padding: 0.55em 0.7em;
   margin-bottom: 18px;
-  font-size: .84rem;
-  color: #334;
-}
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
 
-.pkgFeature {
-  display: flex;
-  gap: .5em;
-  align-items: flex-start;
+  > span {
+    display: flex;
+    flex-direction: column;
+    white-space: nowrap;
+  }
 
-  svg { color: $gold-deep; flex: none; margin-top: 2px; }
+  svg {
+    flex: none;
+  }
+
+  .pkgBonusIndent {
+    visibility: hidden;
+    user-select: none;
+  }
+
+  @media (max-width: $pkg-rows) {
+    width: auto;
+    align-self: center;
+    justify-content: flex-start;
+    margin-bottom: 0;
+  }
 }
 
 .pkgBtn {
-  margin-top: auto;
+  grid-area: btn;
   width: 100%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .5em;
-  padding: .7em;
+  gap: 0.5em;
+  padding: 0.8em;
   border-radius: $r-sm;
   font-weight: 700;
-  font-size: .88rem;
+  font-size: 0.92rem;
   border: 1.5px solid $line;
   background: $white;
   color: $ink;
-  transition: border-color .2s, background-color .2s;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+
+  @media (max-width: $pkg-rows) {
+    width: auto;
+    padding: 0.7em 1.4em;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 560px) {
+    width: 100%;
+    margin-top: 6px;
+  }
 
   &:hover {
     border-color: $gold-deep;
-    background: rgba(230, 169, 60, .1);
+    background: rgba(230, 169, 60, 0.1);
   }
 
   &.pop {
@@ -773,28 +955,67 @@ $ease: cubic-bezier(.2, .7, .2, 1);
     color: #241704;
     border-color: $gold;
 
-    &:hover { background: $gold-2; }
+    &:hover {
+      background: $gold-2;
+    }
   }
 }
 
+// Three equal columns across the full width, split by thin dividers; stacked on small screens.
 .paynote {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 22px;
-  margin-top: 20px;
-  padding: 16px 20px;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 22px;
   background: $white;
   border: 1px solid $line;
-  border-radius: $r-md;
+  border-radius: $r-lg;
 
-  div {
+  // Icon + text as one group, centred in its column.
+  li {
     display: flex;
-    align-items: flex-start;
-    gap: .6em;
-    font-size: .84rem;
-    color: $slate;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    padding: 18px 22px;
 
-    svg { color: $gold-deep; flex: none; margin-top: 1px; }
+    + li {
+      border-left: 1px solid $line;
+    }
+  }
+
+  // Stacked rows stay left-aligned so the icons line up under each other.
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+
+    li {
+      justify-content: flex-start;
+      padding: 16px 18px;
+
+      + li {
+        border-left: none;
+        border-top: 1px solid $line;
+      }
+    }
+  }
+}
+
+.paynoteText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+
+  b {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: $ink;
+  }
+
+  span {
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: $slate;
   }
 }
 
@@ -825,7 +1046,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   }
 
   p {
-    font-size: .86rem;
+    font-size: 0.86rem;
     color: $slate;
     margin-top: 2px;
   }
@@ -844,21 +1065,25 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 .fselect {
   appearance: none;
   border: 1.5px solid $line;
-  background: $white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238693A0' stroke-width='2'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E") no-repeat right .7em center;
+  background: $white
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238693A0' stroke-width='2'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E")
+    no-repeat right 0.7em center;
   border-radius: $r-sm;
-  padding: .62em 2em .62em .9em;
-  font-size: .86rem;
+  padding: 0.62em 2em 0.62em 0.9em;
+  font-size: 0.86rem;
   font-weight: 500;
   cursor: pointer;
   color: $ink;
   width: 100%;
-  transition: border-color .18s, box-shadow .18s;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
 
   &:hover,
   &:focus {
     outline: none;
     border-color: $gold;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, .16);
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
   }
 
   @media (min-width: 640px) {
@@ -876,10 +1101,14 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   gap: 14px;
   padding: 16px 24px;
   border-bottom: 1px solid $line;
-  transition: .15s;
+  transition: 0.15s;
 
-  &:hover { background: rgba(238, 240, 242, .6); }
-  &:last-child { border-bottom: none; }
+  &:hover {
+    background: rgba(238, 240, 242, 0.6);
+  }
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .hi {
@@ -890,8 +1119,14 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   place-items: center;
   flex: none;
 
-  &.spend { background: $blue-bg; color: $blue; }
-  &.buy { background: $green-bg; color: $green; }
+  &.spend {
+    background: $blue-bg;
+    color: $blue;
+  }
+  &.buy {
+    background: $green-bg;
+    color: $green;
+  }
 }
 
 .hd {
@@ -900,14 +1135,14 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   b {
     display: block;
     font-weight: 600;
-    font-size: .94rem;
+    font-size: 0.94rem;
     color: $ink;
   }
 
   span {
-    font-size: .8rem;
+    font-size: 0.8rem;
     color: $slate-2;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: "JetBrains Mono", monospace;
   }
 }
 
@@ -916,22 +1151,26 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 }
 
 .haAmt {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   font-weight: 700;
 
-  &.spend { color: $blue; }
-  &.buy { color: $green; }
+  &.spend {
+    color: $blue;
+  }
+  &.buy {
+    color: $green;
+  }
 }
 
 .haCost {
-  font-size: .78rem;
+  font-size: 0.78rem;
   color: $slate;
 }
 
 .haBal {
-  font-size: .76rem;
+  font-size: 0.76rem;
   color: $slate-2;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
   margin-top: 1px;
 }
 
@@ -939,9 +1178,15 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   padding: 48px 20px;
   text-align: center;
 
-  svg { color: $slate-2; opacity: .5; margin: 0 auto 16px; }
+  svg {
+    color: $slate-2;
+    opacity: 0.5;
+    margin: 0 auto 16px;
+  }
 
-  p { color: $slate; }
+  p {
+    color: $slate;
+  }
 }
 
 .histFoot {
@@ -950,7 +1195,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: .85rem;
+  font-size: 0.85rem;
   color: $slate;
 }
 
@@ -974,7 +1219,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   }
 
   p {
-    font-size: .86rem;
+    font-size: 0.86rem;
     color: $slate;
     margin-top: 2px;
   }
@@ -1006,14 +1251,26 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   place-items: center;
   margin-bottom: 10px;
 
-  &.k1 { background: $blue-bg; color: $blue; }
-  &.k2 { background: $green-bg; color: $green; }
-  &.k3 { background: $amber-bg; color: $gold-deep; }
-  &.k4 { background: $green-bg; color: $green; }
+  &.k1 {
+    background: $blue-bg;
+    color: $blue;
+  }
+  &.k2 {
+    background: $green-bg;
+    color: $green;
+  }
+  &.k3 {
+    background: $amber-bg;
+    color: $gold-deep;
+  }
+  &.k4 {
+    background: $green-bg;
+    color: $green;
+  }
 }
 
 .kpiNum {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: "Bricolage Grotesque", sans-serif;
   font-weight: 700;
   font-size: 1.7rem;
   line-height: 1;
@@ -1021,7 +1278,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 }
 
 .kpiLbl {
-  font-size: .78rem;
+  font-size: 0.78rem;
   color: $slate;
   margin-top: 4px;
 }
@@ -1054,7 +1311,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 .deptLegendItem {
   display: flex;
   align-items: center;
-  gap: .5em;
+  gap: 0.5em;
 
   .dot {
     width: 11px;
@@ -1064,12 +1321,12 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   }
 
   span {
-    font-size: .85rem;
+    font-size: 0.85rem;
     color: $slate;
   }
 
   b {
-    font-size: .85rem;
+    font-size: 0.85rem;
     font-weight: 600;
     color: $ink;
     margin-left: auto;
@@ -1090,7 +1347,10 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   gap: 13px;
   margin-bottom: 18px;
 
-  svg { color: $gold-deep; flex: none; }
+  svg {
+    color: $gold-deep;
+    flex: none;
+  }
 
   h3 {
     font-size: 1.1rem;
@@ -1099,7 +1359,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   }
 
   p {
-    font-size: .86rem;
+    font-size: 0.86rem;
     color: $slate;
     margin-top: 2px;
   }
@@ -1139,7 +1399,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   inset: 0;
   background: $mist;
   border-radius: 99px;
-  transition: .2s;
+  transition: 0.2s;
   pointer-events: none;
 
   &::before {
@@ -1151,26 +1411,28 @@ $ease: cubic-bezier(.2, .7, .2, 1);
     background: #fff;
     top: 3px;
     left: 3px;
-    transition: .2s;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, .2);
+    transition: 0.2s;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   }
 }
 
 .toggle input:checked + .toggleTrack {
   background: $gold;
 
-  &::before { transform: translateX(20px); }
+  &::before {
+    transform: translateX(20px);
+  }
 }
 
 .toggleTxt {
   b {
     display: block;
-    font-size: .95rem;
+    font-size: 0.95rem;
     color: $ink;
   }
 
   span {
-    font-size: .84rem;
+    font-size: 0.84rem;
     color: $slate;
   }
 }
@@ -1181,25 +1443,27 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   gap: 14px;
   max-width: 420px;
   padding-left: 16px;
-  border-left: 2px solid rgba(230, 169, 60, .2);
+  border-left: 2px solid rgba(230, 169, 60, 0.2);
 
   @media (max-width: 560px) {
     margin-left: 0;
   }
 }
 
-.fieldBlock { display: block; }
+.fieldBlock {
+  display: block;
+}
 
 .flabel {
   display: block;
-  font-size: .82rem;
+  font-size: 0.82rem;
   font-weight: 600;
   margin-bottom: 6px;
   color: $ink;
 }
 
 .fdesc {
-  font-size: .78rem;
+  font-size: 0.78rem;
   color: $slate;
   margin-top: 5px;
 }
@@ -1208,34 +1472,40 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   width: 100%;
   border: 1.5px solid $line;
   border-radius: $r-sm;
-  padding: .62em .8em;
-  font-size: .9rem;
+  padding: 0.62em 0.8em;
+  font-size: 0.9rem;
   color: $ink;
-  transition: border-color .18s, box-shadow .18s;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
 
   &:hover,
   &:focus {
     outline: none;
     border-color: $gold;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, .16);
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
   }
 }
 
 .checkRow {
   display: flex;
   align-items: flex-start;
-  gap: .6em;
-  font-size: .88rem;
+  gap: 0.6em;
+  font-size: 0.88rem;
   color: $ink;
   cursor: pointer;
 
-  input { margin-top: 3px; accent-color: $gold; flex: none; }
+  input {
+    margin-top: 3px;
+    accent-color: $gold;
+    flex: none;
+  }
 }
 
 .checkTxt {
   span {
     display: block;
-    font-size: .78rem;
+    font-size: 0.78rem;
     color: $slate;
     margin-top: 1px;
   }
@@ -1243,25 +1513,29 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 
 .noteRow {
   display: flex;
-  gap: .6em;
-  font-size: .84rem;
+  gap: 0.6em;
+  font-size: 0.84rem;
   color: $slate;
-  background: rgba(230, 169, 60, .08);
+  background: rgba(230, 169, 60, 0.08);
   border-radius: $r-sm;
   padding: 12px 14px;
 
-  svg { flex: none; margin-top: 2px; color: $gold-deep; }
+  svg {
+    flex: none;
+    margin-top: 2px;
+    color: $gold-deep;
+  }
 }
 
 .previewBox {
-  background: rgba(238, 240, 242, .6);
+  background: rgba(238, 240, 242, 0.6);
   border-radius: $r-sm;
   padding: 14px;
 
   ul {
     list-style: none;
     color: $slate;
-    font-size: .85rem;
+    font-size: 0.85rem;
     display: grid;
     gap: 4px;
     margin-top: 6px;
@@ -1286,10 +1560,15 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   border: 1.5px solid $line;
   border-radius: $r-md;
   margin-bottom: 10px;
-  transition: .18s;
+  transition: 0.18s;
 
-  &.default { border-color: $gold; background: rgba(230, 169, 60, .05); }
-  &:hover { border-color: rgba(230, 169, 60, .5); }
+  &.default {
+    border-color: $gold;
+    background: rgba(230, 169, 60, 0.05);
+  }
+  &:hover {
+    border-color: rgba(230, 169, 60, 0.5);
+  }
 }
 
 .pmIcon {
@@ -1309,22 +1588,22 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   b {
     display: block;
     font-weight: 600;
-    font-size: .92rem;
+    font-size: 0.92rem;
     color: $ink;
   }
 
   span {
     display: block;
-    font-size: .8rem;
+    font-size: 0.8rem;
     color: $slate;
   }
 }
 
 .pmTag {
-  font-size: .72rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: $gold-deep;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: "JetBrains Mono", monospace;
 }
 
 .pmActions {
@@ -1335,7 +1614,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 }
 
 .setDefBtn {
-  font-size: .82rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: $blue;
 }
@@ -1347,21 +1626,26 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   display: grid;
   place-items: center;
   color: $slate-2;
-  transition: .18s;
+  transition: 0.18s;
 
-  &:hover { background: $red-bg; color: $red; }
+  &:hover {
+    background: $red-bg;
+    color: $red;
+  }
 }
 
 .addCard {
   display: inline-flex;
   align-items: center;
-  gap: .5em;
+  gap: 0.5em;
   font-weight: 600;
   color: $ink;
-  font-size: .9rem;
+  font-size: 0.9rem;
   margin-top: 6px;
 
-  svg { color: $gold-deep; }
+  svg {
+    color: $gold-deep;
+  }
 }
 
 .addCardForm {
@@ -1380,7 +1664,7 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   h4 {
     font-weight: 600;
     color: $ink;
-    font-size: .95rem;
+    font-size: 0.95rem;
   }
 }
 
@@ -1427,9 +1711,11 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   padding: 13px 15px;
   border: 1px solid $line;
   border-radius: $r-md;
-  transition: .18s;
+  transition: 0.18s;
 
-  &:hover { border-color: rgba(230, 169, 60, .5); }
+  &:hover {
+    border-color: rgba(230, 169, 60, 0.5);
+  }
 }
 
 .bankIcon {
@@ -1446,28 +1732,41 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 .bankBody {
   flex: 1;
 
-  b { font-size: .9rem; color: $ink; }
-  span { font-size: .78rem; color: $green; display: block; }
+  b {
+    font-size: 0.9rem;
+    color: $ink;
+  }
+  span {
+    font-size: 0.78rem;
+    color: $green;
+    display: block;
+  }
 }
 
-.bankOk { color: $green; flex: none; }
+.bankOk {
+  color: $green;
+  flex: none;
+}
 
 .secure {
   ul {
     list-style: none;
     display: grid;
     gap: 9px;
-    font-size: .86rem;
+    font-size: 0.86rem;
     color: #334;
   }
 
   li {
     display: flex;
-    gap: .6em;
+    gap: 0.6em;
     align-items: center;
     white-space: nowrap;
 
-    svg { color: $green; flex: none; }
+    svg {
+      color: $green;
+      flex: none;
+    }
   }
 }
 
@@ -1492,7 +1791,9 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   justify-self: center;
   margin: -6px -6px 0 0;
 
-  &.artSmall { width: 56%; }
+  &.artSmall {
+    width: 56%;
+  }
 
   @media (max-width: 880px) {
     display: none;
@@ -1507,27 +1808,40 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   place-items: center;
   flex: none;
 
-  &.peach { background: $amber-bg; color: $gold-deep; }
-  &.green { background: $green-bg; color: $green; }
+  &.peach {
+    background: $amber-bg;
+    color: $gold-deep;
+  }
+  &.green {
+    background: $green-bg;
+    color: $green;
+  }
 }
 
 .infoBox {
   display: flex;
   align-items: center;
-  gap: .7em;
+  gap: 0.7em;
   background: $blue-bg;
   border-radius: $r-md;
   padding: 14px 16px;
-  font-size: .86rem;
+  font-size: 0.86rem;
   color: $ink;
   margin-bottom: 14px;
 
-  svg { color: $blue; flex: none; }
+  svg {
+    color: $blue;
+    flex: none;
+  }
 
-  span { white-space: nowrap; }
+  span {
+    white-space: nowrap;
+  }
 
   @media (max-width: 880px) {
-    span { white-space: normal; }
+    span {
+      white-space: normal;
+    }
   }
 }
 
@@ -1535,20 +1849,28 @@ $ease: cubic-bezier(.2, .7, .2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: .5em;
+  gap: 0.5em;
   width: 100%;
   padding: 14px;
   border: 1.5px dashed $line;
   border-radius: $r-md;
   font-weight: 600;
   color: $ink;
-  font-size: .92rem;
-  transition: .18s;
+  font-size: 0.92rem;
+  transition: 0.18s;
 
-  svg { color: $gold-deep; }
+  svg {
+    color: $gold-deep;
+  }
 
-  &:hover { border-color: $gold; background: rgba(230, 169, 60, .05); }
-  &:disabled { opacity: .6; cursor: default; }
+  &:hover {
+    border-color: $gold;
+    background: rgba(230, 169, 60, 0.05);
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
 }
 
 .secureGrid {
@@ -1565,32 +1887,35 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 .securityFooter {
   display: flex;
   align-items: center;
-  gap: .7em;
+  gap: 0.7em;
   background: $blue-bg;
   border-radius: $r-md;
   padding: 14px 20px;
   margin-top: 18px;
-  font-size: .86rem;
+  font-size: 0.86rem;
   color: $ink;
   flex-wrap: wrap;
 
-  > svg { color: $blue; flex: none; }
+  > svg {
+    color: $blue;
+    flex: none;
+  }
 }
 
 .securityFooterLink {
   margin-left: auto;
   display: inline-flex;
   align-items: center;
-  gap: .4em;
+  gap: 0.4em;
   font-weight: 600;
   color: $blue;
   white-space: nowrap;
 }
 
 // ===== Purchase confirmation modal =====
-$ink-3: #21405E;
-$text-light: #E9F0F7;
-$text-dim: #9BAEC0;
+$ink-3: #21405e;
+$text-light: #e9f0f7;
+$text-dim: #9baec0;
 
 .modalOverlay {
   position: fixed;
@@ -1600,29 +1925,35 @@ $text-dim: #9BAEC0;
   align-items: center;
   justify-content: center;
   padding: 24px;
-  background: rgba(6, 13, 22, .72);
+  background: rgba(6, 13, 22, 0.72);
   backdrop-filter: blur(8px);
-  animation: fade .3s $ease;
+  animation: fade 0.3s $ease;
 }
 
 .modal {
   position: relative;
   width: 100%;
   max-width: 440px;
-  background: linear-gradient(180deg, #15293F, #0E2034);
+  background: linear-gradient(180deg, #15293f, #0e2034);
   border: 1px solid $ink-3;
   border-radius: 22px;
   padding: 34px 30px 28px;
   box-shadow:
-    0 0 0 1px rgba(230, 169, 60, .1),
-    0 50px 100px -30px rgba(0, 0, 0, .7),
-    0 0 0 1px rgba(255, 255, 255, .02) inset;
-  animation: pop .45s $ease;
+    0 0 0 1px rgba(230, 169, 60, 0.1),
+    0 50px 100px -30px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  animation: pop 0.45s $ease;
 }
 
 @keyframes pop {
-  from { opacity: 0; transform: translateY(18px) scale(.97); }
-  to { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .modalFlash {
@@ -1631,15 +1962,27 @@ $text-dim: #9BAEC0;
   border-radius: 22px;
   pointer-events: none;
   opacity: 0;
-  background: radial-gradient(circle at 50% 38%, rgba(242, 200, 113, .45), transparent 60%);
+  background: radial-gradient(
+    circle at 50% 38%,
+    rgba(242, 200, 113, 0.45),
+    transparent 60%
+  );
 
-  &.flashing { animation: flash .8s $ease; }
+  &.flashing {
+    animation: flash 0.8s $ease;
+  }
 }
 
 @keyframes flash {
-  0% { opacity: 0; }
-  25% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .modalClose {
@@ -1653,12 +1996,19 @@ $text-dim: #9BAEC0;
   place-items: center;
   color: $text-dim;
   border: 1px solid transparent;
-  transition: .2s $ease;
+  transition: 0.2s $ease;
 
   &:hover {
     color: $text-light;
-    background: rgba(255, 255, 255, .05);
-    border-color: rgba(255, 255, 255, .1);
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: none;
+    border-color: transparent;
   }
 }
 
@@ -1671,13 +2021,15 @@ $text-dim: #9BAEC0;
   place-items: center;
   color: #241704;
   background: linear-gradient(140deg, $gold-2, $gold-deep);
-  box-shadow: 0 14px 34px -12px rgba(230, 169, 60, .8), 0 0 0 6px rgba(230, 169, 60, .1);
+  box-shadow:
+    0 14px 34px -12px rgba(230, 169, 60, 0.8),
+    0 0 0 6px rgba(230, 169, 60, 0.1);
 }
 
 .modalEyebrow {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .7rem;
-  letter-spacing: .18em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   font-weight: 500;
   color: $gold;
@@ -1685,32 +2037,53 @@ $text-dim: #9BAEC0;
 }
 
 .modalTitle {
-  font-family: 'Bricolage Grotesque', sans-serif;
+  font-family: "Bricolage Grotesque", sans-serif;
   font-weight: 700;
-  letter-spacing: -.02em;
+  letter-spacing: -0.02em;
   font-size: 1.62rem;
   line-height: 1.1;
   text-align: center;
-  margin: .5rem 0 .4rem;
+  margin: 0.5rem 0 0.4rem;
   color: $text-light;
 }
 
 .modalSub {
   text-align: center;
-  font-size: .95rem;
+  font-size: 0.95rem;
   color: $text-dim;
   max-width: 300px;
   margin: 0 auto 24px;
 
-  b { color: $gold-2; font-weight: 600; }
+  b {
+    color: $gold-2;
+    font-weight: 600;
+  }
 }
 
 .modalBox {
-  background: rgba(255, 255, 255, .025);
+  background: rgba(255, 255, 255, 0.025);
   border: 1px solid $ink-3;
   border-radius: $r-md;
   padding: 6px 18px;
   margin-bottom: 22px;
+}
+
+.modalFine {
+  text-align: center;
+  font-size: 0.8rem;
+  color: $text-dim;
+  margin: -8px 0 18px;
+
+  a {
+    color: $gold;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    white-space: nowrap;
+
+    &:hover {
+      color: $gold-2;
+    }
+  }
 }
 
 .modalRow {
@@ -1719,26 +2092,35 @@ $text-dim: #9BAEC0;
   justify-content: space-between;
   gap: 14px;
   padding: 13px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, .06);
-  font-size: .9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.9rem;
   color: $text-dim;
 
-  &:last-child { border-bottom: none; }
+  &:last-child {
+    border-bottom: none;
+  }
 
-  b { color: $text-light; font-weight: 600; font-size: 1rem; }
+  b {
+    color: $text-light;
+    font-weight: 600;
+    font-size: 1rem;
+    text-align: right;
+  }
 
   &.total {
     margin: 0 -18px;
     padding: 15px 18px;
-    background: rgba(230, 169, 60, .07);
-    border-top: 1px solid rgba(230, 169, 60, .22);
+    background: rgba(230, 169, 60, 0.07);
+    border-top: 1px solid rgba(230, 169, 60, 0.22);
     border-bottom: none;
     border-radius: 0 0 $r-md $r-md;
 
-    span:first-child { color: $gold; }
+    span:first-child {
+      color: $gold;
+    }
 
     b {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: "JetBrains Mono", monospace;
       font-weight: 600;
       font-size: 1.15rem;
       color: $gold;
@@ -1747,31 +2129,31 @@ $text-dim: #9BAEC0;
 }
 
 .modalRowKey {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: .74rem;
-  letter-spacing: .06em;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: $slate-2;
 }
 
 .modalDelta {
-  font-size: .78rem;
+  font-size: 0.78rem;
   color: #7bd9a8;
   font-weight: 600;
-  margin-right: .5em;
+  margin-right: 0.5em;
 }
 
 .modalPkgBadge {
   display: inline-flex;
   align-items: center;
-  gap: .4em;
-  font-family: 'JetBrains Mono', monospace;
+  gap: 0.4em;
+  font-family: "JetBrains Mono", monospace;
   font-weight: 600;
-  font-size: .82rem;
-  letter-spacing: .06em;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
   color: #241704;
   background: linear-gradient(140deg, $gold-2, $gold);
-  padding: .34em .8em;
+  padding: 0.34em 0.8em;
   border-radius: 99px;
 }
 
@@ -1789,20 +2171,31 @@ $text-dim: #9BAEC0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .55em;
+  gap: 0.55em;
   font-weight: 600;
-  font-size: .98rem;
+  font-size: 0.98rem;
   border-radius: $r-sm;
-  padding: .92em 1.2em;
+  padding: 0.92em 1.2em;
   background: transparent;
   color: $text-light;
-  border: 1.5px solid rgba(255, 255, 255, .22);
-  transition: transform .25s $ease, background-color .25s, border-color .25s;
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  transition:
+    transform 0.25s $ease,
+    background-color 0.25s,
+    border-color 0.25s;
 
   &:hover {
-    border-color: rgba(255, 255, 255, .6);
-    background: rgba(255, 255, 255, .04);
+    border-color: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 0.04);
     transform: translateY(-2px);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    border-color: rgba(255, 255, 255, 0.22);
+    background: transparent;
+    transform: none;
   }
 }
 
@@ -1811,36 +2204,42 @@ $text-dim: #9BAEC0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: .55em;
+  gap: 0.55em;
   font-weight: 700;
-  font-size: .98rem;
+  font-size: 0.98rem;
   border-radius: $r-sm;
-  padding: .92em 1.2em;
+  padding: 0.92em 1.2em;
   background: $gold;
   color: #241704;
-  box-shadow: 0 10px 26px -12px rgba(230, 169, 60, .85);
-  transition: transform .25s $ease, background-color .25s, box-shadow .25s;
+  box-shadow: 0 10px 26px -12px rgba(230, 169, 60, 0.85);
+  transition:
+    transform 0.25s $ease,
+    background-color 0.25s,
+    box-shadow 0.25s;
 
   &:hover {
     background: $gold-2;
     transform: translateY(-2px);
-    box-shadow: 0 14px 32px -12px rgba(230, 169, 60, .9);
+    box-shadow: 0 14px 32px -12px rgba(230, 169, 60, 0.9);
   }
 
   &.done {
-    background: rgba(86, 210, 145, .16);
+    background: rgba(86, 210, 145, 0.16);
     color: #7bd9a8;
-    border: 1px solid rgba(86, 210, 145, .35);
+    border: 1px solid rgba(86, 210, 145, 0.35);
     box-shadow: none;
     cursor: default;
     transform: none;
 
-    &:hover { transform: none; background: rgba(86, 210, 145, .16); }
+    &:hover {
+      transform: none;
+      background: rgba(86, 210, 145, 0.16);
+    }
   }
 }
 
 .checkoutError {
-  font-size: .82rem;
+  font-size: 0.82rem;
   color: #f5827e;
   margin: -6px 0 14px;
 }
@@ -1852,18 +2251,18 @@ $text-dim: #9BAEC0;
   left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: $ink;
-  color: #E9F0F7;
-  padding: .85em 1.3em;
+  color: #e9f0f7;
+  padding: 0.85em 1.3em;
   border-radius: 99px;
-  font-size: .9rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, .5);
+  box-shadow: 0 20px 40px -16px rgba(0, 0, 0, 0.5);
   opacity: 0;
-  transition: .3s $ease;
+  transition: 0.3s $ease;
   z-index: 1400;
   display: flex;
   align-items: center;
-  gap: .6em;
+  gap: 0.6em;
   pointer-events: none;
 
   &.show {
@@ -1872,12 +2271,15 @@ $text-dim: #9BAEC0;
     pointer-events: auto;
   }
 
-  svg { color: $gold; flex: none; }
+  svg {
+    color: $gold;
+    flex: none;
+  }
 }
 
 // ===== Payment form validation =====
 .fieldError {
-  font-size: .76rem;
+  font-size: 0.76rem;
   color: $red;
   margin-top: 4px;
   display: block;

@@ -87,11 +87,20 @@ const CreditManagement = () => {
     setShowPurchaseModal(true);
   };
 
+  // Stays open while a payment is in flight, so its result can't land on a different package's modal.
   const handleCloseModal = () => {
+    if (busy) return;
     setShowPurchaseModal(false);
     setSelectedPackage(null);
     setPurchaseResult(null);
   };
+
+  useEffect(() => {
+    if (!showPurchaseModal) return undefined;
+    const onKeyDown = (e) => { if (e.key === 'Escape') handleCloseModal(); };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [showPurchaseModal, busy]);
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -260,8 +269,14 @@ const CreditManagement = () => {
       {/* Purchase Confirmation Modal */}
       {showPurchaseModal && selectedPackage && (
         <div className={styles.modalOverlay} onClick={handleCloseModal}>
-          <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <button className={styles.modalClose} onClick={handleCloseModal} aria-label="Close">
+          <div
+            className={styles.modal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="purchase-modal-title"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button className={styles.modalClose} onClick={handleCloseModal} disabled={busy} aria-label="Close">
               <Icon name="X" size={18} />
             </button>
 
@@ -272,7 +287,7 @@ const CreditManagement = () => {
             {purchaseResult ? (
               <>
                 <p className={styles.modalEyebrow}>Purchase confirmation</p>
-                <h2 className={styles.modalTitle}>Payment successful</h2>
+                <h2 className={styles.modalTitle} id="purchase-modal-title">Payment successful</h2>
                 <p className={styles.modalSub}>
                   {purchaseResult.credited
                     ? <>Your <b>+{formatCredits(selectedPackage?.credits)}</b> {selectedPackage?.credits === 1 ? 'is' : 'are'} now available.</>
@@ -287,9 +302,9 @@ const CreditManagement = () => {
             ) : (
               <>
                 <p className={styles.modalEyebrow}>Purchase confirmation</p>
-                <h2 className={styles.modalTitle}>Buy {selectedPackage?.name} package</h2>
+                <h2 className={styles.modalTitle} id="purchase-modal-title">Buy {selectedPackage?.name} package</h2>
                 <p className={styles.modalSub}>
-                  Credits are added instantly and <b>never expire</b>. You only spend them when you unlock a candidate.
+                  Credits are added right after payment and <b>never expire</b>. You only spend them when you unlock a candidate.
                 </p>
 
                 <div className={styles.modalBox}>
@@ -312,7 +327,7 @@ const CreditManagement = () => {
                   {selectedPackage?.bookmarkBonus > 0 && (
                     <div className={styles.modalRow}>
                       <span className={styles.modalRowKey}>Bonus</span>
-                      <b>+{selectedPackage.bookmarkBonus} bookmarks · {selectedPackage.bookmarkBonusMonths} months</b>
+                      <b>+{selectedPackage.bookmarkBonus} bookmarks · {selectedPackage.bookmarkBonusMonths}{' '}months</b>
                     </div>
                   )}
                   <div className={styles.modalRow}>
@@ -320,6 +335,11 @@ const CreditManagement = () => {
                     <b>{formatPrice(selectedPackage?.price, selectedPackage?.currency)}</b>
                   </div>
                 </div>
+
+                <p className={styles.modalFine}>
+                  All purchases are final and non-refundable.{' '}
+                  <a href="/refund-policy" target="_blank" rel="noopener noreferrer">Refund Policy</a>
+                </p>
 
                 {checkoutError && <p className={styles.checkoutError}>{checkoutError}</p>}
 

@@ -202,117 +202,350 @@ $ease: cubic-bezier(.2, .7, .2, 1);
 }
 
 // ===== Overview: balance card =====
-.balBig {
-  background: linear-gradient(135deg, $ink, #10263d);
-  color: #E9F0F7;
-  border: none;
+.balCard {
   position: relative;
   overflow: hidden;
+  border-radius: 20px;
+  background: $ink;
+  color: $white;
+}
 
-  &::after {
-    content: "";
-    position: absolute;
-    top: -60px;
-    right: -40px;
-    width: 240px;
-    height: 240px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(230, 169, 60, .18), transparent 65%);
+.balBody {
+  position: relative;
+  overflow: hidden;
+  padding: 24px 36px 26px;
+
+  @media (max-width: 640px) {
+    padding: 20px 24px 24px;
   }
 }
 
-.balBigTop {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: relative;
+.balArt {
+  position: absolute;
+  top: 50%;
+  right: -100px;
+  width: 520px;
+  height: 520px;
+  margin-top: -260px;
+  pointer-events: none;
+
+  @media (max-width: 640px) {
+    right: -250px;
+  }
 }
 
-.balBigLbl {
-  font-size: .86rem;
+.balContent {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.balTitle {
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: #E9F0F7;
+}
+
+.balSub {
+  margin-top: 4px;
+  font-size: 14px;
+  line-height: 1.5;
   color: #9BAEC0;
-  position: relative;
 }
 
-.balBigIcons {
+.balAmount {
+  margin-top: 16px;
   display: flex;
-  align-items: center;
-  gap: .5em;
+  align-items: baseline;
+  gap: 14px;
+}
+
+.balValue {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 80px;
+  line-height: .84;
+  font-weight: 800;
+  letter-spacing: -.04em;
+  color: #F0B552;
+
+  @media (max-width: 640px) {
+    font-size: 64px;
+  }
+}
+
+.balUnit {
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 600;
   color: $gold;
 }
 
-.balBigVal {
-  font-family: 'Bricolage Grotesque', sans-serif;
-  font-weight: 800;
-  font-size: 3.4rem;
-  line-height: 1;
-  margin: 8px 0;
-  position: relative;
+.balActions {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+}
 
-  &.warn { color: #f0b552; }
+.balBuy {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px 0 14px;
+  border-radius: 10px;
+  background: $gold;
+  color: $ink;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background .18s;
 
-  span {
-    font-size: 1.1rem;
-    color: $gold;
-    font-weight: 600;
-    margin-left: .3em;
+  &:hover { background: #F0B552; }
+}
+
+.balRate {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #9BAEC0;
+}
+
+.balRateDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: $gold;
+}
+
+.balAlert {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 36px;
+  background: rgba(245, 158, 11, .08);
+  border-top: 1px solid rgba(245, 158, 11, .24);
+
+  @media (max-width: 640px) {
+    padding: 10px 24px;
   }
 }
 
-.balBigMeta {
-  font-size: .84rem;
-  color: #9BAEC0;
-  position: relative;
-}
-
-.balBigWarn {
-  margin-top: 16px;
-  padding: 12px;
-  background: rgba(230, 169, 60, .14);
-  border: 1px solid rgba(230, 169, 60, .3);
-  border-radius: $r-sm;
-  display: flex;
-  align-items: center;
-  gap: .5em;
-  position: relative;
-  font-size: .85rem;
-  font-weight: 600;
-  color: $gold-2;
-}
-
-// ===== Quick stats =====
-.qstats {
+.balAlertIcon {
+  flex: none;
+  width: 32px;
+  height: 32px;
   display: grid;
-  align-content: start;
-  gap: 13px;
-  flex: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(245, 158, 11, .16);
+  color: #F59E0B;
+  animation: balPulse 1.6s ease-out .8s 3 both;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 }
 
-.qstat {
+.balAlertText {
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #9BAEC0;
+
+  strong {
+    font-weight: 600;
+    color: $white;
+  }
+}
+
+@keyframes balPulse {
+  from { box-shadow: 0 0 0 0 rgba(245, 158, 11, .5); }
+  to { box-shadow: 0 0 0 12px rgba(245, 158, 11, 0); }
+}
+
+// ===== Overview: Quick stats + Recommendations panels =====
+.ovGrid {
+  margin-top: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(440px, 100%), 1fr));
+  gap: 20px;
+}
+
+.ovPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 20px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, .04);
+}
+
+.ovPanelHead {
+  min-height: 28px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 11px 0;
-  border-bottom: 1px solid $line;
+  gap: 18px;
+  padding: 0 4px;
+  color: #D4931F;
 
-  &:last-child { border-bottom: none; }
+  svg { flex: none; }
 }
 
-.qstatL {
-  font-size: .9rem;
+.ovPanelTitle {
+  font-size: 17px;
+  line-height: 1.4;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: $ink;
+}
+
+.chip {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.chipLg {
+  width: 42px;
+  height: 42px;
+}
+
+.chipAmber { background: #FAECD3; color: #D4931F; }
+.chipBlue { background: #DBE8FC; color: #2563EB; }
+.chipIndigo { background: #E5E7FB; color: #6B77E8; }
+.chipGreen { background: #DCF0E4; color: #12794A; }
+
+.chipCoin {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F0B552, #D4931F);
+}
+
+.ovStats {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ovStat {
+  flex: 1 1 auto;
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px 8px 10px;
+  border-radius: 12px;
+  background: #F4F7FA;
+}
+
+.ovStatLabel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+  line-height: 1.4;
   color: $slate;
 }
 
-.qstatV {
-  font-family: 'Bricolage Grotesque', sans-serif;
+.ovStatValue {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  font-size: 18px;
+  line-height: 1.2;
   font-weight: 700;
-  font-size: 1.15rem;
+  letter-spacing: -.01em;
+  font-variant-numeric: tabular-nums;
   color: $ink;
 
-  &.green { color: $green; }
+  &.positive { color: #12794A; }
 }
 
-// ===== Recommendations =====
+.ovStatUnit {
+  color: #2B4A6A;
+}
+
+.ovRecs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  > li {
+    flex: 1 1 auto;
+    display: flex;
+  }
+}
+
+.ovRec {
+  flex: 1;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 16px 10px 12px;
+  border: 1px solid #E6EBF0;
+  border-radius: 12px;
+  background: #F8FAFC;
+  color: $ink;
+  text-align: left;
+  transition: background .18s, border-color .18s;
+
+  &:hover {
+    background: #F1F5F9;
+    border-color: #D7DFE8;
+  }
+
+  &:hover .ovRecArrow {
+    color: $ink;
+    transform: translateX(2px);
+  }
+}
+
+.ovRecArrow {
+  flex: none;
+  color: $slate-2;
+  transition: color .18s, transform .18s;
+}
+
+.ovRecText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ovRecTitle {
+  font-size: 15px;
+  line-height: 1.4;
+  font-weight: 600;
+  color: $ink;
+}
+
+.ovRecDesc {
+  font-size: 14px;
+  line-height: 1.45;
+  color: $slate;
+}
+
+// ===== Recommendations (Analytics tab) =====
 .recs {
   display: flex;
   flex-direction: column;

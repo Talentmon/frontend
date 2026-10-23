@@ -12,6 +12,20 @@ import { creditWord, formatCredits } from 'utils/formatCredits';
 import { formatPrice, getBalance, getUsageAnalytics } from './creditsApi';
 import styles from './styles/credits.module.scss';
 
+// Overview panel header icons (bar chart on a baseline, sparkles) — not in lucide in this shape.
+const StatsIcon = () => (
+  <svg aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 21h18" /><path d="M6 17v-4" /><path d="M10 17V9" /><path d="M14 17V5" /><path d="M18 17v-6" />
+  </svg>
+);
+
+const SparkleIcon = () => (
+  <svg aria-hidden="true" focusable="false" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14 1.5Q15 9 22.5 10Q15 11 14 18.5Q13 11 5.5 10Q13 9 14 1.5Z" />
+    <path d="M5 16.5Q5.3 18.7 7.5 19Q5.3 19.3 5 21.5Q4.7 19.3 2.5 19Q4.7 18.7 5 16.5Z" fill="currentColor" strokeWidth="1" />
+  </svg>
+);
+
 const CreditManagement = () => {
   const [currentBalance, setCurrentBalance] = useState(0);
   const [quickStats, setQuickStats] = useState(null);
@@ -76,58 +90,99 @@ const CreditManagement = () => {
       case 'overview':
         return (
           <div>
-            <div style={{ marginBottom: 18 }}>
-              <CreditBalance balance={currentBalance} isLowBalance={isLowBalance} />
-            </div>
-            <div className={styles.grid2}>
-              <div className={styles.card}>
-                <div className={styles.cardTitle}>Quick stats</div>
-                <div className={styles.qstats}>
-                  <div className={styles.qstat}>
-                    <span className={styles.qstatL}>Used this month</span>
-                    <span className={styles.qstatV}>{quickStats ? formatCredits(quickStats.usedThisMonth) : '—'}</span>
-                  </div>
-                  <div className={styles.qstat}>
-                    <span className={styles.qstatL}>Profiles unlocked</span>
-                    <span className={styles.qstatV}>{quickStats ? quickStats.usedThisMonth : '—'}</span>
-                  </div>
-                  <div className={styles.qstat}>
-                    <span className={styles.qstatL}>Average monthly spend</span>
-                    <span className={styles.qstatV}>{quickStats ? formatCredits(quickStats.avgUsed) : '—'}</span>
-                  </div>
-                  <div className={styles.qstat}>
-                    <span className={styles.qstatL}>Hires this month</span>
-                    <span className={`${styles.qstatV} ${styles.green}`}>{quickStats ? quickStats.hiresThisMonth : '—'}</span>
-                  </div>
-                </div>
-              </div>
+            <CreditBalance balance={currentBalance} isLowBalance={isLowBalance} onBuy={() => setActiveTab('purchase')} />
 
-              <div className={styles.card}>
-                <div className={styles.cardTitle}>Recommendations</div>
-                <div className={styles.recs}>
-                  <div className={styles.rec}>
-                    <span className={`${styles.recIcon} ${styles.r1}`}><Icon name="TrendingUp" size={16} /></span>
-                    <div className={styles.recBody}>
-                      <b>Track your usage</b>
-                      <span>See trends and hires in the Analytics tab</span>
-                    </div>
-                  </div>
-                  <div className={styles.rec}>
-                    <span className={`${styles.recIcon} ${styles.r2}`}><Icon name="Zap" size={16} /></span>
-                    <div className={styles.recBody}>
-                      <b>Auto-renewal</b>
-                      <span>Enable it for uninterrupted use</span>
-                    </div>
-                  </div>
-                  <div className={styles.rec}>
-                    <span className={`${styles.recIcon} ${styles.r3}`}><Icon name="Award" size={16} /></span>
-                    <div className={styles.recBody}>
-                      <b>Bigger packages, lower cost per unlock</b>
-                      <span>Compare packages on the Purchase tab</span>
-                    </div>
-                  </div>
+            <div className={styles.ovGrid}>
+              <section className={styles.ovPanel} aria-labelledby="quick-stats-title">
+                <div className={styles.ovPanelHead}>
+                  <StatsIcon />
+                  <h2 className={styles.ovPanelTitle} id="quick-stats-title">Quick stats</h2>
                 </div>
-              </div>
+
+                <dl className={styles.ovStats}>
+                  <div className={styles.ovStat}>
+                    <dt className={styles.ovStatLabel}>
+                      <span className={`${styles.chip} ${styles.chipAmber}`} aria-hidden="true"><span className={styles.chipCoin}></span></span>
+                      <span>Used this month</span>
+                    </dt>
+                    <dd className={styles.ovStatValue}>
+                      <span>{quickStats ? quickStats.usedThisMonth : '—'}</span>
+                      {quickStats && <span className={styles.ovStatUnit}>{creditWord(quickStats.usedThisMonth)}</span>}
+                    </dd>
+                  </div>
+
+                  <div className={styles.ovStat}>
+                    <dt className={styles.ovStatLabel}>
+                      <span className={`${styles.chip} ${styles.chipBlue}`} aria-hidden="true"><Icon name="UserRound" size={18} /></span>
+                      <span>Profiles unlocked</span>
+                    </dt>
+                    <dd className={styles.ovStatValue}>
+                      <span>{quickStats ? quickStats.usedThisMonth : '—'}</span>
+                    </dd>
+                  </div>
+
+                  <div className={styles.ovStat}>
+                    <dt className={styles.ovStatLabel}>
+                      <span className={`${styles.chip} ${styles.chipIndigo}`} aria-hidden="true"><Icon name="Wallet" size={18} /></span>
+                      <span>Average monthly spend</span>
+                    </dt>
+                    <dd className={styles.ovStatValue}>
+                      <span>{quickStats ? quickStats.avgUsed : '—'}</span>
+                      {quickStats && <span className={styles.ovStatUnit}>{creditWord(quickStats.avgUsed)}</span>}
+                    </dd>
+                  </div>
+
+                  <div className={styles.ovStat}>
+                    <dt className={styles.ovStatLabel}>
+                      <span className={`${styles.chip} ${styles.chipGreen}`} aria-hidden="true"><Icon name="TrendingUp" size={18} /></span>
+                      <span>Hires this month</span>
+                    </dt>
+                    <dd className={`${styles.ovStatValue} ${styles.positive}`}>
+                      <span>{quickStats ? quickStats.hiresThisMonth : '—'}</span>
+                    </dd>
+                  </div>
+                </dl>
+              </section>
+
+              <section className={styles.ovPanel} aria-labelledby="recommendations-title">
+                <div className={styles.ovPanelHead}>
+                  <SparkleIcon />
+                  <h2 className={styles.ovPanelTitle} id="recommendations-title">Recommendations</h2>
+                </div>
+
+                <ul className={styles.ovRecs}>
+                  <li>
+                    <button type="button" className={styles.ovRec} onClick={() => setActiveTab('analytics')}>
+                      <span className={`${styles.chip} ${styles.chipLg} ${styles.chipGreen}`} aria-hidden="true"><Icon name="TrendingUp" size={20} /></span>
+                      <span className={styles.ovRecText}>
+                        <span className={styles.ovRecTitle}>Track your usage</span>
+                        <span className={styles.ovRecDesc}>See trends and hires in the Analytics tab</span>
+                      </span>
+                      <Icon name="ChevronRight" size={18} className={styles.ovRecArrow} aria-hidden="true" />
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" className={styles.ovRec} onClick={() => setActiveTab('settings')}>
+                      <span className={`${styles.chip} ${styles.chipLg} ${styles.chipAmber}`} aria-hidden="true"><Icon name="Zap" size={20} strokeWidth={1.5} fill="#e6a93c" /></span>
+                      <span className={styles.ovRecText}>
+                        <span className={styles.ovRecTitle}>Auto-renewal</span>
+                        <span className={styles.ovRecDesc}>Enable it for uninterrupted use</span>
+                      </span>
+                      <Icon name="ChevronRight" size={18} className={styles.ovRecArrow} aria-hidden="true" />
+                    </button>
+                  </li>
+                  <li>
+                    <button type="button" className={styles.ovRec} onClick={() => setActiveTab('purchase')}>
+                      <span className={`${styles.chip} ${styles.chipLg} ${styles.chipBlue}`} aria-hidden="true"><Icon name="Award" size={20} /></span>
+                      <span className={styles.ovRecText}>
+                        <span className={styles.ovRecTitle}>Bigger packages, lower cost per unlock</span>
+                        <span className={styles.ovRecDesc}>Compare packages on the Purchase tab</span>
+                      </span>
+                      <Icon name="ChevronRight" size={18} className={styles.ovRecArrow} aria-hidden="true" />
+                    </button>
+                  </li>
+                </ul>
+              </section>
             </div>
           </div>
         );
@@ -149,7 +204,7 @@ const CreditManagement = () => {
   return (
     <div className={styles.page}>
       <Header />
-      <main className="pt-16 max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '70px' }}>
+      <main className="pt-16 max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '32px' }}>
         {/* Page Header */}
         <div className={styles.head}>
           <div>

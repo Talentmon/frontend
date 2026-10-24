@@ -211,7 +211,7 @@ const CreditManagement = () => {
       case 'purchase':
         return <CreditPackages onPurchase={handlePurchase} />;
       case 'history':
-        return <TransactionHistory />;
+        return <TransactionHistory balance={currentBalance} />;
       case 'analytics':
         return <UsageAnalytics />;
       case 'settings':

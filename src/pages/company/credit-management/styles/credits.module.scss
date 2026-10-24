@@ -1049,163 +1049,390 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
 }
 
 // ===== Transaction history =====
-.histCard {
+.histTitle {
+  margin-bottom: 20px;
+
+  h2 {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: $ink;
+    margin-bottom: 3px;
+  }
+
+  p {
+    font-size: 0.9rem;
+    color: $slate;
+  }
+}
+
+.histStats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+.histStat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 22px 24px;
   background: $white;
   border: 1px solid $line;
   border-radius: $r-lg;
 }
 
-.histHead {
-  padding: 24px;
-  border-bottom: 1px solid $line;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-
-  @media (min-width: 640px) {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  h3 {
-    font-size: 1.1rem;
-    color: $ink;
-    font-weight: 700;
-  }
-
-  p {
-    font-size: 0.86rem;
-    color: $slate;
-    margin-top: 2px;
-  }
-}
-
-.histFilters {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-
-  @media (min-width: 640px) {
-    flex-direction: row;
-  }
-}
-
-.fselect {
-  appearance: none;
-  border: 1.5px solid $line;
-  background: $white
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238693A0' stroke-width='2'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E")
-    no-repeat right 0.7em center;
-  border-radius: $r-sm;
-  padding: 0.62em 2em 0.62em 0.9em;
+.histStatLabel {
   font-size: 0.86rem;
   font-weight: 500;
-  cursor: pointer;
+  color: $slate;
+}
+
+.histStatValue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 8px;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 2.3rem;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
   color: $ink;
-  width: 100%;
+}
+
+.histStatUnit {
+  font-family: Inter, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: $slate;
+}
+
+.histStatDark {
+  background: $ink;
+  border-color: $ink;
+
+  .histStatLabel {
+    color: #c5d1dd;
+  }
+  .histStatValue {
+    color: $white;
+  }
+  .histStatUnit {
+    font-weight: 700;
+    color: $gold;
+  }
+}
+
+.histCard {
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  // Clips the table's grey header and footer to the rounded corners (the sort list is portaled, so nothing else gets cut).
+  overflow: hidden;
+}
+
+.histHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px 24px;
+  padding: 18px 24px;
+
+  @media (max-width: 640px) {
+    padding: 16px;
+  }
+}
+
+.histSeg {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: #f1f3f5;
+  border-radius: 12px;
+}
+
+.histSegBtn {
+  padding: 0.5em 1.1em;
+  border-radius: $r-sm;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $slate;
   transition:
-    border-color 0.18s,
-    box-shadow 0.18s;
+    background 0.18s,
+    color 0.18s;
 
-  &:hover,
-  &:focus {
-    outline: none;
-    border-color: $gold;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
+  &:hover {
+    color: $ink;
   }
 
-  @media (min-width: 640px) {
-    width: 12rem;
+  &.on {
+    background: $ink;
+    color: $white;
   }
 }
 
-.histList {
-  border-top: 1px solid transparent;
+.histSort {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  label {
+    font-size: 0.86rem;
+    color: $slate;
+  }
 }
 
-.htx {
+.histSortSelect {
+  width: 10.5rem;
+
+  button {
+    font-weight: 500;
+  }
+}
+
+.htTable {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: 0 24px;
+  }
+
+  @media (max-width: 640px) {
+    display: block;
+
+    thead {
+      display: none;
+    }
+
+    tbody,
+    .htDay,
+    .htDay th {
+      display: block;
+    }
+  }
+}
+
+.htCols th {
+  padding-top: 11px;
+  padding-bottom: 11px;
+  background: #f6f7f9;
+  border-top: 1px solid $line;
+  border-bottom: 1px solid $line;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  text-align: left;
+  color: $slate;
+
+  &.htNum {
+    text-align: right;
+  }
+}
+
+.htDay th {
+  padding-top: 18px;
+  padding-bottom: 4px;
+  border-top: 1px solid $line;
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-align: left;
+  color: $ink;
+
+  @media (max-width: 640px) {
+    padding: 16px 16px 4px;
+  }
+}
+
+.htRow {
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(238, 240, 242, 0.5);
+  }
+
+  td {
+    padding-top: 13px;
+    padding-bottom: 13px;
+    border-top: 1px solid $line;
+  }
+
+  // The first row of a day sits right under its date.
+  .htDay + & td {
+    border-top: none;
+  }
+
+  @media (max-width: 640px) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 12px;
+    row-gap: 2px;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid $line;
+
+    .htDay + & {
+      border-top: none;
+    }
+
+    td {
+      padding: 0;
+      border-top: none;
+    }
+  }
+}
+
+// The flex row lives in an inner div: a flex <td> stops being a table cell and its border slips 1px.
+.htMainCell {
+  @media (max-width: 640px) {
+    grid-row: 1 / span 3;
+  }
+}
+
+.htMain {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px 24px;
-  border-bottom: 1px solid $line;
-  transition: 0.15s;
-
-  &:hover {
-    background: rgba(238, 240, 242, 0.6);
-  }
-  &:last-child {
-    border-bottom: none;
-  }
 }
 
 .hi {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
   display: grid;
   place-items: center;
   flex: none;
 
-  &.spend {
-    background: $blue-bg;
-    color: $blue;
-  }
   &.buy {
-    background: $green-bg;
-    color: $green;
+    background: #dcf0e4;
+    color: #12794a;
+  }
+  &.gold {
+    background: #faecd3;
+    color: #c98a1f;
+  }
+  &.spend {
+    background: #dbe8fc;
+    color: #2563eb;
   }
 }
 
-.hd {
-  flex: 1;
+.htText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.htName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
 
   b {
-    display: block;
+    font-size: 0.96rem;
     font-weight: 600;
-    font-size: 0.94rem;
     color: $ink;
   }
-
-  span {
-    font-size: 0.8rem;
-    color: $slate-2;
-    font-family: "JetBrains Mono", monospace;
-  }
 }
 
-.ha {
-  text-align: right;
-}
+.htBadge {
+  padding: 0.2em 0.6em;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  line-height: 1.3;
 
-.haAmt {
-  font-family: "JetBrains Mono", monospace;
-  font-weight: 700;
-
-  &.spend {
-    color: $blue;
-  }
   &.buy {
-    color: $green;
+    background: #dcf0e4;
+    color: #12794a;
+  }
+  &.spend {
+    background: #dbe8fc;
+    color: #2563eb;
   }
 }
 
-.haCost {
-  font-size: 0.78rem;
+.htMeta {
+  font-size: 0.83rem;
   color: $slate;
 }
 
-.haBal {
-  font-size: 0.76rem;
-  color: $slate-2;
-  font-family: "JetBrains Mono", monospace;
-  margin-top: 1px;
+.htNum {
+  width: 125px;
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+
+  @media (max-width: 640px) {
+    grid-column: 2;
+    width: auto;
+  }
+}
+
+.htCredits {
+  font-weight: 700;
+
+  &.buy {
+    color: #12794a;
+  }
+  &.spend {
+    color: #2563eb;
+  }
+}
+
+.htAmount {
+  font-weight: 500;
+  color: $ink;
+
+  @media (max-width: 640px) {
+    font-size: 0.86rem;
+  }
+}
+
+// An unlock's "—" only means something under the Amount column header, which phones don't show.
+.htNoAmount {
+  @media (max-width: 640px) {
+    display: none;
+  }
+}
+
+.htBalance {
+  color: $slate;
+
+  @media (max-width: 640px) {
+    font-size: 0.8rem;
+  }
+}
+
+// "Balance 13" on phones, where the column headers are hidden.
+.htMobileLabel {
+  display: none;
+
+  @media (max-width: 640px) {
+    display: inline;
+  }
 }
 
 .histEmpty {
   padding: 48px 20px;
   text-align: center;
+  border-top: 1px solid $line;
 
   svg {
     color: $slate-2;
@@ -1219,13 +1446,56 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
 }
 
 .histFoot {
-  padding: 16px 24px;
-  border-top: 1px solid $line;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.85rem;
+  gap: 10px 16px;
+  padding: 13px 24px;
+  background: #f6f7f9;
+  border-top: 1px solid $line;
+  font-size: 0.86rem;
   color: $slate;
+
+  @media (max-width: 640px) {
+    padding: 12px 16px;
+  }
+}
+
+.histFootCount {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 14px;
+}
+
+.histMore {
+  font-weight: 600;
+  color: $gold-deep;
+
+  &:hover:not(:disabled) {
+    text-decoration: underline;
+  }
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.histExport {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  font-weight: 600;
+  color: $ink;
+  transition: color 0.18s;
+
+  &:hover:not(:disabled) {
+    color: $gold-deep;
+  }
+  &:disabled {
+    opacity: 0.6;
+    cursor: wait;
+  }
 }
 
 // ===== Analytics =====

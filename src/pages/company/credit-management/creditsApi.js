@@ -46,9 +46,11 @@ export function transactionToFrontend(t) {
     id: t.id,
     type: isPurchase ? 'purchase' : 'unlock',
     description: isPurchase
-      ? `Purchase of ${t.packageName || 'credits'} package`
+      ? (t.packageName ? `${t.packageName} package` : 'Credits purchase')
       : 'Profile unlock',
     amount: t.amount,
+    // A multi-Credit package (Starter and up) — tinted gold in the history, a single Credit green.
+    bundle: isPurchase && t.amount > 1,
     cost: t.costCents ? Math.round(t.costCents / 100) : null,
     currency: t.currency,
     date: new Date(t.createdAt),

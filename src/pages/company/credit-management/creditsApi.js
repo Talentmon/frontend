@@ -66,12 +66,12 @@ export function getUsageAnalytics(months) {
   return apiClient.get('/companies/me/credits/usage-analytics', { params: { months } }).then((r) => r.data);
 }
 
-// ---- Auto-renewal ----
-export function getAutoRenewal() {
-  return apiClient.get('/companies/me/credits/auto-renewal').then((r) => r.data);
+// ---- Low balance alert ({ enabled, thresholdCredits }) ----
+export function getLowBalanceAlert() {
+  return apiClient.get('/companies/me/credits/low-balance-alert').then((r) => r.data);
 }
-export function updateAutoRenewal(patch) {
-  return apiClient.put('/companies/me/credits/auto-renewal', patch).then((r) => r.data);
+export function updateLowBalanceAlert(patch) {
+  return apiClient.patch('/companies/me/credits/low-balance-alert', patch).then((r) => r.data);
 }
 
 /** Step 1 of the purchase flow: opens a Paddle transaction. `requiresCheckout` tells the frontend whether to open the Paddle Checkout overlay (no saved card yet) or just poll the balance (saved card was auto-charged). */

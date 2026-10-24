@@ -2032,19 +2032,6 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
   }
 }
 
-.toggleRow {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  padding: 16px 0;
-  border-top: 1px solid $line;
-
-  &:first-of-type {
-    border-top: none;
-    padding-top: 0;
-  }
-}
-
 .toggle {
   position: relative;
   width: 46px;
@@ -2104,80 +2091,6 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
   }
 }
 
-.subSetting {
-  margin: 14px 0 0 59px;
-  display: grid;
-  gap: 14px;
-  max-width: 420px;
-  padding-left: 16px;
-  border-left: 2px solid rgba(230, 169, 60, 0.2);
-
-  @media (max-width: 560px) {
-    margin-left: 0;
-  }
-}
-
-.fieldBlock {
-  display: block;
-}
-
-.flabel {
-  display: block;
-  font-size: 0.82rem;
-  font-weight: 600;
-  margin-bottom: 6px;
-  color: $ink;
-}
-
-.fdesc {
-  font-size: 0.78rem;
-  color: $slate;
-  margin-top: 5px;
-}
-
-.finput {
-  width: 100%;
-  border: 1.5px solid $line;
-  border-radius: $r-sm;
-  padding: 0.62em 0.8em;
-  font-size: 0.9rem;
-  color: $ink;
-  transition:
-    border-color 0.18s,
-    box-shadow 0.18s;
-
-  &:hover,
-  &:focus {
-    outline: none;
-    border-color: $gold;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
-  }
-}
-
-.checkRow {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.6em;
-  font-size: 0.88rem;
-  color: $ink;
-  cursor: pointer;
-
-  input {
-    margin-top: 3px;
-    accent-color: $gold;
-    flex: none;
-  }
-}
-
-.checkTxt {
-  span {
-    display: block;
-    font-size: 0.78rem;
-    color: $slate;
-    margin-top: 1px;
-  }
-}
-
 .noteRow {
   display: flex;
   gap: 0.6em;
@@ -2194,28 +2107,556 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
   }
 }
 
-.previewBox {
-  background: rgba(238, 240, 242, 0.6);
-  border-radius: $r-sm;
-  padding: 14px;
+// ===== Low balance alert (Settings tab) =====
+// Controls on the left; on the right a dark "right now" card in the Overview
+// balance card's colours, then the bell notifications the team will get.
+// Same title as the other tabs (Purchase, History, Analytics): no gold bar or icon.
+.lbaHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid $line;
 
-  ul {
-    list-style: none;
+  h2 {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: $ink;
+    margin-bottom: 3px;
+  }
+
+  p {
+    font-size: 0.9rem;
     color: $slate;
-    font-size: 0.85rem;
-    display: grid;
-    gap: 4px;
-    margin-top: 6px;
   }
 }
 
-.setActions {
+.lbaHeadText {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.lbaGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+
+  @media (max-width: 880px) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+}
+
+.lbaControls {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+
+  &:disabled .toggle,
+  &:disabled .lbaPreset,
+  &:disabled .lbaStepper {
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+}
+
+.lbaBlock {
+  padding-bottom: 22px;
+
+  & + & {
+    border-top: 1px solid $line;
+    padding-top: 22px;
+  }
+}
+
+.lbaLabel {
+  display: block;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.lbaHint {
+  font-size: 0.86rem;
+  color: $slate;
+  margin-top: 3px;
+  max-width: 46ch;
+}
+
+.lbaStepRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.lbaStepper {
+  display: inline-flex;
+  align-items: stretch;
+  background: $white;
+  border: 1.5px solid $line;
+  border-radius: $r-md;
+  overflow: hidden;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+
+  &:focus-within {
+    border-color: $gold;
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
+  }
+
+  button {
+    width: 46px;
+    display: grid;
+    place-items: center;
+    color: $slate;
+    transition: 0.18s;
+
+    &:hover:not(:disabled) {
+      background: $amber-bg;
+      color: $gold-deep;
+    }
+
+    &:disabled {
+      opacity: 0.35;
+      cursor: default;
+    }
+  }
+
+  input {
+    width: 76px;
+    height: 50px;
+    border: 0;
+    border-left: 1px solid $line;
+    border-right: 1px solid $line;
+    background: transparent;
+    text-align: center;
+    font-family: "JetBrains Mono", monospace;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: $ink;
+
+    &:focus {
+      outline: none;
+    }
+  }
+}
+
+.lbaUnit {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $slate;
+}
+
+.lbaPresets {
   display: flex;
   flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.lbaPreset {
+  min-width: 48px;
+  padding: 0.42em 0.95em;
+  border: 1.5px solid $line;
+  border-radius: 99px;
+  background: $white;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: $slate;
+  transition: 0.18s;
+
+  &:hover:not(:disabled) {
+    border-color: $gold;
+    color: $ink;
+  }
+
+  &.on {
+    background: $amber-bg;
+    border-color: rgba(230, 169, 60, 0.55);
+    color: $gold-deep;
+  }
+}
+
+.lbaRange {
+  font-size: 0.78rem;
+  color: $slate-2;
+  margin-top: 10px;
+}
+
+.lbaSuggest {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  border: 1px solid rgba(230, 169, 60, 0.35);
+  border-radius: $r-md;
+  background: rgba(230, 169, 60, 0.08);
+  font-size: 0.84rem;
+  color: $slate;
+
+  > svg {
+    flex: none;
+    color: $gold-deep;
+  }
+
+  > span:first-of-type {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+
+  b {
+    color: $ink;
+  }
+
+  button {
+    padding: 0.35em 0.85em;
+    border-radius: $r-sm;
+    background: $gold;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #241704;
+    transition: 0.18s;
+
+    &:hover:not(:disabled) {
+      background: $gold-2;
+    }
+  }
+}
+
+.lbaSuggestOn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: $green;
+}
+
+.lbaToggleBlock {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+
+  .toggleTxt span {
+    display: block;
+    margin-top: 2px;
+    max-width: 46ch;
+  }
+}
+
+.lbaWhere {
+  list-style: none;
+  display: grid;
   gap: 10px;
-  margin-top: 22px;
-  padding-top: 20px;
-  border-top: 1px solid $line;
+  padding: 15px 16px;
+  background: rgba(238, 240, 242, 0.7);
+  border-radius: $r-md;
+  font-size: 0.84rem;
+  color: $slate;
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65em;
+  }
+
+  svg {
+    flex: none;
+    margin-top: 1px;
+    color: $gold-deep;
+  }
+}
+
+.lbaSide {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.lbaEyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $slate-2;
+}
+
+.lbaStatus {
+  padding: 20px 22px 22px;
+  border-radius: $r-lg;
+  background: $ink;
+  color: $white;
+
+  .lbaEyebrow {
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  --lba-fill: linear-gradient(90deg, #{$gold-deep}, #{$gold-2});
+  --lba-state: #5fd39d;
+
+  &.low {
+    --lba-fill: linear-gradient(90deg, #d9822b, #{$gold});
+    --lba-state: #{$gold-2};
+  }
+
+  &.out {
+    --lba-fill: #e06666;
+    --lba-state: #ff9b9b;
+  }
+}
+
+.lbaBalance {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45em;
+  margin-top: 8px;
+}
+
+.lbaBalanceValue {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 46px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #f0b552;
+}
+
+.lbaBalanceUnit {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.lbaMeter {
+  position: relative;
+  height: 10px;
+  margin: 18px 0 34px;
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.lbaMeterFill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  min-width: 10px;
+  border-radius: inherit;
+  background: var(--lba-fill);
+  transition: width 0.4s $ease;
+}
+
+// A tick at the alert level with its label hanging under the bar.
+.lbaMeterMark {
+  position: absolute;
+  top: -5px;
+  width: 2px;
+  height: 20px;
+  margin-left: -1px;
+  border-radius: 2px;
+  background: $white;
+  transition: left 0.4s $ease;
+
+  span {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.75);
+  }
+}
+
+.lbaState {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55em;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.82);
+
+  svg {
+    flex: none;
+    margin-top: 1px;
+    color: var(--lba-state);
+  }
+
+  b {
+    color: $white;
+  }
+}
+
+.lbaPace {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55em;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.84rem;
+  color: rgba(255, 255, 255, 0.68);
+
+  svg {
+    flex: none;
+    margin-top: 1px;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  b {
+    color: $white;
+  }
+}
+
+.lbaBuy {
+  margin-top: 16px;
+}
+
+.lbaPreview {
+  padding: 16px;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+  background: $white;
+  display: grid;
+  gap: 10px;
+
+  &.off .lbaNotif {
+    opacity: 0.45;
+    filter: grayscale(0.6);
+  }
+}
+
+.lbaPreviewHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2px;
+}
+
+.lbaOffBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  padding: 0.2em 0.65em;
+  border-radius: 99px;
+  background: $mist;
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: $slate;
+}
+
+.lbaOffNote {
+  font-size: 0.8rem;
+  color: $slate;
+}
+
+.lbaNotif {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid $line;
+  border-radius: 12px;
+  background: $white;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, 0.04);
+  transition: 0.2s;
+}
+
+.lbaNotifIcon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  background: #ebf3ff;
+  color: #2c5fa8;
+}
+
+.lbaNotifBody {
+  flex: 1;
+  min-width: 0;
+
+  b {
+    display: block;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: $ink;
+  }
+
+  span {
+    display: block;
+    font-size: 0.8rem;
+    color: $slate;
+    margin-top: 2px;
+  }
+
+  small {
+    display: block;
+    font-size: 0.74rem;
+    color: $slate-2;
+    margin-top: 4px;
+  }
+}
+
+.lbaNotifDot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: $gold;
+}
+
+.lbaSave {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: $slate;
+
+  &.ok {
+    color: $green;
+  }
+
+  &.err {
+    color: $red;
+  }
+}
+
+.lbaLoadError {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: $slate;
+
+  svg {
+    color: $red;
+  }
+
+  button {
+    margin-left: auto;
+  }
+}
+
+.lbaLoading {
+  font-size: 0.88rem;
+  color: $slate;
 }
 
 // ===== Payment =====
@@ -2952,6 +3393,3 @@ $text-dim: #9baec0;
   display: block;
 }
 
-.finput.invalid {
-  border-color: $red;
-}

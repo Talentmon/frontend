@@ -4,11 +4,11 @@ import CreditBalance from './components/CreditBalance';
 import CreditPackages from './components/CreditPackages';
 import TransactionHistory from './components/TransactionHistory';
 import UsageAnalytics from './components/UsageAnalytics';
-import AutoRenewalSettings from './components/AutoRenewalSettings';
+import LowBalanceAlertSettings from './components/LowBalanceAlertSettings';
 import PaymentMethods from './components/PaymentMethods';
 import Icon from 'components/AppIcon';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
-import { creditWord, formatCredits, LOW_CREDIT_BALANCE } from 'utils/formatCredits';
+import { creditWord, formatCredits, LOW_BALANCE_EVENT, LOW_CREDIT_BALANCE } from 'utils/formatCredits';
 import { formatPrice, getBalance, getUsageAnalytics } from './creditsApi';
 import styles from './styles/credits.module.scss';
 
@@ -28,6 +28,7 @@ const SparkleIcon = () => (
 
 const CreditManagement = () => {
   const [currentBalance, setCurrentBalance] = useState(0);
+  const [lowThreshold, setLowThreshold] = useState(LOW_CREDIT_BALANCE);
   // null until the balance loads, false for a new company that has never had Credits.
   const [hasCreditHistory, setHasCreditHistory] = useState(null);
   const [quickStats, setQuickStats] = useState(null);
@@ -38,7 +39,7 @@ const CreditManagement = () => {
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef(null);
 
-  const isLowBalance = currentBalance <= LOW_CREDIT_BALANCE;
+  const isLowBalance = currentBalance <= lowThreshold;
 
   const showToast = (message) => {
     setToastMsg(message);
@@ -60,6 +61,7 @@ const CreditManagement = () => {
       .then((d) => {
         setCurrentBalance(d.balance);
         setHasCreditHistory(d.hasCreditHistory);
+        setLowThreshold(d.lowBalanceThreshold ?? LOW_CREDIT_BALANCE);
       })
       .catch(() => {});
     getUsageAnalytics(6)
@@ -68,10 +70,14 @@ const CreditManagement = () => {
           usedThisMonth: thisMonth.unlocked,
           profilesUnlocked: allTime.unlocked,
           avgUsed: Math.round(pace.perMonth),
+          pacePerMonth: pace.perMonth,
           hiresThisMonth: thisMonth.hires,
         });
       })
       .catch(() => {});
+    const onThreshold = (e) => setLowThreshold(e.detail);
+    window.addEventListener(LOW_BALANCE_EVENT, onThreshold);
+    return () => window.removeEventListener(LOW_BALANCE_EVENT, onThreshold);
   }, []);
 
   const tabs = [
@@ -188,10 +194,10 @@ const CreditManagement = () => {
                   </li>
                   <li>
                     <button type="button" className={styles.ovRec} onClick={() => setActiveTab('settings')}>
-                      <span className={`${styles.chip} ${styles.chipLg} ${styles.chipAmber}`} aria-hidden="true"><Icon name="Zap" size={20} strokeWidth={1.5} fill="#e6a93c" /></span>
+                      <span className={`${styles.chip} ${styles.chipLg} ${styles.chipAmber}`} aria-hidden="true"><Icon name="BellRing" size={20} /></span>
                       <span className={styles.ovRecText}>
-                        <span className={styles.ovRecTitle}>Auto-renewal</span>
-                        <span className={styles.ovRecDesc}>Enable it for uninterrupted use</span>
+                        <span className={styles.ovRecTitle}>Low balance alert</span>
+                        <span className={styles.ovRecDesc}>Get a heads-up before you run out</span>
                       </span>
                       <Icon name="ChevronRight" size={18} className={styles.ovRecArrow} aria-hidden="true" />
                     </button>
@@ -218,7 +224,14 @@ const CreditManagement = () => {
       case 'analytics':
         return <UsageAnalytics />;
       case 'settings':
-        return <AutoRenewalSettings />;
+        return (
+          <LowBalanceAlertSettings
+            balance={currentBalance}
+            balanceLoaded={hasCreditHistory !== null}
+            pacePerMonth={quickStats?.pacePerMonth}
+            onBuy={() => setActiveTab('purchase')}
+          />
+        );
       case 'payment':
         return <PaymentMethods onNotify={showToast} />;
       default:

@@ -202,6 +202,38 @@ const TransactionHistory = ({ balance }) => {
         </div>
       </div>
 
+      {summary?.byMember?.length > 0 && (
+        <section className={`${styles.memberCard} ${styles.histMembers}`} aria-labelledby="purchases-by-member-title">
+          <h3 className={styles.memberCardTitle} id="purchases-by-member-title">Purchases by member</h3>
+          <p className={styles.memberCardSub}>Who on your team bought Credits, and what they paid</p>
+          <div className={styles.memberTableWrap}>
+            <table className={styles.memberTable}>
+              <thead>
+                <tr>
+                  <th scope="col">Member</th>
+                  <th scope="col" className={styles.memberNum}>Purchases</th>
+                  <th scope="col" className={styles.memberNum}>Credits</th>
+                  <th scope="col" className={styles.memberNum}>Paid</th>
+                </tr>
+              </thead>
+              <tbody>
+                {summary.byMember.map((member) => (
+                  <tr key={member.id ?? 'not-recorded'}>
+                    <td>
+                      {member.name}
+                      {member.removed && <span className={styles.memberFormer}> (former member)</span>}
+                    </td>
+                    <td className={styles.memberNum} data-label="Purchases">{member.purchases}</td>
+                    <td className={styles.memberNum} data-label="Credits">{member.credits}</td>
+                    <td className={styles.memberNum} data-label="Paid">{formatPrice(member.paidCents / 100, summary.currency)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      )}
+
       <div className={styles.histCard}>
         <div className={styles.histHead}>
           <div className={styles.histSeg} role="group" aria-label="Show">

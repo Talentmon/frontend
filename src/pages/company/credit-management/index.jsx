@@ -63,11 +63,13 @@ const CreditManagement = () => {
       })
       .catch(() => {});
     getUsageAnalytics(6)
-      .then(({ monthlyUsage, hiresInvestment }) => {
-        const thisMonth = monthlyUsage[monthlyUsage.length - 1];
-        const thisMonthHires = hiresInvestment[hiresInvestment.length - 1];
-        const avgUsed = Math.round(monthlyUsage.reduce((sum, m) => sum + m.used, 0) / monthlyUsage.length);
-        setQuickStats({ usedThisMonth: thisMonth.used, hiresThisMonth: thisMonthHires.hires, avgUsed });
+      .then(({ thisMonth, allTime, pace }) => {
+        setQuickStats({
+          usedThisMonth: thisMonth.unlocked,
+          profilesUnlocked: allTime.unlocked,
+          avgUsed: Math.round(pace.perMonth),
+          hiresThisMonth: thisMonth.hires,
+        });
       })
       .catch(() => {});
   }, []);
@@ -139,7 +141,8 @@ const CreditManagement = () => {
                       <span>Profiles unlocked</span>
                     </dt>
                     <dd className={styles.ovStatValue}>
-                      <span>{quickStats ? quickStats.usedThisMonth : '—'}</span>
+                      <span>{quickStats ? quickStats.profilesUnlocked : '—'}</span>
+                      {quickStats && <span className={styles.ovStatUnit}>in total</span>}
                     </dd>
                   </div>
 

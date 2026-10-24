@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
+import { useSearchParams } from 'react-router-dom';
 import Header from 'components/ui/Header';
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
@@ -24,10 +25,17 @@ import styles from './styles/purchased.module.scss';
 // settling into place.
 const LAYOUT_SETTLE_MS = 360;
 
+// ?status=new — the Analytics tab's "still at New" notice links straight to that filter.
+const LINKABLE_STATUSES = ['new', 'contacted', 'interviewed', 'hired', 'rejected'];
+
 const PurchasedProfiles = () => {
+  const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState('cards');
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState(() => {
+    const status = searchParams.get('status');
+    return LINKABLE_STATUSES.includes(status) ? status : '';
+  });
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [feedbackModal, setFeedbackModal] = useState({ isOpen: false, candidate: null });
   const [notification, setNotification] = useState(null);

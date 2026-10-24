@@ -203,17 +203,6 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   margin-bottom: 18px;
 }
 
-.grid2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin-bottom: 18px;
-
-  @media (max-width: 880px) {
-    grid-template-columns: 1fr;
-  }
-}
-
 // ===== Overview: balance card =====
 .balCard {
   position: relative;
@@ -589,56 +578,6 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   font-size: 14px;
   line-height: 1.45;
   color: $slate;
-}
-
-// ===== Recommendations (Analytics tab) =====
-.recs {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-evenly;
-  flex: 1;
-  gap: 14px;
-}
-
-.rec {
-  display: flex;
-  gap: 0.8em;
-  align-items: flex-start;
-}
-
-.recIcon {
-  width: 34px;
-  height: 34px;
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-  flex: none;
-
-  &.r1 {
-    background: $green-bg;
-    color: $green;
-  }
-  &.r2 {
-    background: $amber-bg;
-    color: $gold-deep;
-  }
-  &.r3 {
-    background: $blue-bg;
-    color: $blue;
-  }
-}
-
-.recBody {
-  b {
-    display: block;
-    font-size: 0.92rem;
-    color: $ink;
-  }
-
-  span {
-    font-size: 0.82rem;
-    color: $slate;
-  }
 }
 
 // ===== Buy packages =====
@@ -1134,6 +1073,10 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
   }
 }
 
+.histMembers {
+  margin-bottom: 24px;
+}
+
 .histCard {
   background: $white;
   border: 1px solid $line;
@@ -1499,137 +1442,562 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
 }
 
 // ===== Analytics =====
-.analyticsHead {
+.anHead {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 18px;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px 24px;
+  margin-bottom: 20px;
 
-  @media (min-width: 640px) {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  h3 {
-    font-size: 1.1rem;
-    color: $ink;
+  h2 {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 1.5rem;
     font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: $ink;
+    margin-bottom: 3px;
   }
 
   p {
-    font-size: 0.86rem;
+    font-size: 0.9rem;
     color: $slate;
-    margin-top: 2px;
   }
 }
 
-.kpis4 {
+// On a phone the four periods share the row instead of overflowing it.
+.anPeriod {
+  @media (max-width: 640px) {
+    display: flex;
+    width: 100%;
+
+    .histSegBtn {
+      flex: 1;
+      padding: 0.5em 0.3em;
+      font-size: 0.84rem;
+    }
+  }
+}
+
+.anBusy {
+  opacity: 0.55;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.anMuted {
+  font-size: 0.9rem;
+  color: $slate;
+}
+
+.anNotice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+  padding: 12px 16px;
+  background: $amber-bg;
+  border: 1px solid rgba(230, 169, 60, 0.4);
+  border-radius: $r-md;
+
+  p {
+    flex: 1;
+    font-size: 0.9rem;
+    color: $ink;
+  }
+}
+
+.anNoticeIcon {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  flex: none;
+  color: $gold-deep;
+}
+
+.anNoticeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  color: $gold-deep;
+
+  &:hover {
+    color: $ink;
+  }
+}
+
+.anKpis {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 14px;
   margin-bottom: 18px;
 
-  @media (max-width: 880px) {
-    grid-template-columns: 1fr 1fr;
+  // Hire rate keeps a row to itself, the other four pair up.
+  @media (max-width: 1000px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    .anKpiDark {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 640px) {
+    gap: 12px;
   }
 }
 
-.kpi {
-  background: $white;
-  border: 1px solid $line;
-  border-radius: $r-md;
-  padding: 16px 18px;
-}
-
-.kpiIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-  margin-bottom: 10px;
-
-  &.k1 {
-    background: $blue-bg;
-    color: $blue;
-  }
-  &.k2 {
-    background: $green-bg;
-    color: $green;
-  }
-  &.k3 {
-    background: $amber-bg;
-    color: $gold-deep;
-  }
-  &.k4 {
-    background: $green-bg;
-    color: $green;
-  }
-}
-
-.kpiNum {
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-weight: 700;
-  font-size: 1.7rem;
-  line-height: 1;
-  color: $ink;
-}
-
-.kpiLbl {
-  font-size: 0.78rem;
-  color: $slate;
-  margin-top: 4px;
-}
-
-.chartCard {
+.anKpi {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  padding: 18px 20px;
   background: $white;
   border: 1px solid $line;
   border-radius: $r-lg;
-  padding: 24px;
 
-  h4 {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: $ink;
-    margin-bottom: 16px;
+  @media (max-width: 640px) {
+    padding: 16px;
   }
 }
 
-.chartBox {
-  height: 16rem;
+.anKpiLabel {
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: $slate;
 }
 
-.deptLegend {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.deptLegendItem {
+.anKpiValue {
   display: flex;
-  align-items: center;
-  gap: 0.5em;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 6px;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 2rem;
+  line-height: 1.05;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: $ink;
+}
 
-  .dot {
-    width: 11px;
-    height: 11px;
-    border-radius: 3px;
-    flex: none;
+.anKpiUnit {
+  font-family: Inter, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: $slate;
+}
+
+.anKpiHint {
+  margin-top: auto;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: $slate;
+
+  a {
+    font-weight: 600;
+    color: $gold-deep;
+
+    &:hover {
+      text-decoration: underline;
+    }
   }
+}
 
-  span {
-    font-size: 0.85rem;
+.anKpiDark {
+  background: $ink;
+  border-color: $ink;
+
+  .anKpiLabel {
+    color: #c5d1dd;
+  }
+  .anKpiValue {
+    color: $gold;
+  }
+  .anKpiHint {
+    color: #a9b8c7;
+  }
+}
+
+.anGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+  gap: 18px;
+  margin-bottom: 18px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.anCard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 22px 24px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+
+  @media (max-width: 640px) {
+    padding: 18px 16px;
+  }
+}
+
+.anCardHead {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.anCardTitle {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.anCardSub {
+  margin-top: 3px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: $slate;
+}
+
+.anLegend {
+  display: flex;
+  gap: 16px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.84rem;
     color: $slate;
   }
 
-  b {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: $ink;
-    margin-left: auto;
+  i {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
   }
+}
+
+.anChart {
+  height: 15rem;
+}
+
+.anTip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 9.5rem;
+  padding: 10px 12px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-sm;
+  box-shadow: 0 12px 30px -18px rgba(11, 26, 44, 0.45);
+  font-size: 0.84rem;
+  color: $slate;
+
+  b {
+    margin-bottom: 2px;
+    font-weight: 700;
+    color: $ink;
+  }
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  i {
+    width: 9px;
+    height: 9px;
+    border-radius: 3px;
+  }
+
+  strong {
+    margin-left: auto;
+    padding-left: 12px;
+    color: $ink;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.anStages {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.anStage {
+  display: grid;
+  grid-template-columns: 6.2rem minmax(0, 1fr) 4.6rem;
+  align-items: center;
+  gap: 12px;
+}
+
+.anStageLabel {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: $ink;
+}
+
+.anStageTrack {
+  height: 10px;
+  overflow: hidden;
+  background: #f1f3f5;
+  border-radius: 4px;
+}
+
+// The Purchased page's status colors, so a stage looks the same on both pages.
+.anStageFill {
+  display: block;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+
+  &.stageNew {
+    background: $slate-2;
+  }
+  &.stageContacted {
+    background: $gold;
+  }
+  &.stageInterviewed {
+    background: $blue;
+  }
+  &.stageHired {
+    background: $green;
+  }
+  &.stageRejected {
+    background: $red;
+  }
+}
+
+.anStageCount {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: $ink;
+
+  small {
+    display: inline-block;
+    min-width: 2.4rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: $slate;
+  }
+}
+
+.anFoot {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid $line;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: $slate;
+
+  svg {
+    flex: none;
+    margin-top: 1px;
+    color: $green;
+  }
+
+  b {
+    color: $ink;
+  }
+
+  a {
+    margin-left: auto;
+    font-weight: 600;
+    white-space: nowrap;
+    color: $gold-deep;
+
+    &:hover {
+      color: $ink;
+    }
+  }
+}
+
+// Per-member tables: Analytics "Team activity" and History "Purchases by member".
+.memberCard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  padding: 22px 24px 8px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: $r-lg;
+
+  @media (max-width: 640px) {
+    padding: 18px 16px 6px;
+  }
+}
+
+.memberCardTitle {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: $ink;
+}
+
+.memberCardSub {
+  margin-top: 3px;
+  font-size: 0.86rem;
+  line-height: 1.45;
+  color: $slate;
+}
+
+.memberTableWrap {
+  margin: 16px -24px 0;
+  overflow-x: auto;
+
+  @media (max-width: 640px) {
+    margin: 14px -16px 0;
+  }
+}
+
+.memberTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+
+  th,
+  td {
+    padding: 12px 24px;
+    text-align: left;
+    white-space: nowrap;
+  }
+
+  th {
+    padding-top: 11px;
+    padding-bottom: 11px;
+    background: #f6f7f9;
+    border-top: 1px solid $line;
+    border-bottom: 1px solid $line;
+    font-size: 0.74rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: $slate;
+  }
+
+  td {
+    color: $ink;
+  }
+
+  tbody tr + tr td {
+    border-top: 1px solid $line;
+  }
+
+  .memberNum {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  // Phone: each member stacks — name across the top, the figures in a row under it with their own labels.
+  @media (max-width: 640px) {
+    display: block;
+    border-top: 1px solid $line;
+
+    thead {
+      display: none;
+    }
+
+    tbody {
+      display: block;
+    }
+
+    tr {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 10px;
+      padding: 14px 16px;
+    }
+
+    tbody tr + tr {
+      border-top: 1px solid $line;
+    }
+
+    td,
+    tbody tr + tr td {
+      padding: 0;
+      border-top: none;
+    }
+
+    td:first-child {
+      flex-basis: 100%;
+      font-weight: 600;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    // Values line up along the bottom even when a label wraps to two lines.
+    .memberNum {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      justify-content: space-between;
+      text-align: left;
+
+      &::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 2px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: normal;
+        color: $slate;
+      }
+    }
+  }
+}
+
+.memberFormer {
+  color: $slate;
+}
+
+.anEmpty {
+  align-items: center;
+  padding: 48px 24px;
+  text-align: center;
+
+  h3 {
+    margin-top: 16px;
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: $ink;
+  }
+
+  p {
+    max-width: 30rem;
+    margin: 6px auto 22px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: $slate;
+  }
+}
+
+.anEmptyIcon {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  background: $amber-bg;
+  border-radius: 16px;
+  color: $gold-deep;
 }
 
 // ===== Settings =====

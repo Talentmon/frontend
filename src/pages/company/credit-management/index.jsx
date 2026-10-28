@@ -233,7 +233,7 @@ const CreditManagement = () => {
           />
         );
       case 'payment':
-        return <PaymentMethods onNotify={showToast} />;
+        return <PaymentMethods onNotify={showToast} onBuy={() => setActiveTab('purchase')} />;
       default:
         return null;
     }

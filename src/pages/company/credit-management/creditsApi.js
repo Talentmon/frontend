@@ -74,7 +74,7 @@ export function updateLowBalanceAlert(patch) {
   return apiClient.patch('/companies/me/credits/low-balance-alert', patch).then((r) => r.data);
 }
 
-/** Step 1 of the purchase flow: opens a Paddle transaction. `requiresCheckout` tells the frontend whether to open the Paddle Checkout overlay (no saved card yet) or just poll the balance (saved card was auto-charged). */
+/** Step 1 of the purchase flow: opens a Paddle transaction, then the frontend opens Paddle Checkout for it — `{ transactionId, customerAuthToken }`. */
 export function purchaseCredits(packageId) {
   return apiClient.post('/companies/me/credits/purchase', { packageId }).then((r) => r.data);
 }
@@ -86,15 +86,29 @@ export function listPaymentMethods() {
 export function removePaymentMethod(id) {
   return apiClient.delete(`/companies/me/payment-methods/${id}`).then((r) => r.data);
 }
-/** Opens Paddle's hosted portal for adding/updating a card outside of a purchase — Paddle has no direct SetupIntent-style flow. */
-export function createPaymentMethodPortalSession() {
-  return apiClient.post('/companies/me/payment-methods/portal-session').then((r) => r.data);
-}
+
+// Paddle's card.type values, by the names people know them.
+const CARD_BRANDS = {
+  visa: 'Visa',
+  mastercard: 'Mastercard',
+  american_express: 'American Express',
+  discover: 'Discover',
+  diners_club: 'Diners Club',
+  jcb: 'JCB',
+  maestro: 'Maestro',
+  union_pay: 'UnionPay',
+  mada: 'Mada',
+};
 
 export function paymentMethodToFrontend(m) {
+  const card = m.card;
+  const month = card ? String(card.expiry_month).padStart(2, '0') : null;
   return {
     id: m.id,
-    name: m.card ? `${m.card.type[0].toUpperCase()}${m.card.type.slice(1)} **** ${m.card.last4}` : 'Card',
-    expiry: m.card ? `${String(m.card.expiry_month).padStart(2, '0')}/${String(m.card.expiry_year).slice(-2)}` : '—',
+    brand: card ? CARD_BRANDS[card.type] || 'Card' : m.type === 'paypal' ? 'PayPal' : 'Card',
+    last4: card?.last4 || null,
+    // "08/28" on the card itself, "08/2028" in the text under it.
+    expiry: card ? `${month}/${String(card.expiry_year).slice(-2)}` : null,
+    expiryFull: card ? `${month}/${card.expiry_year}` : null,
   };
 }

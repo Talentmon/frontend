@@ -2008,30 +2008,6 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
   padding: 24px;
 }
 
-.settingsHead {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  margin-bottom: 18px;
-
-  svg {
-    color: $gold-deep;
-    flex: none;
-  }
-
-  h3 {
-    font-size: 1.1rem;
-    color: $ink;
-    font-weight: 700;
-  }
-
-  p {
-    font-size: 0.86rem;
-    color: $slate;
-    margin-top: 2px;
-  }
-}
-
 .toggle {
   position: relative;
   width: 46px;
@@ -2659,81 +2635,320 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
   color: $slate;
 }
 
-// ===== Payment =====
-.pm {
+// ===== Payment methods =====
+// One card: the saved card (drawn as a card) on the left, payment security on
+// a light panel to the right. Colours are taken from the approved mockup.
+$pm-ink: #1b2230;
+$pm-slate: #5b6272;
+$pm-gold: #b8801f;
+$pm-gold-ink: #7a5310;
+$pm-line: #e2e5ea;
+$pm-soft: #fafafb;
+
+.pmPanel {
+  background: $white;
+  border: 1px solid $pm-line;
+  border-radius: $r-lg;
+  overflow: hidden;
+}
+
+.pmHead {
+  padding: 28px 32px;
+  border-bottom: 1px solid $pm-line;
+
+  h2 {
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: $pm-ink;
+    margin-bottom: 4px;
+  }
+
+  p {
+    font-size: 0.94rem;
+    color: $pm-slate;
+  }
+
+  @media (max-width: 560px) {
+    padding: 22px 20px;
+  }
+}
+
+.pmGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 3fr);
+
+  @media (max-width: 880px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.pmMain {
+  min-width: 0;
+  padding: 40px 32px;
+
+  @media (max-width: 560px) {
+    padding: 28px 20px;
+  }
+}
+
+// --- The card itself ---
+.pmFace {
+  position: relative;
+  width: 280px;
+  max-width: 100%;
+  aspect-ratio: 280 / 176;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 22px 18px;
+  border: 1px dashed #c4c9d3;
+  border-radius: 16px;
+  background: #fbfbfc;
+  color: #b7bcc6;
+  margin-bottom: 36px;
+
+  &.filled {
+    border: 0;
+    background: $pm-ink;
+    color: #8a93a5;
+    box-shadow: 0 18px 32px -14px rgba(27, 34, 48, 0.55);
+  }
+}
+
+.pmFaceTop {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 15px 16px;
-  border: 1.5px solid $line;
-  border-radius: $r-md;
-  margin-bottom: 10px;
+  justify-content: space-between;
+}
+
+.pmChip {
+  width: 38px;
+  height: 28px;
+  color: $pm-gold;
+}
+
+.pmWaves {
+  width: 15px;
+  height: 20px;
+}
+
+.pmFaceNumber {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 0.82rem;
+  letter-spacing: 0.14em;
+  word-spacing: 0.2em;
+  white-space: nowrap;
+
+  .filled & {
+    color: #e6e9ef;
+  }
+
+  b {
+    font-size: 1.12rem;
+    font-weight: 500;
+    letter-spacing: 0.24em;
+  }
+}
+
+.pmFaceBottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 20px;
+
+  b {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: $white;
+  }
+
+  span {
+    font-size: 0.84rem;
+    color: #b9c0cc;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.pmBarLong,
+.pmBarShort {
+  display: block;
+  height: 8px;
+  border-radius: 99px;
+  background: #e4e7ec;
+}
+
+.pmBarLong {
+  width: 104px;
+}
+
+.pmBarShort {
+  width: 40px;
+}
+
+// --- Text and actions under the card ---
+.pmTitle {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: $pm-ink;
+  margin-bottom: 12px;
+}
+
+.pmBadge {
+  font-family: Inter, sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+  color: #3a4252;
+  background: #eef0f3;
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+.pmText {
+  max-width: 26rem;
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: $pm-slate;
+}
+
+.pmActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 24px;
+  margin-top: 24px;
+}
+
+.pmBtnDark,
+.pmBtnOutline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 0.94rem;
+  font-weight: 600;
   transition: 0.18s;
 
-  &.default {
-    border-color: $gold;
-    background: rgba(230, 169, 60, 0.05);
-  }
-  &:hover {
-    border-color: rgba(230, 169, 60, 0.5);
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
   }
 }
 
-.pmIcon {
-  width: 42px;
-  height: 30px;
-  border-radius: 6px;
-  background: $mist;
+.pmBtnDark {
+  padding: 0 20px;
+  background: $pm-ink;
+  color: $white;
+  font-weight: 700;
+
+  &:hover:not(:disabled) {
+    background: #2b3446;
+  }
+}
+
+.pmBtnOutline {
+  padding: 0 18px;
+  background: $white;
+  border: 1px solid #d5d9e0;
+  color: $pm-ink;
+
+  &:hover:not(:disabled) {
+    border-color: $pm-ink;
+  }
+}
+
+.pmNote {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5em;
+  margin-top: 18px;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: $pm-slate;
+
+  svg {
+    flex: none;
+    margin-top: 0.2em;
+    color: $pm-gold;
+  }
+
+  & + & {
+    margin-top: 8px;
+  }
+}
+
+// "Manage cards" (owner, each removable) or "See other cards" (rest of the team) opens this list of every saved card.
+.pmList {
+  list-style: none;
+  margin-top: 20px;
+  max-width: 26rem;
+  border: 1px solid $pm-line;
+  border-radius: 12px;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+
+    & + li {
+      border-top: 1px solid $pm-line;
+    }
+  }
+}
+
+.pmListIcon {
   display: grid;
   place-items: center;
+  width: 32px;
+  height: 32px;
   flex: none;
-  color: $slate;
+  border-radius: 8px;
+  background: #eef0f3;
+  color: $pm-ink;
 }
 
-.pmBody {
+.pmListBody {
   flex: 1;
+  min-width: 0;
 
   b {
     display: block;
+    font-size: 0.88rem;
     font-weight: 600;
-    font-size: 0.92rem;
-    color: $ink;
+    color: $pm-ink;
   }
 
   span {
     display: block;
     font-size: 0.8rem;
-    color: $slate;
+    color: $pm-slate;
   }
 }
 
-.pmTag {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: $gold-deep;
-  font-family: "JetBrains Mono", monospace;
-}
-
-.pmActions {
-  margin-left: auto;
-  display: flex;
+.pmRemove {
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-}
-
-.setDefBtn {
+  gap: 0.4em;
+  flex: none;
+  padding: 6px 10px;
+  border-radius: 8px;
   font-size: 0.82rem;
   font-weight: 600;
-  color: $blue;
-}
-
-.delBtn {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  color: $slate-2;
+  color: $pm-slate;
   transition: 0.18s;
 
   &:hover {
@@ -2742,282 +2957,101 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
   }
 }
 
-.addCard {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  font-weight: 600;
-  color: $ink;
-  font-size: 0.9rem;
-  margin-top: 6px;
+// --- Payment security ---
+.pmSecurity {
+  min-width: 0;
+  padding: 40px 32px;
+  background: $pm-soft;
+  border-left: 1px solid $pm-line;
 
-  svg {
-    color: $gold-deep;
+  h3 {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: "Bricolage Grotesque", sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: $pm-ink;
+
+    svg {
+      flex: none;
+      color: $pm-gold;
+    }
   }
-}
 
-.addCardForm {
-  border: 1px solid $line;
-  border-radius: $r-md;
-  padding: 16px;
-  margin-top: 16px;
-}
-
-.addCardHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-
-  h4 {
-    font-weight: 600;
-    color: $ink;
-    font-size: 0.95rem;
-  }
-}
-
-.formGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.formGridFull {
-  grid-column: 1 / -1;
-}
-
-.formGrid2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.formActions {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-}
-
-.banks {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.bank {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 13px 15px;
-  border: 1px solid $line;
-  border-radius: $r-md;
-  transition: 0.18s;
-
-  &:hover {
-    border-color: rgba(230, 169, 60, 0.5);
-  }
-}
-
-.bankIcon {
-  width: 34px;
-  height: 34px;
-  border-radius: 8px;
-  background: $blue-bg;
-  display: grid;
-  place-items: center;
-  color: $blue;
-  flex: none;
-}
-
-.bankBody {
-  flex: 1;
-
-  b {
-    font-size: 0.9rem;
-    color: $ink;
-  }
-  span {
-    font-size: 0.78rem;
-    color: $green;
-    display: block;
-  }
-}
-
-.bankOk {
-  color: $green;
-  flex: none;
-}
-
-.secure {
   ul {
     list-style: none;
     display: grid;
-    gap: 9px;
-    font-size: 0.86rem;
-    color: #334;
+    gap: 24px;
+    margin-top: 24px;
   }
 
   li {
     display: flex;
-    gap: 0.6em;
     align-items: center;
-    white-space: nowrap;
+    gap: 14px;
+  }
 
-    svg {
-      color: $green;
-      flex: none;
+  li > div {
+    min-width: 0;
+
+    b {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: $pm-ink;
+    }
+
+    span {
+      display: block;
+      font-size: 0.85rem;
+      line-height: 1.45;
+      color: $pm-slate;
+      margin-top: 2px;
     }
   }
-}
-
-.pmCardRow {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  align-items: flex-start;
-  gap: 20px;
 
   @media (max-width: 880px) {
-    grid-template-columns: 1fr;
+    border-left: 0;
+    border-top: 1px solid $pm-line;
+  }
+
+  @media (max-width: 560px) {
+    padding: 28px 20px;
   }
 }
 
-.pmCardMain {
-  min-width: 0;
-}
-
-.pmCardArt {
-  width: 75%;
-  height: auto;
-  justify-self: center;
-  margin: -6px -6px 0 0;
-
-  &.artSmall {
-    width: 56%;
-  }
-
-  @media (max-width: 880px) {
-    display: none;
-  }
-}
-
-.iconBadge {
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
+.pmSecIcon {
   display: grid;
   place-items: center;
+  width: 36px;
+  height: 36px;
   flex: none;
-
-  &.peach {
-    background: $amber-bg;
-    color: $gold-deep;
-  }
-  &.green {
-    background: $green-bg;
-    color: $green;
-  }
+  border: 1px solid $pm-line;
+  border-radius: 9px;
+  background: $white;
+  color: $pm-gold;
 }
 
-.infoBox {
-  display: flex;
+.pmSecLink {
+  display: inline-flex;
   align-items: center;
-  gap: 0.7em;
-  background: $blue-bg;
-  border-radius: $r-md;
-  padding: 14px 16px;
-  font-size: 0.86rem;
-  color: $ink;
-  margin-bottom: 14px;
-
-  svg {
-    color: $blue;
-    flex: none;
-  }
-
-  span {
-    white-space: nowrap;
-  }
-
-  @media (max-width: 880px) {
-    span {
-      white-space: normal;
-    }
-  }
-}
-
-.addCardBox {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-  width: 100%;
-  padding: 14px;
-  border: 1.5px dashed $line;
-  border-radius: $r-md;
+  gap: 0.55em;
+  margin-top: 30px;
+  font-size: 0.88rem;
   font-weight: 600;
-  color: $ink;
-  font-size: 0.92rem;
-  transition: 0.18s;
+  color: $pm-gold-ink;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
 
   svg {
-    color: $gold-deep;
+    flex: none;
   }
 
   &:hover {
-    border-color: $gold;
-    background: rgba(230, 169, 60, 0.05);
+    color: $pm-ink;
   }
-  &:disabled {
-    opacity: 0.6;
-    cursor: default;
-  }
-}
-
-.secureGrid {
-  grid-template-columns: 1fr 1fr !important;
-  column-gap: 60px !important;
-  row-gap: 22px !important;
-
-  @media (max-width: 560px) {
-    grid-template-columns: 1fr !important;
-    column-gap: 9px !important;
-  }
-}
-
-.securityFooter {
-  display: flex;
-  align-items: center;
-  gap: 0.7em;
-  background: $blue-bg;
-  border-radius: $r-md;
-  padding: 14px 20px;
-  margin-top: 18px;
-  font-size: 0.86rem;
-  color: $ink;
-  flex-wrap: wrap;
-
-  > svg {
-    color: $blue;
-    flex: none;
-  }
-}
-
-.securityFooterLink {
-  margin-left: auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  font-weight: 600;
-  color: $blue;
-  white-space: nowrap;
 }
 
 // ===== Purchase confirmation modal =====

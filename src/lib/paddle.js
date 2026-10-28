@@ -29,14 +29,24 @@ async function getPaddle() {
   return paddleInstance;
 }
 
-/** Opens the Paddle Checkout overlay for an existing (backend-created) transaction and resolves once payment completes. */
-export async function openPaddleCheckout(transactionId) {
+/**
+ * Opens the Paddle Checkout overlay for an existing (backend-created) transaction and resolves once payment completes.
+ * `customerAuthToken` makes Checkout list the company's saved cards.
+ */
+export async function openPaddleCheckout(transactionId, { customerAuthToken } = {}) {
   const paddle = await getPaddle();
   return new Promise((resolve, reject) => {
     currentHandlers = { resolve, reject };
-    // one-page variant is required for the "save payment method" checkbox to
-    // appear at all — the default multi-page (details, then payment) layout
-    // never shows it, even with the account setting enabled.
-    paddle.Checkout.open({ transactionId, settings: { variant: 'one-page' } });
+    paddle.Checkout.open({
+      transactionId,
+      ...(customerAuthToken && { customerAuthToken }),
+      settings: {
+        // one-page variant is required for the "save payment method" checkbox
+        // and for saved cards to appear at all — the default multi-page
+        // (details, then payment) layout never shows them, even with the
+        // account setting enabled.
+        variant: 'one-page',
+      },
+    });
   });
 }

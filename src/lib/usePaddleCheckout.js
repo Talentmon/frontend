@@ -11,11 +11,10 @@ function wait(ms) {
 
 /**
  * Shared purchase-flow logic for both the credit-management Purchase modal and the
- * search-dashboard's quick Buy Credits modal. If the company has no saved payment
- * method yet, opens the Paddle Checkout overlay to collect one; otherwise the
- * backend charges the saved method directly and no overlay is shown at all.
- * Either way, credits land asynchronously via the Paddle webhook, so the balance
- * is polled briefly afterward rather than assumed.
+ * search-dashboard's quick Buy Credits modal. Always opens the Paddle Checkout
+ * overlay — Paddle doesn't charge a saved card by itself for a one-time purchase,
+ * so the company's saved cards are offered there. Credits land asynchronously via
+ * the Paddle webhook, so the balance is polled briefly afterward rather than assumed.
  */
 export function usePaddleCheckout({ onSuccess } = {}) {
   const [processing, setProcessing] = useState(false);
@@ -30,11 +29,8 @@ export function usePaddleCheckout({ onSuccess } = {}) {
 
       try {
         const initialBalance = await getBalance().then((r) => r.balance).catch(() => null);
-        const { transactionId, requiresCheckout } = await purchaseCredits(pkg.id);
-
-        if (requiresCheckout) {
-          await openPaddleCheckout(transactionId);
-        }
+        const { transactionId, customerAuthToken } = await purchaseCredits(pkg.id);
+        await openPaddleCheckout(transactionId, { customerAuthToken });
 
         setProcessing(false);
         setSettling(true);

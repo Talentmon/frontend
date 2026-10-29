@@ -6,6 +6,7 @@ import { COMPANY_SIZE_OPTIONS, INDUSTRY_OPTIONS, WORK_MODE_OPTIONS, uploadCompan
 import SectionHead from './SectionHead';
 import styles from '../styles/company.module.scss';
 import { ACCEPTED_IMAGE_TYPES } from 'utils/resizeImage';
+import { COUNTRY_NAMES, COUNTRY_OPTIONS } from 'utils/countries';
 
 const BENEFITS_LIST = [
   'Private health insurance',
@@ -42,6 +43,11 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
   const inputClass = (field, base = styles.finput) => (errors[field] ? `${base} ${styles.finvalid}` : base);
   const fieldError = (field) => (errors[field] ? <span className={styles.ferr}>{errors[field]}</span> : null);
   const requiredMark = <span className={styles.req}>*</span>;
+  // Country used to be typed in; a saved name that isn't on the list stays selectable instead of vanishing.
+  const savedCountry = companyData?.country;
+  const countryOptions = savedCountry && !COUNTRY_NAMES.includes(savedCountry)
+    ? [{ value: savedCountry, label: savedCountry }, ...COUNTRY_OPTIONS]
+    : COUNTRY_OPTIONS;
   // An input with its icon inside, like the Account settings fields.
   const withIcon = (icon, input) => (
     <div className={styles.inputIcon}>
@@ -218,16 +224,15 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
 
           <div {...fieldProps('country')}>
             <label className={styles.flabel}>Country {requiredMark}</label>
-            {withIcon('Globe', (
-              <input
-                className={inputClass('country')}
-                type="text"
-                placeholder="Serbia"
+            <div className={errors.country ? styles.selectInvalid : undefined}>
+              <Select
                 value={companyData?.country || ''}
-                onChange={(e) => handleInputChange('country', e?.target?.value)}
-                required
+                onChange={(v) => handleInputChange('country', v)}
+                options={countryOptions}
+                placeholder="Select country…"
+                searchable
               />
-            ))}
+            </div>
             {fieldError('country')}
           </div>
 
@@ -237,7 +242,7 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
               <input
                 className={inputClass('address')}
                 type="text"
-                placeholder="12 High Street, London"
+                placeholder="12 High Street"
                 value={companyData?.address}
                 onChange={(e) => handleInputChange('address', e?.target?.value)}
                 required

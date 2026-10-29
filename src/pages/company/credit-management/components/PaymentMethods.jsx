@@ -60,7 +60,7 @@ const SECURITY_POINTS = [
     title: 'Not stored on our servers',
     text: 'Your card details never sit on our servers.',
   },
-  { icon: <Icon name="Award" size={16} strokeWidth={1.75} />, title: 'PCI DSS compliant', text: 'We meet the card industry’s data security standard.' },
+  { icon: <Icon name="Award" size={16} strokeWidth={1.75} />, title: 'PCI DSS compliant', text: 'Payments are handled by Paddle, a PCI DSS compliant provider.' },
   {
     icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
@@ -234,7 +234,7 @@ const PaymentMethods = ({ onNotify = () => {}, onBuy }) => {
               </li>
             ))}
           </ul>
-          <a href="/privacy-policy" target="_blank" rel="noreferrer" className={styles.pmSecLink}>
+          <a href="/privacy-policy#payments-and-card-security" target="_blank" rel="noreferrer" className={styles.pmSecLink}>
             Learn more about security <Icon name="ExternalLink" size={14} />
           </a>
         </aside>

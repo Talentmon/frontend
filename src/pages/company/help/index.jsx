@@ -338,8 +338,9 @@ const CompanyHelp = () => {
               <Steps
                 items={[
                   <>Click <b>Credits</b> in the top bar, then <b>Buy Credits</b> (or open the <b>Purchase</b> tab).</>,
-                  <>Pick a package. The bigger the package, the lower the price per unlock.</>,
-                  <>Click <b>Buy now</b>, check the summary and pay by card in the secure checkout. The Credits land on your balance right away.</>,
+                  <>Pick a package and click <b>Buy now</b>. The bigger the package, the lower the price per unlock.</>,
+                  <>Check the summary and click <b>Continue to payment</b>.</>,
+                  <>Pay in Paddle's secure checkout, by card or PayPal. The Credits land on your balance right away.</>,
                 ]}
               />
               <Figure
@@ -352,13 +353,60 @@ const CompanyHelp = () => {
                 columns={2}
                 items={[
                   { icon: 'Infinity', title: 'Credits never expire', text: 'Buy once and use them whenever you need them.' },
-                  { icon: 'Users', title: 'One balance for the team', text: 'Everyone on your team spends from the same balance. It is always shown in the top bar.' },
+                  { icon: 'Users', title: 'One balance for the team', text: 'Everyone on your team can buy Credits and spends from the same balance. It is always shown in the top bar.' },
                   { icon: 'Bookmark', title: 'Bonus bookmark slots', text: 'Larger packages add extra bookmark slots for 6 months. The bonus is shown on each package.' },
                   { icon: 'Wallet', title: 'Your currency', text: "Prices include VAT and are shown in your company's billing currency (EUR, USD, GBP or CNY), set under Account settings." },
-                  { icon: 'History', title: 'History', text: 'Every purchase and unlock in one list, and with a team, who made it.' },
-                  { icon: 'BarChart3', title: 'Analytics', text: 'Monthly usage and hires, so you can see what your hiring costs.' },
+                  { icon: 'History', title: 'History', text: 'Every purchase and unlock, grouped by day, with totals at the top and Export CSV. With a team, it shows who made each one.' },
+                  { icon: 'BarChart3', title: 'Analytics', text: 'Hire rate, cost per hire and time to hire, where your unlocked candidates are now, and what each team member unlocked.' },
                 ]}
               />
+
+              <div className={styles.subTitle}>Saved cards</div>
+              <div className={styles.split}>
+                <div className={styles.prose}>
+                  <p>
+                    At checkout, tick <b>Save my card details</b> to keep your card for next time. The next checkout
+                    offers it, so nobody has to type it in again. Saved cards belong to the company: anyone on the team
+                    can pay with them, or with a new card.
+                  </p>
+                  <Path>Credits → Payment</Path>
+                  <ul className={styles.bullets}>
+                    <li><b>Manage cards</b> lists every saved card. Only the account owner sees it and can remove cards.</li>
+                    <li>The rest of the team gets <b>See other cards</b>: the same list, without Remove.</li>
+                    <li>To add another card, pay with it at checkout and tick the box to save it.</li>
+                    <li>Card details stay with Paddle. Talentmon only shows the card type, last four digits and expiry date.</li>
+                  </ul>
+                </div>
+                <Figure
+                  src="/help/credits-payment-methods.webp"
+                  alt="Payment tab with a saved card and the list of saved cards"
+                  caption="The Payment tab, with Manage cards open."
+                  onZoom={setZoomed}
+                />
+              </div>
+
+              <div className={styles.subTitle}>Low balance alert</div>
+              <div className={styles.split}>
+                <div className={styles.prose}>
+                  <p>
+                    Get a heads-up before your team runs out of Credits. Pick an alert level: when your balance drops to
+                    that many Credits or fewer, you count as running low. It's on by default at 5 Credits.
+                  </p>
+                  <Path>Credits → Settings</Path>
+                  <ul className={styles.bullets}>
+                    <li>Any whole number from 1 to 100, with quick picks and a suggestion of about a week of unlocks at your team's pace.</li>
+                    <li>The balance in the top bar turns amber at the alert level.</li>
+                    <li>With <b>Notify the team</b> on, everyone gets a bell notification when the balance reaches the level, and again at zero. Each alert is sent once.</li>
+                    <li>Only the account owner changes the alert. The rest of the team sees how it's set.</li>
+                  </ul>
+                </div>
+                <Figure
+                  src="/help/credits-alert.webp"
+                  alt="Low balance alert on the Settings tab"
+                  caption="The alert level, the current balance and the notifications your team gets."
+                  onZoom={setZoomed}
+                />
+              </div>
             </section>
 
             {/* ===== 3. Search ===== */}
@@ -654,8 +702,8 @@ const CompanyHelp = () => {
                   <ul className={styles.bullets}>
                     <li>Each person can belong to only one company.</li>
                     <li>
-                      Only the account owner edits the company profile and billing currency, and can hand the account
-                      over to a teammate with <b>Make owner</b>.
+                      Only the account owner edits the company profile and billing currency, removes saved cards and
+                      changes the low balance alert, and can hand the account over to a teammate with <b>Make owner</b>.
                     </li>
                   </ul>
                 </div>

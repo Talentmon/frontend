@@ -4,6 +4,7 @@ import LegalLayout from './LegalLayout';
 const KEY_POINTS = [
   'Talentmon lets companies search an anonymized pool of candidates and spend a credit to unlock a full profile.',
   'Credits are bought in one-time packages, never expire and are not refundable. There is no subscription.',
+  'Anyone on a company’s team can buy credits for it, and the company is responsible for those purchases.',
   'Payments are handled by Paddle, our Merchant of Record, including invoices and VAT.',
   'Unlocked candidate data is for your own recruiting only: no scraping, reselling or sharing outside your organization.',
   "Candidates own their profiles and their reviews of companies. A company can't edit or remove reviews.",
@@ -37,6 +38,11 @@ const TermsOfService = () => (
       Credits do not expire and there is no subscription or recurring billing — you only pay when you choose
       to buy more credits. Credit purchases are final and non-refundable, as described in our{' '}
       <a href="/refund-policy">Refund Policy</a>.
+    </p>
+    <p>
+      Any member of a company's team can buy credits for the company, either with a card saved to the company's
+      account or with a new card. The company is responsible for every purchase its team members make, and only
+      the account owner can remove a saved card.
     </p>
 
     <h2>3. Payment processing</h2>

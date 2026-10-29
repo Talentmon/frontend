@@ -4,7 +4,7 @@ import LegalLayout from './LegalLayout';
 const KEY_POINTS = [
   'We collect what we need to run Talentmon: account details, CV and company profile data, sign-in and usage data.',
   'Candidate profiles stay anonymous (no name, contact details or employers) until a company unlocks them.',
-  'We never see or store your full card number. Payments are handled by Paddle.',
+  "We never see or store your full card number. Payments are handled by Paddle; your team only sees a saved card's type, last four digits and expiry date.",
   "We don't sell your data. We share it only with the providers that run the service, listed in section 6.",
   'We use only the cookies needed to keep you signed in. No advertising or tracking cookies.',
   'You can access, correct or delete your data at any time.',
@@ -34,10 +34,26 @@ const PrivacyPolicy = () => (
       <li><b>Usage data</b> — actions like searches, bookmarks, and profile unlocks, needed to operate the Service</li>
     </ul>
 
-    <h2>2. Payment information</h2>
+    {/* The "Learn more about security" link on the Payment methods tab points here (#payments-and-card-security). */}
+    <h2>2. Payments and card security</h2>
     <p>
-      Purchases are processed by Paddle, our payment provider and Merchant of Record. Talentmon never sees or
-      stores your full card number — Paddle handles that directly. See Paddle's own{' '}
+      Purchases are processed by Paddle, our payment provider and Merchant of Record. You enter your card details
+      in Paddle's checkout and they go straight to Paddle: Talentmon never sees or stores your full card number or
+      security code.
+    </p>
+    <ul>
+      <li><b>Encrypted</b> — every payment is sent over an encrypted (SSL/TLS) connection</li>
+      <li><b>PCI DSS</b> — Paddle is compliant with PCI DSS, the card industry's data security standard</li>
+      <li><b>3D Secure</b> — your bank may ask you to confirm a payment</li>
+      <li>
+        <b>Saved cards</b> — if you tick the box to save your card at checkout, Paddle keeps it for your
+        company's future purchases. Everyone on your company's team can then pay with it, and on the Payment
+        tab they see each saved card's type, last four digits and expiry date. We load these details from Paddle
+        when the page opens and don't store them. Only the account owner can remove a saved card.
+      </li>
+    </ul>
+    <p>
+      See Paddle's own{' '}
       <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noreferrer">privacy policy</a> for how
       they handle payment data.
     </p>

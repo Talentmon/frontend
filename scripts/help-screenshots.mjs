@@ -3,6 +3,7 @@
 //
 // Usage: start the frontend (vite on 4028) and the backend (3000), then run
 //   HELP_SHOTS_EMAIL=<test company email> HELP_SHOTS_PASSWORD=<password> node scripts/help-screenshots.mjs
+// HELP_SHOTS_ONLY=credits,payment,alert redoes just those shots (names in SHOTS at the bottom).
 //
 // It logs in as a test company and replaces the candidate, bookmark, purchase
 // and balance responses with the made-up people below, so every picture shows
@@ -133,7 +134,7 @@ function candidate(spec) {
 
 const SEARCH = [
   candidate({
-    key: 'a1', role: 'Senior Frontend Developer', years: 7, city: 'Belgrade', status: 'ACTIVE', mode: 'HYBRID', salary: 3800, notice: '1m',
+    key: 'a1', role: 'Senior Frontend Developer', years: 7, city: 'London', status: 'ACTIVE', mode: 'HYBRID', salary: 3800, notice: '1m',
     skills: ['React', 'TypeScript', 'Next.js', 'GraphQL', 'Jest', 'Storybook', 'CSS'],
     summary: 'Frontend engineer focused on fast, accessible web apps. Led the move of a large e-commerce storefront to Next.js and built the design system three product teams now share.',
     jobs: [
@@ -143,7 +144,7 @@ const SEARCH = [
     degree: 'BSc Computer Science', school: 'University of Belgrade', gradYear: 2018,
   }),
   candidate({
-    key: 'a2', role: 'Product Designer', years: 5, city: 'Novi Sad', status: 'OPEN', mode: 'REMOTE', salary: 2900, notice: '2w',
+    key: 'a2', role: 'Product Designer', years: 5, city: 'Manchester', status: 'OPEN', mode: 'REMOTE', salary: 2900, notice: '2w',
     skills: ['Figma', 'Design Systems', 'Prototyping', 'User Research', 'Webflow'],
     summary: 'Product designer shaping clean, usable interfaces for SaaS teams. Comfortable taking a feature from research and wireframes all the way to a shipped, measured release.',
     jobs: [
@@ -153,7 +154,7 @@ const SEARCH = [
     degree: 'BA Graphic Design', school: 'Academy of Arts Novi Sad', gradYear: 2019,
   }),
   candidate({
-    key: 'a3', role: 'DevOps Engineer', years: 6, city: 'Niš', status: 'ACTIVE', mode: 'REMOTE', salary: 4200, notice: 'now', travel: true,
+    key: 'a3', role: 'DevOps Engineer', years: 6, city: 'Chicago', status: 'ACTIVE', mode: 'REMOTE', salary: 4200, notice: 'now', travel: true,
     skills: ['AWS', 'Kubernetes', 'Terraform', 'Docker', 'CI/CD', 'Prometheus'],
     summary: 'Platform engineer who automates everything twice. Cut cloud costs by a third for a payments company while moving 40 services to Kubernetes.',
     jobs: [
@@ -163,7 +164,7 @@ const SEARCH = [
     degree: 'BSc Electrical Engineering', school: 'University of Niš', gradYear: 2018,
   }),
   candidate({
-    key: 'a4', role: 'Data Analyst', years: 3, city: 'Belgrade', status: 'ACTIVE', mode: 'HYBRID', salary: 1900, notice: 'now',
+    key: 'a4', role: 'Data Analyst', years: 3, city: 'New York', status: 'ACTIVE', mode: 'HYBRID', salary: 1900, notice: 'now',
     skills: ['SQL', 'Python', 'Power BI', 'Excel', 'dbt'],
     summary: 'Analyst turning messy sales and marketing data into dashboards people actually use. Strong SQL, practical Python, and a habit of asking why a number moved.',
     jobs: [
@@ -173,7 +174,7 @@ const SEARCH = [
     degree: 'BSc Statistics', school: 'University of Belgrade', gradYear: 2021,
   }),
   candidate({
-    key: 'a5', role: 'QA Automation Engineer', years: 4, city: 'Kragujevac', status: 'OPEN', mode: 'REMOTE', salary: 2400, notice: '1m',
+    key: 'a5', role: 'QA Automation Engineer', years: 4, city: 'Leeds', status: 'OPEN', mode: 'REMOTE', salary: 2400, notice: '1m',
     skills: ['Playwright', 'Cypress', 'Selenium', 'Java', 'API testing'],
     summary: 'QA engineer who builds test suites developers trust. Took a flaky 2-hour regression run down to 12 stable minutes.',
     jobs: [
@@ -183,7 +184,7 @@ const SEARCH = [
     degree: 'BSc Software Engineering', school: 'University of Kragujevac', gradYear: 2020,
   }),
   candidate({
-    key: 'a6', role: 'Mobile Developer (Flutter)', years: 5, city: 'Novi Sad', status: 'ACTIVE', mode: 'REMOTE', salary: 3300, notice: '2w',
+    key: 'a6', role: 'Mobile Developer (Flutter)', years: 5, city: 'Austin', status: 'ACTIVE', mode: 'REMOTE', salary: 3300, notice: '2w',
     skills: ['Flutter', 'Dart', 'Firebase', 'iOS', 'Android', 'REST'],
     summary: 'Mobile developer with four apps in the stores, the largest with 300k users. Cares about smooth animations, offline mode and small app sizes.',
     jobs: [
@@ -193,7 +194,7 @@ const SEARCH = [
     degree: 'BSc Computer Science', school: 'University of Novi Sad', gradYear: 2019,
   }),
   candidate({
-    key: 'a7', role: 'Project Manager', years: 9, city: 'Belgrade', status: 'OPEN', mode: 'ONSITE', salary: 3600, notice: '3m', travel: true,
+    key: 'a7', role: 'Project Manager', years: 9, city: 'Boston', status: 'OPEN', mode: 'ONSITE', salary: 3600, notice: '3m', travel: true,
     skills: ['Scrum', 'Jira', 'Stakeholder management', 'Budgeting', 'Risk management'],
     summary: 'Delivery-focused project manager for software and infrastructure projects. Keeps teams calm, clients informed and budgets where they were promised.',
     jobs: [
@@ -203,7 +204,7 @@ const SEARCH = [
     degree: 'MSc Management', school: 'Faculty of Organizational Sciences', level: 'MASTERS', gradYear: 2016,
   }),
   candidate({
-    key: 'a8', role: 'Backend Developer (Java)', years: 6, city: 'Belgrade', status: 'ACTIVE', mode: 'HYBRID', salary: 3900, notice: '1m', relocation: true,
+    key: 'a8', role: 'Backend Developer (Java)', years: 6, city: 'Seattle', status: 'ACTIVE', mode: 'HYBRID', salary: 3900, notice: '1m', relocation: true,
     skills: ['Java', 'Spring Boot', 'PostgreSQL', 'Kafka', 'Microservices'],
     summary: 'Backend developer building reliable payment and booking systems. Happiest when designing clean APIs and making slow queries fast.',
     jobs: [
@@ -213,7 +214,7 @@ const SEARCH = [
     degree: 'BSc Computer Science', school: 'University of Belgrade', gradYear: 2018,
   }),
   candidate({
-    key: 'a9', role: 'Full-stack Developer', years: 4, city: 'Subotica', status: 'ACTIVE', mode: 'REMOTE', salary: 2800, notice: 'now',
+    key: 'a9', role: 'Full-stack Developer', years: 4, city: 'Bristol', status: 'ACTIVE', mode: 'REMOTE', salary: 2800, notice: 'now',
     skills: ['Node.js', 'React', 'PostgreSQL', 'Docker', 'TypeScript'],
     summary: 'Full-stack developer who likes owning a feature end to end, from the database schema to the last button. Shipped two SaaS products from zero.',
     jobs: [
@@ -225,7 +226,7 @@ const SEARCH = [
 ];
 
 const SAVED_FILTERS = [
-  { id: 'help-sf-1', name: 'Senior React · Belgrade', filters: { position: 'Frontend Developer', location: 'Belgrade', experience: '5-10' }, createdAt: daysAgo(20), updatedAt: daysAgo(20) },
+  { id: 'help-sf-1', name: 'Senior React · London', filters: { position: 'Frontend Developer', location: 'London', experience: '5-10' }, createdAt: daysAgo(20), updatedAt: daysAgo(20) },
   { id: 'help-sf-2', name: 'Remote designers', filters: { position: 'Designer', status: 'OPEN' }, createdAt: daysAgo(9), updatedAt: daysAgo(9) },
 ];
 
@@ -277,9 +278,9 @@ const purchase = (spec) => {
 
 const PURCHASES = [
   purchase({
-    key: 'b1', name: 'Marija Jovanović', initials: 'MJ', color: '#3b6fb0', email: 'marija.jovanovic@example.com', phone: '+381 64 210 3344', linkedin: 'https://linkedin.com/in/example-marija',
+    key: 'b1', name: 'Emily Carter', initials: 'EC', color: '#3b6fb0', email: 'emily.carter@example.com', phone: '+44 7700 900123', linkedin: 'https://linkedin.com/in/example-emily',
     unlocked: 2, pipeline: 'NEW',
-    role: 'Senior Frontend Developer', years: 6, city: 'Belgrade', status: 'ACTIVE', mode: 'HYBRID', salary: 3700, notice: '1m',
+    role: 'Senior Frontend Developer', years: 6, city: 'London', status: 'ACTIVE', mode: 'HYBRID', salary: 3700, notice: '1m',
     skills: ['React', 'TypeScript', 'Redux', 'Next.js', 'Testing Library', 'Figma'],
     summary: 'Frontend developer building dashboards and booking flows for travel products. Mentors juniors and runs the team’s code reviews.',
     jobs: [
@@ -289,9 +290,9 @@ const PURCHASES = [
     degree: 'BSc Software Engineering', school: 'University of Belgrade', gradYear: 2019,
   }),
   purchase({
-    key: 'b2', name: 'Stefan Nikolić', initials: 'SN', color: '#2f9e69', email: 'stefan.nikolic@example.com', phone: '+381 63 552 1180', linkedin: 'https://linkedin.com/in/example-stefan',
+    key: 'b2', name: 'James Mitchell', initials: 'JM', color: '#2f9e69', email: 'james.mitchell@example.com', phone: '+44 7700 900456', linkedin: 'https://linkedin.com/in/example-james',
     unlocked: 6, pipeline: 'CONTACTED', notes: 'Called on Monday, sending the task on Wednesday.',
-    role: 'DevOps Engineer', years: 5, city: 'Novi Sad', status: 'ACTIVE', mode: 'REMOTE', salary: 4000, notice: '2w',
+    role: 'DevOps Engineer', years: 5, city: 'Manchester', status: 'ACTIVE', mode: 'REMOTE', salary: 4000, notice: '2w',
     skills: ['AWS', 'Terraform', 'Kubernetes', 'GitHub Actions', 'Linux'],
     summary: 'DevOps engineer running cloud platforms for SaaS companies. Infrastructure as code, sensible alerts and calm on-call nights.',
     jobs: [
@@ -301,9 +302,9 @@ const PURCHASES = [
     degree: 'BSc Computer Engineering', school: 'University of Novi Sad', gradYear: 2019,
   }),
   purchase({
-    key: 'b3', name: 'Jelena Petrović', initials: 'JP', color: '#C98A1F', email: 'jelena.petrovic@example.com', phone: '+381 65 908 7721', linkedin: 'https://linkedin.com/in/example-jelena',
+    key: 'b3', name: 'Sarah Thompson', initials: 'ST', color: '#C98A1F', email: 'sarah.thompson@example.com', phone: '+1 212 555 0147', linkedin: 'https://linkedin.com/in/example-sarah',
     unlocked: 12, pipeline: 'INTERVIEWED', notes: 'Great second interview. Waiting for the reference check.',
-    role: 'Product Designer', years: 6, city: 'Belgrade', status: 'OPEN', mode: 'HYBRID', salary: 3100, notice: '1m',
+    role: 'Product Designer', years: 6, city: 'New York', status: 'OPEN', mode: 'HYBRID', salary: 3100, notice: '1m',
     skills: ['Figma', 'UX Research', 'Prototyping', 'Design Systems', 'Usability testing'],
     summary: 'Product designer for fintech and health apps. Runs research herself and turns it into simple, tested interfaces.',
     jobs: [
@@ -313,10 +314,10 @@ const PURCHASES = [
     degree: 'MA Interaction Design', school: 'University of Arts Belgrade', level: 'MASTERS', gradYear: 2018,
   }),
   purchase({
-    key: 'b4', name: 'Nikola Ilić', initials: 'NI', color: '#7a4fb0', email: 'nikola.ilic@example.com', phone: '+381 62 441 9090', linkedin: 'https://linkedin.com/in/example-nikola',
+    key: 'b4', name: 'Michael Brooks', initials: 'MB', color: '#7a4fb0', email: 'michael.brooks@example.com', phone: '+1 512 555 0183', linkedin: 'https://linkedin.com/in/example-michael',
     unlocked: 34, pipeline: 'HIRED',
     hire: { id: 'help-hire-1', purchaseId: 'help-pur-b4', hireDate: daysAgo(12), position: 'Backend Developer', salaryClauseRespected: true, ratingOverall: 5, comments: null, createdAt: daysAgo(12) },
-    role: 'Backend Developer (Node.js)', years: 4, city: 'Niš', status: 'ACTIVE', mode: 'REMOTE', salary: 2900, notice: 'now',
+    role: 'Backend Developer (Node.js)', years: 4, city: 'Austin', status: 'ACTIVE', mode: 'REMOTE', salary: 2900, notice: 'now',
     skills: ['Node.js', 'NestJS', 'PostgreSQL', 'Redis', 'Docker'],
     summary: 'Backend developer building APIs for logistics and e-commerce. Clean code, good tests and clear documentation.',
     jobs: [
@@ -326,9 +327,9 @@ const PURCHASES = [
     degree: 'BSc Computer Science', school: 'University of Niš', gradYear: 2020,
   }),
   purchase({
-    key: 'b5', name: 'Ana Kovačević', initials: 'AK', color: '#cf4b4b', email: 'ana.kovacevic@example.com', phone: '+381 60 330 4512', linkedin: 'https://linkedin.com/in/example-ana',
+    key: 'b5', name: 'Olivia Bennett', initials: 'OB', color: '#cf4b4b', email: 'olivia.bennett@example.com', phone: '+1 416 555 0129', linkedin: 'https://linkedin.com/in/example-olivia',
     unlocked: 41, pipeline: 'REJECTED', notes: 'Looking for a fully remote role only.',
-    role: 'QA Engineer', years: 3, city: 'Kragujevac', status: 'OPEN', mode: 'REMOTE', salary: 2100, notice: '2w',
+    role: 'QA Engineer', years: 3, city: 'Toronto', status: 'OPEN', mode: 'REMOTE', salary: 2100, notice: '2w',
     skills: ['Cypress', 'Postman', 'Jira', 'SQL', 'Test planning'],
     summary: 'QA engineer with an eye for edge cases. Writes clear bug reports and automated checks for web apps.',
     jobs: [
@@ -338,7 +339,12 @@ const PURCHASES = [
   }),
 ];
 
-const BALANCE = 86; // under 50 the header shows a low-balance warning
+const BALANCE = 86; // above the alert level below, so the header shows no low-balance warning
+
+const SAVED_CARDS = [
+  { id: 'help-pm-visa', type: 'card', card: { type: 'visa', last4: '4242', expiry_month: 12, expiry_year: 2030 } },
+  { id: 'help-pm-mc', type: 'card', card: { type: 'mastercard', last4: '5454', expiry_month: 3, expiry_year: 2029 } },
+];
 
 // A just-registered company: only the name and login email are filled in.
 const NEW_COMPANY = {
@@ -368,8 +374,12 @@ const BASE_OVERRIDES = {
   'companies/me/bookmarks': () => BOOKMARKS,
   'companies/me/bookmarks/limit': () => ({ limit: 10, count: BOOKMARKS.length, personalLimit: 0, personalUsed: 0, overflowDeadline: null }),
   'companies/me/purchases': () => PURCHASES,
-  'companies/me/credits/balance': () => ({ balance: BALANCE }),
+  'companies/me/credits/balance': (real) => ({ ...real, balance: BALANCE, lowBalanceThreshold: 10 }),
   'companies/me/saved-search-filters': () => SAVED_FILTERS,
+  'companies/me/payment-methods': () => SAVED_CARDS,
+  'companies/me/credits/low-balance-alert': () => ({ enabled: true, thresholdCredits: 10 }),
+  // A team pace of 12 unlocks a month, for the alert's suggestion and "goes off in" line.
+  'companies/me/credits/usage-analytics': (real) => ({ ...real, pace: { ...real?.pace, perMonth: 12 } }),
 };
 
 const NEW_COMPANY_OVERRIDES = {
@@ -530,6 +540,27 @@ async function shotCredits(page) {
   await save(await clipBetween(page, '#help-head', '#help-pkg-row', 12), 'credits-packages');
 }
 
+async function openCreditsTab(page, tabName, readySelector) {
+  await open(page, '/credit-management', 'text=Credits management');
+  await page.locator('nav button', { hasText: tabName }).first().click();
+  await page.waitForSelector(readySelector);
+  await settle(page, 1200);
+}
+
+async function shotPaymentMethods(page) {
+  console.log('payment methods');
+  await openCreditsTab(page, 'Payment', 'text=Visa ending in 4242');
+  await page.locator('button', { hasText: 'Manage cards' }).click();
+  await settle(page, 500);
+  await save(await page.locator('main [class*="pmPanel"]').screenshot(), 'credits-payment-methods');
+}
+
+async function shotLowBalanceAlert(page) {
+  console.log('low balance alert');
+  await openCreditsTab(page, 'Settings', '#lba-threshold');
+  await save(await page.locator('main [class*="settingsCard"]').screenshot(), 'credits-alert');
+}
+
 async function shotSearch(page) {
   console.log('search');
   await open(page, '/candidate-search-dashboard', 'text=Senior Frontend Developer');
@@ -585,12 +616,12 @@ async function shotBookmarks(page) {
 
 async function shotPurchased(page) {
   console.log('purchased');
-  await open(page, '/purchased-profiles', 'text=Marija Jovanović');
+  await open(page, '/purchased-profiles', 'text=Emily Carter');
   await page.evaluate(() => window.scrollTo(0, 0));
   await settle(page);
   await save(await page.screenshot(), 'purchased-overview');
 
-  const card = page.locator('article').filter({ hasText: 'Jelena Petrović' }).first();
+  const card = page.locator('article').filter({ hasText: 'Sarah Thompson' }).first();
   // The card is almost as tall as the window, so the fixed site header would cover its top edge.
   await page.evaluate(() => { document.querySelector('header').style.visibility = 'hidden'; });
   await card.evaluate((el) => el.scrollIntoView({ block: 'center' }));
@@ -598,7 +629,7 @@ async function shotPurchased(page) {
   await save(await card.screenshot(), 'purchased-card');
   await page.evaluate(() => { document.querySelector('header').style.visibility = ''; });
 
-  const other = page.locator('article').filter({ hasText: 'Stefan Nikolić' }).first();
+  const other = page.locator('article').filter({ hasText: 'James Mitchell' }).first();
   await other.locator('select').selectOption('hired');
   const modal = page.locator('[role="dialog"][aria-label="Hiring feedback"]');
   await modal.waitFor();
@@ -630,14 +661,23 @@ await login(page);
 await hideMatch(page);
 await installApiMock(page);
 
+const SHOTS = {
+  profile: shotProfile,
+  credits: shotCredits,
+  payment: shotPaymentMethods,
+  alert: shotLowBalanceAlert,
+  search: shotSearch,
+  bookmarks: shotBookmarks,
+  purchased: shotPurchased,
+  team: (p) => shotSettingsTab(p, 'Team', 'Invite member', 'team'),
+  reputation: (p) => shotSettingsTab(p, 'Reputation management', 'Overall reputation', 'reputation'),
+};
+const only = process.env.HELP_SHOTS_ONLY?.split(',').map((name) => name.trim());
+
 try {
-  await shotProfile(page);
-  await shotCredits(page);
-  await shotSearch(page);
-  await shotBookmarks(page);
-  await shotPurchased(page);
-  await shotSettingsTab(page, 'Team', 'Invite member', 'team');
-  await shotSettingsTab(page, 'Reputation management', 'Overall reputation', 'reputation');
+  for (const [name, shot] of Object.entries(SHOTS)) {
+    if (!only || only.includes(name)) await shot(page);
+  }
 } catch (err) {
   const debugPath = path.join(OUT, '..', 'help-screenshots-error.png');
   await page.screenshot({ path: debugPath }).catch(() => {});

@@ -8,8 +8,9 @@ import LowBalanceAlertSettings from './components/LowBalanceAlertSettings';
 import PaymentMethods from './components/PaymentMethods';
 import Icon from 'components/AppIcon';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
-import { creditWord, formatCredits, LOW_BALANCE_EVENT, LOW_CREDIT_BALANCE } from 'utils/formatCredits';
-import { formatPrice, getBalance, getUsageAnalytics } from './creditsApi';
+import { useCreditBalance } from 'lib/creditBalance';
+import { creditWord, formatCredits } from 'utils/formatCredits';
+import { formatPrice, getUsageAnalytics } from './creditsApi';
 import styles from './styles/credits.module.scss';
 
 // Overview panel header icons (bar chart on a baseline, sparkles) — not in lucide in this shape.
@@ -27,10 +28,9 @@ const SparkleIcon = () => (
 );
 
 const CreditManagement = () => {
-  const [currentBalance, setCurrentBalance] = useState(0);
-  const [lowThreshold, setLowThreshold] = useState(LOW_CREDIT_BALANCE);
-  // null until the balance loads, false for a new company that has never had Credits.
-  const [hasCreditHistory, setHasCreditHistory] = useState(null);
+  // Shared with the top bar, so a purchase from either one shows on both.
+  // hasCreditHistory is null until the balance loads, false for a company that has never had Credits.
+  const { balance: currentBalance, lowBalanceThreshold: lowThreshold, hasCreditHistory } = useCreditBalance();
   const [quickStats, setQuickStats] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
@@ -48,22 +48,13 @@ const CreditManagement = () => {
   };
 
   const { buy, busy, error: checkoutError } = usePaddleCheckout({
-    onSuccess: ({ balance, credited }) => {
-      if (balance != null) setCurrentBalance(balance);
-      setHasCreditHistory(true);
+    onSuccess: ({ credited }) => {
       setPurchaseResult({ credited });
       showToast(credited ? 'Credits added to your balance!' : 'Payment confirmed — credits are on their way.');
     },
   });
 
   useEffect(() => {
-    getBalance()
-      .then((d) => {
-        setCurrentBalance(d.balance);
-        setHasCreditHistory(d.hasCreditHistory);
-        setLowThreshold(d.lowBalanceThreshold ?? LOW_CREDIT_BALANCE);
-      })
-      .catch(() => {});
     getUsageAnalytics(6)
       .then(({ thisMonth, allTime, pace }) => {
         setQuickStats({
@@ -75,9 +66,6 @@ const CreditManagement = () => {
         });
       })
       .catch(() => {});
-    const onThreshold = (e) => setLowThreshold(e.detail);
-    window.addEventListener(LOW_BALANCE_EVENT, onThreshold);
-    return () => window.removeEventListener(LOW_BALANCE_EVENT, onThreshold);
   }, []);
 
   const tabs = [

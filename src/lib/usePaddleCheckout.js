@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { openPaddleCheckout } from 'lib/paddle';
 import { purchaseCredits, getBalance } from 'pages/company/credit-management/creditsApi';
+import { refreshCreditBalance } from 'lib/creditBalance';
 
 const POLL_ATTEMPTS = 6;
 const POLL_INTERVAL_MS = 1000;
@@ -14,7 +15,9 @@ function wait(ms) {
  * search-dashboard's quick Buy Credits modal. Always opens the Paddle Checkout
  * overlay — Paddle doesn't charge a saved card by itself for a one-time purchase,
  * so the company's saved cards are offered there. Credits land asynchronously via
- * the Paddle webhook, so the balance is polled briefly afterward rather than assumed.
+ * the Paddle webhook, so the balance is polled briefly afterward rather than assumed,
+ * then published to the shared balance (lib/creditBalance) so the top bar and the
+ * page show the same number.
  */
 export function usePaddleCheckout({ onSuccess } = {}) {
   const [processing, setProcessing] = useState(false);
@@ -51,6 +54,7 @@ export function usePaddleCheckout({ onSuccess } = {}) {
           }
         }
 
+        await refreshCreditBalance();
         setSettling(false);
         onSuccess?.({ balance: finalBalance, credited });
       } catch (err) {

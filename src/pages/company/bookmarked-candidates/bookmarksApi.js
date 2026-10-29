@@ -1,7 +1,7 @@
 import apiClient from 'lib/apiClient';
 import { candidateToFrontend } from '../candidate-search-dashboard/candidateSearchApi';
 
-export { unlockCandidate, revealedToFrontend, getCreditsBalance } from '../candidate-search-dashboard/candidateSearchApi';
+export { unlockCandidate, revealedToFrontend } from '../candidate-search-dashboard/candidateSearchApi';
 
 /** Matches the backend's UnlocksService UNLOCK_COST (1 credit per profile). */
 export const UNLOCK_COST = 1;

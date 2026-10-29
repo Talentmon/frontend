@@ -180,10 +180,6 @@ export function removeBookmark(id) {
 }
 
 // ---- Credits ----
-export function getCreditsBalance() {
-  return apiClient.get('/companies/me/credits/balance').then((r) => r.data?.balance ?? 0);
-}
-
 export function listCreditPackages() {
   return apiClient.get('/companies/me/credits/packages').then((r) =>
     r.data.map((p) => ({

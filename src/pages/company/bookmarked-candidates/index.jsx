@@ -13,6 +13,7 @@ import CandidatePreviewDrawer from '../candidate-search-dashboard/components/Can
 import Icon from 'components/AppIcon';
 import { buildBaseSalaryRange, filterByBaseSalary } from 'utils/salaryFilterService';
 import { getSkillNamesFor } from 'utils/skills';
+import { setCreditBalance, useCreditBalance } from 'lib/creditBalance';
 import {
   listBookmarks,
   getBookmarkLimit,
@@ -23,7 +24,6 @@ import {
   bulkUnlockBookmarks,
   unlockCandidate,
   revealedToFrontend,
-  getCreditsBalance,
   UNLOCK_COST,
 } from './bookmarksApi';
 import styles from './styles/bookmarked.module.scss';
@@ -41,7 +41,7 @@ const BookmarkedCandidatesPage = () => {
   const previousSortByRef = useRef('bookmarked-date-desc');
   const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [sortBy, setSortBy] = useState('bookmarked-date-desc');
-  const [creditBalance, setCreditBalance] = useState(0);
+  const { balance: creditBalance } = useCreditBalance();
   const [bookmarkLimit, setBookmarkLimit] = useState(10);
   const [personalLimit, setPersonalLimit] = useState(0);
   const [overflowDeadline, setOverflowDeadline] = useState(null);
@@ -66,7 +66,6 @@ const BookmarkedCandidatesPage = () => {
       .then((rows) => setAllBookmarkedCandidates(rows.map(bookmarkToFrontend)))
       .catch(() => {})
       .finally(() => setLoading(false));
-    getCreditsBalance().then(setCreditBalance).catch(() => {});
     getBookmarkLimit()
       .then(({ limit, personalLimit: personal, overflowDeadline: deadline }) => {
         setBookmarkLimit(limit);

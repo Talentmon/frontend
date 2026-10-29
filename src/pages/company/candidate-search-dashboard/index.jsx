@@ -11,6 +11,7 @@ import Toast from './components/Toast';
 import styles from './styles/dashboard.module.scss';
 import { addNotification } from 'utils/notificationStore';
 import { formatCredits } from 'utils/formatCredits';
+import { setCreditBalance, useCreditBalance } from 'lib/creditBalance';
 import {
   searchCandidates,
   candidateToFrontend,
@@ -19,7 +20,6 @@ import {
   listBookmarks,
   createBookmark,
   removeBookmark,
-  getCreditsBalance,
   listCreditPackages,
 } from './candidateSearchApi';
 
@@ -45,7 +45,7 @@ const CandidateSearchDashboard = () => {
   );
 
   const [bookmarksById, setBookmarksById] = useState({});
-  const [credits, setCredits] = useState(0);
+  const { balance: credits } = useCreditBalance();
   const [creditPackages, setCreditPackages] = useState([]);
 
   const [unlockTarget, setUnlockTarget] = useState(null);
@@ -70,7 +70,6 @@ const CandidateSearchDashboard = () => {
         setBookmarksById(map);
       })
       .catch(() => {});
-    getCreditsBalance().then(setCredits).catch(() => {});
   }, []);
 
   const fetchPage = (pageNum, { append = false } = {}) => {
@@ -174,7 +173,7 @@ const CandidateSearchDashboard = () => {
       const unlock = await unlockCandidate(unlockTarget.id, unlockTarget.position);
       const revealed = revealedToFrontend(unlock.cvSnapshot);
       setUnlockTarget((prev) => (prev ? { ...prev, ...revealed } : prev));
-      setCredits((c) => Math.max(0, c - UNLOCK_COST));
+      setCreditBalance((c) => Math.max(0, c - UNLOCK_COST));
       setCandidates((prev) => prev?.filter((c) => c?.id !== unlockTarget.id));
       setTotal((t) => Math.max(0, t - 1));
       setBookmarksById((prev) => {
@@ -316,8 +315,7 @@ const CandidateSearchDashboard = () => {
             balance={credits}
             packages={creditPackages}
             onClose={() => setIsBuyOpen(false)}
-            onPurchased={({ balance, credited }) => {
-              if (balance != null) setCredits(balance);
+            onPurchased={({ credited }) => {
               showToast(credited ? 'Credits added to your balance!' : 'Payment confirmed — credits are on their way.');
             }}
           />

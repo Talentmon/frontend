@@ -1,29 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import Icon from '../AppIcon';
 import Button from './Button';
 import BuyCreditsModal from 'pages/company/candidate-search-dashboard/components/BuyCreditsModal';
-import { getBalance, listPackages, packageToFrontend } from 'pages/company/credit-management/creditsApi';
-import { LOW_BALANCE_EVENT, LOW_CREDIT_BALANCE } from 'utils/formatCredits';
+import { listPackages, packageToFrontend } from 'pages/company/credit-management/creditsApi';
+import { useCreditBalance } from 'lib/creditBalance';
 
 const CreditCounter = () => {
-  const [creditBalance, setCreditBalance] = useState(0);
-  const [lowThreshold, setLowThreshold] = useState(LOW_CREDIT_BALANCE);
+  const { balance: creditBalance, lowBalanceThreshold } = useCreditBalance();
   const [packages, setPackages] = useState([]);
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
-  useEffect(() => {
-    getBalance()
-      .then((r) => {
-        setCreditBalance(r.balance);
-        setLowThreshold(r.lowBalanceThreshold ?? LOW_CREDIT_BALANCE);
-      })
-      .catch(() => {});
-    const onThreshold = (e) => setLowThreshold(e.detail);
-    window.addEventListener(LOW_BALANCE_EVENT, onThreshold);
-    return () => window.removeEventListener(LOW_BALANCE_EVENT, onThreshold);
-  }, []);
-
-  const isLowBalance = creditBalance <= lowThreshold;
+  const isLowBalance = creditBalance <= lowBalanceThreshold;
 
   const handlePurchaseClick = () => {
     setShowPurchaseModal(true);
@@ -79,9 +66,6 @@ const CreditCounter = () => {
           balance={creditBalance}
           packages={packages}
           onClose={() => setShowPurchaseModal(false)}
-          onPurchased={({ balance }) => {
-            if (balance != null) setCreditBalance(balance);
-          }}
         />
       )}
     </>

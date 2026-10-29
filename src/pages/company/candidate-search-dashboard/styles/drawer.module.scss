@@ -360,6 +360,10 @@ $header-h: 64px;
   display: flex;
 }
 
+.contactMissing {
+  color: $slate-2;
+}
+
 .contactRow {
   display: flex;
   align-items: center;
@@ -663,6 +667,13 @@ $header-h: 64px;
   &:hover {
     background: $gold-2;
     transform: translateY(-1px);
+  }
+
+  // No email on the profile.
+  &[aria-disabled='true'] {
+    opacity: 0.5;
+    pointer-events: none;
+    box-shadow: none;
   }
 }
 

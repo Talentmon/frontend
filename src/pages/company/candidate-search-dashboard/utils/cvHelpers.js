@@ -1,36 +1,5 @@
-// Helpers for the anonymous CV preview drawer.
-// The dashboard's candidate records only carry contact/company details once a
-// company has actually unlocked the profile, so the drawer synthesizes a
-// deterministic, display-only email/phone/LinkedIn for the redacted preview.
+// Helpers for the CV preview drawer.
 import { formatMoney } from 'utils/currencyService';
-
-const CYRILLIC_TO_LATIN = {
-  а: 'a', б: 'b', в: 'v', г: 'g', д: 'd', ђ: 'dj', е: 'e', ж: 'z', з: 'z', и: 'i', ј: 'j',
-  к: 'k', л: 'l', љ: 'lj', м: 'm', н: 'n', њ: 'nj', о: 'o', п: 'p', р: 'r', с: 's', т: 't',
-  ћ: 'c', у: 'u', ф: 'f', х: 'h', ц: 'c', ч: 'c', џ: 'dz', ш: 's'
-};
-
-export const slugify = (name = '') =>
-  name
-    ?.toLowerCase()
-    ?.split('')
-    ?.map((ch) => CYRILLIC_TO_LATIN?.[ch] ?? ch)
-    ?.join('')
-    ?.replace(/[^a-z0-9\s-]/g, '')
-    ?.trim()
-    ?.replace(/\s+/g, '.') || '';
-
-export const mockContactFor = (candidate) => {
-  const slug = slugify(candidate?.name) || `candidate${candidate?.id ?? ''}`;
-  const seed = candidate?.id ?? 0;
-  const phoneMid = String(60 + (seed % 9)).padStart(2, '0');
-  const phoneRest = String(1000000 + seed * 7919).slice(-7);
-  return {
-    email: `${slug}@email.com`,
-    phone: `+381 ${phoneMid} ${phoneRest?.slice(0, 3)} ${phoneRest?.slice(3)}`,
-    linkedin: `/in/${slug}`
-  };
-};
 
 export const educationLabels = {
   'high-school': 'High School',

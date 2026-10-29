@@ -1,8 +1,7 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import {
-  mockContactFor,
   educationLabels,
   availabilityLabels,
   jobTypeLabels,
@@ -88,14 +87,13 @@ const CandidatePreviewDrawer = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Purchased profiles already carry real contact details — only fall back
-  // to the deterministic mock contact for pages that don't have them yet.
-  const mockContact = useMemo(() => mockContactFor(candidate), [candidate?.id]);
+  // Only what the candidate actually entered — a missing field reads "Not provided", never a made-up value.
   const contact = {
-    email: candidate?.email || mockContact?.email,
-    phone: candidate?.phone || mockContact?.phone,
-    linkedin: candidate?.linkedin || mockContact?.linkedin
+    email: candidate?.email,
+    phone: candidate?.phone,
+    linkedin: candidate?.linkedin
   };
+  const notProvided = <span className={styles.contactMissing}>Not provided</span>;
 
   const isRevealed = !!candidate && purchasedCandidates?.includes(candidate?.id);
   const isBookmarked = !!candidate && bookmarkedCandidates?.includes(candidate?.id);
@@ -171,15 +169,15 @@ const CandidatePreviewDrawer = ({
             <div className={styles.contactStrip}>
               <div className={styles.contactRow}>
                 <Icon name="Mail" size={15} />
-                <span>{contact?.email}</span>
+                {contact.email ? <span>{contact.email}</span> : notProvided}
               </div>
               <div className={styles.contactRow}>
                 <Icon name="Phone" size={15} />
-                <span>{contact?.phone}</span>
+                {contact.phone ? <span>{contact.phone}</span> : notProvided}
               </div>
               <div className={styles.contactRow}>
                 <Icon name="Linkedin" size={15} />
-                <span>{contact?.linkedin}</span>
+                {contact.linkedin ? <span>{contact.linkedin}</span> : notProvided}
               </div>
             </div>
 
@@ -287,7 +285,11 @@ const CandidatePreviewDrawer = ({
 
         {variant === 'purchased' ? (
           <div className={styles.foot}>
-            <a href={`mailto:${contact?.email || ''}`} className={styles.mailBtn}>
+            <a
+              href={contact.email ? `mailto:${contact.email}` : undefined}
+              aria-disabled={!contact.email}
+              className={styles.mailBtn}
+            >
               Send Email
               <Icon name="Mail" size={18} />
             </a>

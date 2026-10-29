@@ -81,7 +81,7 @@ const AccountPreferencesTab = ({
                 className={nameMissing ? `${styles.finput} ${styles.finvalid}` : styles.finput}
                 type="text"
                 maxLength={100}
-                placeholder="e.g. Ana Jovanović"
+                placeholder="e.g. Jane Smith"
                 value={preferences?.name || ''}
                 onChange={(e) => handlePreferenceChange('name', e.target.value)}
               />

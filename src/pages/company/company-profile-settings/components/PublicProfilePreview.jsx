@@ -172,7 +172,7 @@ const PublicProfilePreview = ({ companyData, reputationData, isVisible, onClose 
                   </span>
                   <span className={styles.dContactItem}>
                     <Icon name="Phone" size={15} />
-                    {companyData?.phone || '+381 11 123 4567'}
+                    {companyData?.phone || 'Company phone'}
                   </span>
                 </div>
                 {(companyData?.registrationNumber || companyData?.pib) && (

@@ -207,7 +207,7 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
               <input
                 className={inputClass('location')}
                 type="text"
-                placeholder="Belgrade"
+                placeholder="London"
                 value={companyData?.location}
                 onChange={(e) => handleInputChange('location', e?.target?.value)}
                 required
@@ -237,7 +237,7 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
               <input
                 className={inputClass('address')}
                 type="text"
-                placeholder="Knez Mihailova 12, Belgrade"
+                placeholder="12 High Street, London"
                 value={companyData?.address}
                 onChange={(e) => handleInputChange('address', e?.target?.value)}
                 required
@@ -333,7 +333,7 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
               <input
                 className={styles.finput}
                 type="tel"
-                placeholder="+381 11 123 4567"
+                placeholder="+44 20 7946 0958"
                 value={companyData?.phone}
                 onChange={(e) => handleInputChange('phone', e?.target?.value)}
               />

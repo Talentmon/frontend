@@ -187,7 +187,7 @@ const AcceptInvite = () => {
           <div className={`field${errors.fullName ? ' invalid' : ''}`}>
             <label htmlFor="fullName">Full name</label>
             <div className="ctrl">
-              <input id="fullName" name="fullName" type="text" autoComplete="name" placeholder="Marko Petrović" required />
+              <input id="fullName" name="fullName" type="text" autoComplete="name" placeholder="Jane Smith" required />
             </div>
             {errors.fullName ? (
               <span className="field-hint error">{errors.fullName}</span>

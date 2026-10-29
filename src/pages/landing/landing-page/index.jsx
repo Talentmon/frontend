@@ -316,7 +316,7 @@ const LandingPage = () => {
                 </div>
                 <div className="tc-fact">
                   <span className="tc-fact-ic"><Icon name="MapPin" size={16} /></span>
-                  <span className="tc-fact-text"><span className="k">Location</span><span className="v">Belgrade</span></span>
+                  <span className="tc-fact-text"><span className="k">Location</span><span className="v">San Francisco</span></span>
                 </div>
                 <div className="tc-fact">
                   <span className="tc-fact-ic"><Icon name="Building2" size={16} /></span>
@@ -518,7 +518,7 @@ const LandingPage = () => {
             <div className="match-filters">
               <div className="mf-head"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5h18l-7 8v6l-4 2v-8z" /></svg>Your criteria</div>
               <div className="mf-group"><span className="mf-lab">Skills</span><div className="mf-chips"><span>React</span><span>TypeScript</span><span>Next.js</span></div></div>
-              <div className="mf-group"><span className="mf-lab">Location</span><div className="mf-chips"><span>Belgrade</span></div></div>
+              <div className="mf-group"><span className="mf-lab">Location</span><div className="mf-chips"><span>London</span></div></div>
               <div className="mf-group"><span className="mf-lab">Experience</span><div className="mf-chips"><span>3+ years</span></div></div>
               <div className="mf-group"><span className="mf-lab">Work mode</span><div className="mf-chips"><span>Remote</span></div></div>
               <div className="mf-group"><span className="mf-lab">Status</span><div className="mf-chips"><span>Open to offers</span></div></div>
@@ -528,21 +528,21 @@ const LandingPage = () => {
                 <div className="mr-score" style={{ '--pct': 96 }}><b>96%</b></div>
                 <div className="mr-info">
                   <div className="mr-name"><span className="mr-redact" />Frontend Developer</div>
-                  <div className="mr-meta">Belgrade · 5 yrs · <b>React, TypeScript, Next.js, Remote</b> all match</div>
+                  <div className="mr-meta">London · 5 yrs · <b>React, TypeScript, Next.js, Remote</b> all match</div>
                 </div>
               </div>
               <div className="mr-row">
                 <div className="mr-score" style={{ '--pct': 88 }}><b>88%</b></div>
                 <div className="mr-info">
                   <div className="mr-name"><span className="mr-redact" />Frontend Developer</div>
-                  <div className="mr-meta">Belgrade · 4 yrs · React, TypeScript match · <b>Next.js missing</b></div>
+                  <div className="mr-meta">London · 4 yrs · React, TypeScript match · <b>Next.js missing</b></div>
                 </div>
               </div>
               <div className="mr-row">
                 <div className="mr-score" style={{ '--pct': 71 }}><b>71%</b></div>
                 <div className="mr-info">
                   <div className="mr-name"><span className="mr-redact" />Fullstack Developer</div>
-                  <div className="mr-meta">Novi Sad · 6 yrs · React match · <b>location &amp; Next.js off</b></div>
+                  <div className="mr-meta">Manchester · 6 yrs · React match · <b>location &amp; Next.js off</b></div>
                 </div>
               </div>
             </div>
@@ -579,7 +579,7 @@ const LandingPage = () => {
                 </div>
 
                 <div className="an-facts">
-                  <div><span className="k">Location</span><span className="v">Belgrade, Serbia</span></div>
+                  <div><span className="k">Location</span><span className="v">San Francisco, USA</span></div>
                   <div><span className="k">Work mode</span><span className="v">Remote</span></div>
                   <div><span className="k">Type</span><span className="v">Full-time</span></div>
                   <div><span className="k">Expected salary</span><span className="v gold">€78,000 / year</span></div>
@@ -596,17 +596,17 @@ const LandingPage = () => {
                   <div className="an-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>Experience</div>
                   <ul className="xp">
                     <li>
-                      <div className="xp-top"><span className="xp-title">Senior React Engineer</span><span className="xp-when">2021–Present · Belgrade</span></div>
+                      <div className="xp-top"><span className="xp-title">Senior React Engineer</span><span className="xp-when">2021–Present · San Francisco</span></div>
                       <p className="xp-desc">Owns the component library and the core dashboard. Leads a team of four on migrating the app to TypeScript.</p>
                       <div className="tags"><span>React</span><span>TypeScript</span><span>Node.js</span><span>GraphQL</span></div>
                     </li>
                     <li>
-                      <div className="xp-top"><span className="xp-title">Frontend Engineer</span><span className="xp-when">2019–2021 · Belgrade</span></div>
+                      <div className="xp-top"><span className="xp-title">Frontend Engineer</span><span className="xp-when">2019–2021 · San Francisco</span></div>
                       <p className="xp-desc">Rebuilt the checkout flow for an e-commerce platform and cut bundle size by 40%.</p>
                       <div className="tags"><span>React</span><span>Redux</span><span>Webpack</span></div>
                     </li>
                     <li>
-                      <div className="xp-top"><span className="xp-title">Junior Developer</span><span className="xp-when">2018–2019 · Niš</span></div>
+                      <div className="xp-top"><span className="xp-title">Junior Developer</span><span className="xp-when">2018–2019 · Sacramento</span></div>
                       <p className="xp-desc">Built internal tools and marketing sites for clients at a small agency.</p>
                       <div className="tags"><span>JavaScript</span><span>CSS</span></div>
                     </li>
@@ -616,7 +616,7 @@ const LandingPage = () => {
                 <div className="an-block">
                   <div className="an-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M3 9l9-4 9 4-9 4-9-4z" /><path d="M7 11.5V16c0 1.4 2.2 2.5 5 2.5s5-1.1 5-2.5v-4.5" /></svg>Education</div>
                   <div className="an-line"><span className="t">BSc, Computer Science</span><span className="d">2014–2018</span></div>
-                  <div className="an-sub">University of Belgrade</div>
+                  <div className="an-sub">University of California, Berkeley</div>
                 </div>
 
                 <div className="an-block">
@@ -645,7 +645,7 @@ const LandingPage = () => {
                 <div className="an-block">
                   <div className="an-h"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="9" /><path d="M8 12h.01M12 12h.01M16 12h.01" /></svg>Anything else on the CV</div>
                   <p className="an-p">Whatever the candidate adds themselves — side projects, talks, open source, awards. It shows up here exactly as they wrote it.</p>
-                  <div className="tags" style={{ marginTop: '11px' }}><span>3 open-source repos</span><span>Speaker, React Belgrade</span></div>
+                  <div className="tags" style={{ marginTop: '11px' }}><span>3 open-source repos</span><span>Speaker, React Bay Area</span></div>
                 </div>
 
                 <div className="an-locked">

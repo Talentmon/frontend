@@ -85,7 +85,7 @@ const FILTER_GROUPS = [
     title: 'Basic Search',
     fields: [
       { key: 'position', type: 'text', label: 'Position', placeholder: 'e.g. Frontend Developer' },
-      { key: 'location', type: 'text', label: 'Location', placeholder: 'e.g. Belgrade, Novi Sad' }
+      { key: 'location', type: 'text', label: 'Location', placeholder: 'e.g. London, New York' }
     ]
   },
   {

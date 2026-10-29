@@ -474,7 +474,7 @@ const ForCandidates = () => {
             <div className="rate-modal fx">
               <div className="rm-head">
                 <span className="rm-av">M</span>
-                <div><div className="rm-title">Rate · Meridian</div><div className="rm-sub">Health Tech · Belgrade · Product Designer</div></div>
+                <div><div className="rm-title">Rate · Meridian</div><div className="rm-sub">Health Tech · Boston · Product Designer</div></div>
                 <span className="rm-x"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M18 6 6 18M6 6l12 12" /></svg></span>
               </div>
 
@@ -575,7 +575,7 @@ const ForCandidates = () => {
                   <span className="coc-badge">YOUR EMPLOYER</span>
                   <span className="coc-av" style={{ background: 'linear-gradient(140deg,#3f597a,#1f3550)' }}>N</span>
                   <div className="coc-name">Nordwave</div>
-                  <div className="coc-meta">Software · Belgrade</div>
+                  <div className="coc-meta">Software · London</div>
                   <div className="coc-pills"><span className="coc-pill">51–200 employees</span><span className="coc-pill"><span className="st">★</span>4.6</span></div>
                   <div className="coc-honor">Candidate salary: honored 88%</div>
                   <div className="coc-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>Can't see you</div>
@@ -583,7 +583,7 @@ const ForCandidates = () => {
                 <div className="co-card">
                   <span className="coc-av" style={{ background: 'linear-gradient(140deg,#e0a63f,#c98a1f)' }}>A</span>
                   <div className="coc-name">Atlas &amp; Co</div>
-                  <div className="coc-meta">Consulting · Novi Sad</div>
+                  <div className="coc-meta">Consulting · Manchester</div>
                   <div className="coc-pills"><span className="coc-pill">1–50 employees</span><span className="coc-pill"><span className="st">★</span>4.2</span></div>
                   <div className="coc-honor">Candidate salary: honored 96%</div>
                   <div className="coc-hiring"><span className="gd" />Actively hiring</div>
@@ -599,7 +599,7 @@ const ForCandidates = () => {
                 <div className="co-card">
                   <span className="coc-av" style={{ background: 'linear-gradient(140deg,#4f7d9e,#33566f)' }}>M</span>
                   <div className="coc-name">Meridian</div>
-                  <div className="coc-meta">Health Tech · Belgrade</div>
+                  <div className="coc-meta">Health Tech · Boston</div>
                   <div className="coc-pills"><span className="coc-pill">201–1000 employees</span><span className="coc-pill"><span className="st">★</span>4.1</span></div>
                   <div className="coc-honor">Candidate salary: honored 93%</div>
                   <div className="coc-hiring"><span className="gd" />Actively hiring</div>
@@ -611,7 +611,7 @@ const ForCandidates = () => {
           <div className="co-rep fx">
             <div className="rep-head">
               <span className="rep-av" style={{ background: 'linear-gradient(140deg,#e0a63f,#c98a1f)' }}>A</span>
-              <div><div className="rep-name">Atlas &amp; Co</div><div className="rep-meta">Consulting · Novi Sad · Reputation</div></div>
+              <div><div className="rep-name">Atlas &amp; Co</div><div className="rep-meta">Consulting · Manchester · Reputation</div></div>
               <div className="rep-rating">
                 <div className="rep-stars">{renderPartialStars(4.2)}</div>
                 <div><span className="rep-score">4.2</span> <span className="rep-rc">52 reviews</span></div>

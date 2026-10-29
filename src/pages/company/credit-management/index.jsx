@@ -257,9 +257,12 @@ const CreditManagement = () => {
               <span className={styles.balChipUnit}>{creditWord(currentBalance)}</span>
             </div>
 
-            <button className={styles.btnPrimary} onClick={() => setActiveTab('purchase')}>
-              <Icon name="Plus" size={16} />Buy Credits
-            </button>
+            {/* It only leads to the Purchase tab, so it's left out while that tab is open. */}
+            {activeTab !== 'purchase' && (
+              <button className={styles.btnPrimary} onClick={() => setActiveTab('purchase')}>
+                <Icon name="Plus" size={16} />Buy Credits
+              </button>
+            )}
           </div>
         </div>
 
@@ -318,7 +321,7 @@ const CreditManagement = () => {
             ) : (
               <>
                 <p className={styles.modalEyebrow}>Purchase confirmation</p>
-                <h2 className={styles.modalTitle} id="purchase-modal-title">Buy {selectedPackage?.name} package</h2>
+                <h2 className={styles.modalTitle} id="purchase-modal-title">{selectedPackage?.name} package</h2>
                 <p className={styles.modalSub}>
                   Credits are added right after payment and <b>never expire</b>. You only spend them when you unlock a candidate.
                 </p>
@@ -364,12 +367,13 @@ const CreditManagement = () => {
                     Cancel
                   </button>
                   <button className={styles.btnFull} onClick={() => buy(selectedPackage)} disabled={busy}>
+                    {/* Payment itself happens in Paddle's checkout, which this opens. */}
                     {busy ? (
                       'Processing…'
                     ) : (
                       <>
-                        <Icon name="Lock" size={16} />
-                        Pay {formatPrice(selectedPackage?.price, selectedPackage?.currency)}
+                        Continue to payment
+                        <Icon name="ArrowRight" size={16} />
                       </>
                     )}
                   </button>

@@ -3303,6 +3303,15 @@ $text-dim: #9baec0;
   display: flex;
   gap: 11px;
 
+  // Cancel takes only the room it needs, so "Continue to payment" stays on one line.
+  .btnOutline {
+    flex: 0 0 auto;
+  }
+
+  .btnFull {
+    white-space: nowrap;
+  }
+
   @media (max-width: 460px) {
     flex-direction: column;
   }

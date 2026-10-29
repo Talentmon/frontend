@@ -1821,38 +1821,64 @@ $push-bp: 1520px;
   }
 }
 
-// ===== Buy credits modal =====
-.overlay {
+// ===== Buy credits modal (quick top-up) =====
+// Dark navy and gold, like the Credits page's purchase confirmation.
+$qb-ink-2: #10243a;
+$qb-ink-3: #21405e;
+$qb-text: #e9f0f7;
+$qb-dim: #9baec0;
+
+.qbOverlay {
   position: fixed;
   inset: 0;
-  background: rgba(11, 26, 44, 0.55);
-  backdrop-filter: blur(3px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 1300;
-  padding: 20px;
-}
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(6, 13, 22, 0.72);
+  backdrop-filter: blur(8px);
+  animation: qbFade 0.3s $ease;
 
-.modal {
-  position: relative;
-  background: $white;
-  border-radius: $r-lg;
-  width: 100%;
-  max-width: 420px;
-  padding: 28px;
-  box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.5);
-  animation: pop 0.25s $ease;
-
-  &.buy {
-    max-width: 440px;
+  @media (max-width: 460px) {
+    padding: 12px;
   }
 }
 
-@keyframes pop {
+@keyframes qbFade {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.qbModal {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  padding: 28px 26px 24px;
+  background: linear-gradient(180deg, #15293f, #0e2034);
+  border: 1px solid $qb-ink-3;
+  border-radius: 22px;
+  color: $qb-text;
+  box-shadow:
+    0 0 0 1px rgba(230, 169, 60, 0.1),
+    0 50px 100px -30px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  animation: qbPop 0.45s $ease;
+
+  @media (max-width: 460px) {
+    padding: 24px 20px 20px;
+  }
+}
+
+@keyframes qbPop {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
   }
   to {
     opacity: 1;
@@ -1860,225 +1886,351 @@ $push-bp: 1520px;
   }
 }
 
-.modalClose {
+// A gold glow when the payment goes through.
+.qbFlash {
   position: absolute;
-  top: 18px;
-  right: 18px;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  inset: 0;
+  border-radius: 22px;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 45%, rgba(242, 200, 113, 0.4), transparent 60%);
+
+  .flashing & {
+    animation: qbFlashGlow 0.8s $ease;
+  }
+}
+
+@keyframes qbFlashGlow {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.qbHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 4px;
+}
+
+.qbEyebrow {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: $gold;
+}
+
+.qbTitle {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: $qb-text;
+  margin-top: 0.4rem;
+
+  @media (max-width: 460px) {
+    font-size: 1.34rem;
+  }
+}
+
+.qbClose {
   display: grid;
   place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  color: $qb-dim;
+  transition: 0.2s $ease;
+
+  &:hover:not(:disabled) {
+    color: $qb-text;
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+}
+
+.qbBalance {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55em;
+  margin: 14px 0 22px;
+  padding: 0.5em 0.9em;
+  border-radius: 99px;
+  background: $qb-ink-2;
+  border: 1px solid $qb-ink-3;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 0.02em;
+  color: $qb-dim;
+
+  b {
+    color: $gold;
+    font-weight: 600;
+  }
+}
+
+.qbCoin {
+  width: 13px;
+  height: 13px;
+  flex: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, $gold-2, $gold-deep);
+  box-shadow: 0 0 0 2px rgba(230, 169, 60, 0.18);
+}
+
+.qbLoading {
+  font-size: 0.88rem;
+  color: $qb-dim;
+  margin-bottom: 22px;
+}
+
+.qbPacks {
+  display: grid;
+  gap: 11px;
+  margin-bottom: 22px;
+}
+
+.qbPack {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  padding: 16px 18px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1.5px solid $qb-ink-3;
+  border-radius: 14px;
+  transition:
+    transform 0.2s $ease,
+    border-color 0.2s,
+    background-color 0.2s,
+    box-shadow 0.2s;
+
+  &:hover:not(:disabled) {
+    transform: translateX(2px);
+    border-color: rgba(230, 169, 60, 0.45);
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+
+  &.sel {
+    border-color: $gold;
+    background: linear-gradient(180deg, rgba(230, 169, 60, 0.1), rgba(230, 169, 60, 0.03));
+    box-shadow:
+      0 0 0 1px $gold,
+      0 20px 44px -30px rgba(230, 169, 60, 0.6);
+  }
+
+  @media (max-width: 460px) {
+    padding: 14px 15px;
+    gap: 12px;
+  }
+}
+
+.qbRadio {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid $qb-ink-3;
+  transition: border-color 0.2s;
+
+  &::after {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: $gold;
+    transform: scale(0);
+    transition: transform 0.2s $ease;
+  }
+
+  .sel & {
+    border-color: $gold;
+
+    &::after {
+      transform: scale(1);
+    }
+  }
+}
+
+.qbPackMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.qbPackName {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.06rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: $qb-text;
+}
+
+.qbTag {
+  padding: 0.28em 0.6em;
+  border-radius: 99px;
+  background: linear-gradient(140deg, $gold-2, $gold);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.64rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #241704;
+}
+
+.qbPackSub {
+  display: block;
+  margin-top: 4px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.76rem;
   color: $slate-2;
 
-  &:hover {
-    background: $mist;
-    color: $ink;
+  @media (max-width: 460px) {
+    font-size: 0.7rem;
   }
 }
 
-.modalIcon {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: rgba(230, 169, 60, 0.14);
-  display: grid;
-  place-items: center;
-  margin-bottom: 16px;
-  color: $gold-deep;
+.qbPackPrice {
+  flex: none;
+  text-align: right;
 }
 
-.modalTitle {
-  font-size: 1.25rem;
-  color: $ink;
-  margin-bottom: 6px;
-}
+.qbAmt {
+  display: block;
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.32rem;
+  font-weight: 700;
+  line-height: 1;
+  color: $qb-text;
 
-.modalSub {
-  font-size: 0.92rem;
-  color: $slate;
-  margin-bottom: 18px;
-}
-
-.modalRow {
-  display: flex;
-  justify-content: space-between;
-  padding: 11px 0;
-  font-size: 0.92rem;
-  border-top: 1px solid $line;
-
-  &:first-of-type {
-    border-top: none;
-  }
-
-  .k {
-    color: $slate;
-  }
-  .v {
-    font-weight: 600;
-    color: $ink;
-  }
-  .vGold {
-    color: $gold-deep;
-    font-family: "JetBrains Mono", monospace;
+  .sel & {
+    color: $gold-2;
   }
 }
 
-.modalActions {
-  display: flex;
-  gap: 10px;
-  margin-top: 22px;
+.qbPer {
+  display: block;
+  margin-top: 5px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.7rem;
+  color: $slate-2;
 }
 
-.btnGo {
-  flex: 1;
+.qbError {
+  margin: -8px 0 14px;
+  font-size: 0.82rem;
+  color: #ff8a8a;
+}
+
+.qbCta {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5em;
-  background: $gold;
-  color: #241704;
-  font-weight: 700;
-  font-size: 0.94rem;
-  border-radius: $r-sm;
-  padding: 0.85em 1em;
-  transition:
-    background-color 0.2s,
-    transform 0.2s $ease;
-
-  &:hover {
-    background: $gold-2;
-    transform: translateY(-1px);
-  }
-}
-
-.btnX {
-  padding: 0.85em 1.3em;
-  border: 1.5px solid $line;
-  border-radius: $r-sm;
-  font-weight: 600;
-  color: $slate;
-
-  &:hover {
-    border-color: $ink;
-    color: $ink;
-  }
-}
-
-.buyBal {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.86rem;
-  color: $slate;
-  margin-bottom: 18px;
-
-  b {
-    color: $gold-deep;
-  }
-}
-
-.pkgs {
-  display: grid;
-  gap: 10px;
-}
-
-.pkg {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 1.5px solid $line;
-  border-radius: $r-md;
-  padding: 15px 16px;
-  cursor: pointer;
-  transition: 0.18s;
+  gap: 0.55em;
   width: 100%;
-  text-align: left;
-  background: $white;
-
-  &:hover {
-    border-color: #cdd3d8;
-  }
-
-  &.pop {
-    border-color: $gold;
-    box-shadow: 0 0 0 1px $gold;
-  }
-}
-
-.pkgLeft b {
-  font-size: 1.02rem;
-  color: $ink;
-}
-
-.pkgBadge {
-  font-size: 0.64rem;
-  font-weight: 700;
-  color: #241704;
+  padding: 0.95em 1.2em;
+  border-radius: $r-sm;
   background: $gold;
-  padding: 0.2em 0.5em;
-  border-radius: 999px;
-  margin-left: 0.5em;
-  vertical-align: middle;
-}
+  color: #241704;
+  font-size: 1rem;
+  font-weight: 700;
+  box-shadow: 0 10px 26px -12px rgba(230, 169, 60, 0.85);
+  transition:
+    background-color 0.25s,
+    transform 0.25s $ease,
+    box-shadow 0.25s;
 
-.pkgUnit {
-  display: block;
-  font-size: 0.78rem;
-  color: $slate;
-  font-family: "JetBrains Mono", monospace;
-  margin-top: 2px;
-}
-
-.pkgRight {
-  text-align: right;
-
-  b {
-    font-size: 1.18rem;
-    color: $ink;
+  &:hover:not(:disabled) {
+    background: $gold-2;
+    transform: translateY(-2px);
+    box-shadow: 0 14px 32px -12px rgba(230, 169, 60, 0.9);
   }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: default;
+  }
+
+  &.done {
+    background: rgba(86, 210, 145, 0.16);
+    color: #7bd9a8;
+    border: 1px solid rgba(86, 210, 145, 0.35);
+    box-shadow: none;
+
+    &:hover {
+      background: rgba(86, 210, 145, 0.2);
+      transform: none;
+    }
+  }
+}
+
+.qbFoot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5em 1.4em;
+  margin-top: 16px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+  color: $slate-2;
 
   span {
-    display: block;
-    font-size: 0.72rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+  }
+
+  svg {
     color: $gold-deep;
-    font-family: "JetBrains Mono", monospace;
   }
 }
 
-.buyNote {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  font-size: 0.78rem;
-  color: $slate-2;
-  margin-top: 16px;
-  justify-content: center;
-}
-
-.buyConfirmActions {
-  display: flex;
-  margin-top: 18px;
-}
-
-.buyBtnGhost {
-  flex: 1;
+.qbFinal {
+  margin-top: 8px;
   text-align: center;
-  padding: 0.9em 1.2em;
-  border: 1px solid $line;
-  border-radius: $r-sm;
-  font-weight: 600;
-  color: $slate;
-  transition: 0.2s;
+  font-size: 0.74rem;
+  color: $slate-2;
 
-  &:hover {
-    border-color: $slate-2;
-    color: $ink;
+  a {
+    color: $gold;
+    text-decoration: underline;
+    text-underline-offset: 2px;
   }
 }
 
-.checkoutError {
-  font-size: .82rem;
-  color: #d64545;
-  margin: -6px 0 14px;
+@media (prefers-reduced-motion: reduce) {
+  .qbOverlay,
+  .qbModal,
+  .qbFlash,
+  .qbPack,
+  .qbCta {
+    animation: none !important;
+    transition: none !important;
+  }
 }
 
 // ===== Toast =====

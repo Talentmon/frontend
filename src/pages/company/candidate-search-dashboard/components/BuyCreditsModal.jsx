@@ -1,103 +1,126 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
-import { creditWord, formatCredits } from 'utils/formatCredits';
+import { formatCredits } from 'utils/formatCredits';
 import { formatPrice } from 'pages/company/credit-management/creditsApi';
 import styles from '../styles/dashboard.module.scss';
 
+// Quick top-up from the header's Buy button and the search page: pick a package, then Paddle's
+// checkout takes the payment — the button only opens it, hence "Continue to payment".
 const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => {} }) => {
-  const [selectedPackage, setSelectedPackage] = useState(null);
-  const [done, setDone] = useState(false);
+  const [pickedId, setPickedId] = useState(null);
+  const [result, setResult] = useState(null);
 
   const { buy, busy, error } = usePaddleCheckout({
-    onSuccess: (result) => {
-      setDone(true);
-      onPurchased(result);
+    onSuccess: (res) => {
+      setResult(res);
+      onPurchased(res);
     },
   });
 
-  if (selectedPackage) {
-    return (
-      <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-        <div className={`${styles.modal} ${styles.buy}`}>
-          <button className={styles.modalClose} onClick={onClose} aria-label="Close">
-            <Icon name="X" size={18} />
-          </button>
+  // The most popular package is picked until the user picks another.
+  const selected = packages.find((p) => p.id === pickedId) || packages.find((p) => p.popular) || packages[0];
+  const done = !!result;
 
-          {done ? (
-            <>
-              <h3 className={styles.modalTitle}>Payment successful</h3>
-              <p className={styles.buyBal}>Your Credits have been added.</p>
-              <div className={styles.buyConfirmActions}>
-                <button className={styles.btnGo} onClick={onClose}>
-                  Done
-                </button>
-              </div>
-            </>
-          ) : (
-            <>
-              <h3 className={styles.modalTitle}>Buy {formatCredits(selectedPackage?.credits)}</h3>
-              <p className={styles.buyBal}>
-                <b>{formatPrice(selectedPackage?.price, selectedPackage?.currency)}</b> · {formatPrice(selectedPackage?.pricePerCredit, selectedPackage?.currency, { cents: true })} / unlock
-              </p>
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === 'Escape' && !busy) onClose(); };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [busy, onClose]);
 
-              {error && <p className={styles.checkoutError}>{error}</p>}
-
-              <div className={styles.buyConfirmActions}>
-                <button className={styles.buyBtnGhost} onClick={() => setSelectedPackage(null)} disabled={busy}>
-                  Back to packages
-                </button>
-                <button className={styles.btnGo} onClick={() => buy(selectedPackage)} disabled={busy}>
-                  {busy ? 'Processing…' : `Pay ${formatPrice(selectedPackage?.price, selectedPackage?.currency)}`}
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-      </div>
+  let cta;
+  if (done) {
+    cta = (
+      <>
+        <Icon name="Check" size={18} strokeWidth={2.6} />
+        {result.credited ? `Purchased · +${formatCredits(selected?.credits)}` : 'Paid · Credits on their way'}
+      </>
+    );
+  } else if (busy) {
+    cta = 'Processing…';
+  } else {
+    cta = (
+      <>
+        <Icon name="CreditCard" size={18} />
+        Continue to payment{selected && ` · ${formatPrice(selected.price, selected.currency)}`}
+      </>
     );
   }
 
   return (
-    <div className={styles.overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <div className={`${styles.modal} ${styles.buy}`}>
-        <button className={styles.modalClose} onClick={onClose} aria-label="Close">
-          <Icon name="X" size={18} />
-        </button>
+    <div className={styles.qbOverlay} onClick={(e) => e.target === e.currentTarget && !busy && onClose()}>
+      <div className={`${styles.qbModal} ${done ? styles.flashing : ''}`} role="dialog" aria-modal="true" aria-labelledby="qb-title">
+        <span className={styles.qbFlash} aria-hidden="true" />
 
-        <h3 className={styles.modalTitle}>Buy Credits</h3>
-        <p className={styles.buyBal}>
-          Current balance: <b>{balance}</b> {creditWord(balance)} · 1 Credit = 1 unlock
-        </p>
+        <div className={styles.qbHead}>
+          <div>
+            <p className={styles.qbEyebrow}>Top up Credits</p>
+            <h2 className={styles.qbTitle} id="qb-title">Choose a package</h2>
+          </div>
+          <button type="button" className={styles.qbClose} onClick={onClose} disabled={busy} aria-label="Close">
+            <Icon name="X" size={18} />
+          </button>
+        </div>
 
-        {packages?.length === 0 ? (
-          <p style={{ color: 'var(--slate)', fontSize: '.88rem' }}>Loading packages…</p>
+        <div className={styles.qbBalance}>
+          <span className={styles.qbCoin} />
+          Current balance: <b>{formatCredits(balance ?? 0)}</b>
+        </div>
+
+        {packages.length === 0 ? (
+          <p className={styles.qbLoading}>Loading packages…</p>
         ) : (
-          <div className={styles.pkgs}>
-            {packages?.map((pkg) => (
-              <button
-                key={pkg?.id}
-                className={`${styles.pkg} ${pkg?.popular ? styles.pop : ''}`}
-                onClick={() => setSelectedPackage(pkg)}
-              >
-                <div className={styles.pkgLeft}>
-                  <b>{formatCredits(pkg?.credits)}</b>
-                  {pkg?.popular && <span className={styles.pkgBadge}>POPULAR</span>}
-                  <span className={styles.pkgUnit}>{formatPrice(pkg?.pricePerCredit, pkg?.currency, { cents: true })} / unlock</span>
-                </div>
-                <div className={styles.pkgRight}>
-                  <b>{formatPrice(pkg?.price, pkg?.currency)}</b>
-                  <span>one-time</span>
-                </div>
-              </button>
-            ))}
+          <div className={styles.qbPacks} role="radiogroup" aria-label="Credit packages">
+            {packages.map((pkg) => {
+              const on = pkg.id === selected?.id;
+              return (
+                <button
+                  key={pkg.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  className={`${styles.qbPack} ${on ? styles.sel : ''}`}
+                  onClick={() => setPickedId(pkg.id)}
+                  disabled={busy || done}
+                >
+                  <span className={styles.qbRadio} />
+                  <span className={styles.qbPackMain}>
+                    <span className={styles.qbPackName}>
+                      {pkg.name}
+                      {pkg.popular && <span className={styles.qbTag}>Most popular</span>}
+                    </span>
+                    <span className={styles.qbPackSub}>
+                      {formatCredits(pkg.credits)} · {formatPrice(pkg.pricePerCredit, pkg.currency, { cents: true })} / unlock
+                    </span>
+                  </span>
+                  <span className={styles.qbPackPrice}>
+                    <span className={styles.qbAmt}>{formatPrice(pkg.price, pkg.currency)}</span>
+                    <span className={styles.qbPer}>+{pkg.credits}</span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
 
-        <div className={styles.buyNote}>
-          <Icon name="ShieldCheck" size={14} />
-          Secure payment · Credits never expire
+        {error && <p className={styles.qbError}>{error}</p>}
+
+        <button
+          type="button"
+          className={`${styles.qbCta} ${done ? styles.done : ''}`}
+          onClick={() => (done ? onClose() : buy(selected))}
+          disabled={busy || !selected}
+        >
+          {cta}
+        </button>
+
+        <div className={styles.qbFoot}>
+          <span><Icon name="Shield" size={13} />Secure checkout by Paddle</span>
+          <span><Icon name="Infinity" size={13} />Credits never expire</span>
         </div>
+        <p className={styles.qbFinal}>
+          All purchases are final and non-refundable. <a href="/refund-policy" target="_blank" rel="noreferrer">Refund Policy</a>
+        </p>
       </div>
     </div>
   );

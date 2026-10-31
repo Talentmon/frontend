@@ -19,6 +19,21 @@ export const currencySelectOptions = () => [
   ...OTHER_CURRENCIES.map((c) => ({ value: c.code, label: `${c.code} — ${c.name}`, group: 'All currencies' })),
 ];
 
+// Short symbol for `currencyCode` (€, $, £ ...). Intl returns the ISO code
+// itself for currencies without a symbol of their own (e.g. RSD).
+export const currencySymbol = (currencyCode) => {
+  try {
+    const parts = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currencyCode,
+      currencyDisplay: 'narrowSymbol',
+    }).formatToParts(0);
+    return parts.find((part) => part.type === 'currency')?.value || currencyCode;
+  } catch {
+    return currencyCode;
+  }
+};
+
 // Formats `amount` in its own currency - this is what candidates/employers
 // entered and it must never be silently converted. Falls back to a plain
 // "1.234 XYZ" format if Intl doesn't recognize the ISO code in this runtime.

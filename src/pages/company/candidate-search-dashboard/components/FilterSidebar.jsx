@@ -8,7 +8,7 @@ import { INDUSTRY_NAMES, getSubIndustries } from 'utils/industries';
 import { ISSUER_NAMES, FAMILY_NAMES, getCertificationNamesFor } from 'utils/certifications';
 import { CATEGORY_NAMES as SKILL_CATEGORY_NAMES, getSkillNamesFor } from 'utils/skills';
 import { LANGUAGE_NAMES, LEVELS } from 'utils/languages';
-import { currencySelectOptions } from 'utils/currencyService';
+import { currencySelectOptions, currencySymbol } from 'utils/currencyService';
 import { BASE_CURRENCY } from 'utils/exchangeRateService';
 import {
   listSavedFilters,
@@ -82,6 +82,7 @@ const certFamilyOptions = FAMILY_NAMES.map((name) => ({ value: name, label: name
 // adding an entry here.
 const FILTER_GROUPS = [
   {
+    id: 'basic',
     title: 'Basic Search',
     fields: [
       { key: 'position', type: 'text', label: 'Position', placeholder: 'e.g. Frontend Developer' },
@@ -89,6 +90,7 @@ const FILTER_GROUPS = [
     ]
   },
   {
+    id: 'experience',
     title: 'Experience & Education',
     fields: [
       { key: 'experience', type: 'select', label: 'Experience Level', placeholder: 'Select experience', options: experienceOptions },
@@ -96,12 +98,14 @@ const FILTER_GROUPS = [
     ]
   },
   {
+    id: 'salary',
     title: 'Salary',
     fields: [
       { key: 'salary', type: 'salaryRange' }
     ]
   },
   {
+    id: 'skills',
     title: 'Skills',
     fields: [
       { key: 'skillCategory', type: 'multiSelect', label: 'Category', placeholder: 'Select category', options: skillCategoryOptions },
@@ -115,12 +119,14 @@ const FILTER_GROUPS = [
     ]
   },
   {
+    id: 'languages',
     title: 'Languages',
     fields: [
       { key: 'languages', type: 'languageLevel', label: 'Languages', placeholder: 'Select languages', options: languageOptions }
     ]
   },
   {
+    id: 'industry',
     title: 'Industry',
     fields: [
       { key: 'industry', type: 'multiSelect', label: 'Industry', placeholder: 'Select industry', options: industryOptions },
@@ -143,6 +149,7 @@ const FILTER_GROUPS = [
     ]
   },
   {
+    id: 'certifications',
     title: 'Certifications',
     fields: [
       { key: 'hasCertifications', type: 'checkbox', label: 'Has at least one certification' },
@@ -159,6 +166,7 @@ const FILTER_GROUPS = [
     ]
   },
   {
+    id: 'status',
     title: 'Status & Preferences',
     fields: [
       { key: 'status', type: 'select', label: 'Candidate Status', placeholder: 'Any status', options: statusOptions },
@@ -208,6 +216,13 @@ const isFieldActive = (field, localFilters) => {
   }
 };
 
+const countActiveInGroup = (group, localFilters) =>
+  group?.fields?.filter((field) => isFieldActive(field, localFilters))?.length;
+
+// Groups expanded on first render; the rest start collapsed. Open/closed
+// state lives only as long as the page does - nothing is persisted.
+const DEFAULT_OPEN_GROUPS = { basic: true, salary: true };
+
 const FilterSidebar = ({
   filters = {},
   onFiltersChange = () => {},
@@ -225,6 +240,7 @@ const FilterSidebar = ({
   const [activeSavedFilterId, setActiveSavedFilterId] = useState(null);
   const [isNamingFilter, setIsNamingFilter] = useState(false);
   const [filterNameDraft, setFilterNameDraft] = useState('');
+  const [openGroups, setOpenGroups] = useState(DEFAULT_OPEN_GROUPS);
 
   useEffect(() => {
     listSavedFilters()
@@ -325,11 +341,24 @@ const FilterSidebar = ({
   const isSavedFilterCurrent = (entry) =>
     entry?.id === activeSavedFilterId && JSON.stringify(entry?.filters) === JSON.stringify(localFilters);
 
+  const handleToggleGroup = (id) => {
+    setOpenGroups((prev) => ({ ...prev, [id]: !prev?.[id] }));
+  };
+
+  // Applying a saved filter also expands every group it sets something in,
+  // so what's switched on is visible right away; open groups stay open.
   const handleApplySavedFilter = (entry) => {
     const nextFilters = { ...DEFAULT_FILTERS, ...entry?.filters };
     setLocalFilters(nextFilters);
     setActiveSavedFilterId(entry?.id);
     setIsNamingFilter(false);
+    setOpenGroups((prev) => {
+      const next = { ...prev };
+      FILTER_GROUPS.forEach((group) => {
+        if (countActiveInGroup(group, nextFilters) > 0) next[group.id] = true;
+      });
+      return next;
+    });
     onFiltersChange(nextFilters);
   };
 
@@ -488,8 +517,11 @@ const FilterSidebar = ({
         // it and converted to the base currency once (see
         // salaryFilterService.buildBaseSalaryRange) - never per candidate.
         const filterCurrency = localFilters?.salary?.currency || 'EUR';
+        const symbol = currencySymbol(filterCurrency);
+        // Left padding grows with the symbol so "RSD" fits as well as "€".
+        const symbolPadding = { paddingLeft: `calc(${symbol.length}ch + 20px)` };
         return (
-          <div key={field?.key}>
+          <React.Fragment key={field?.key}>
             <Select
               label="Filter currency"
               options={currencyOptions}
@@ -497,25 +529,39 @@ const FilterSidebar = ({
               onChange={(value) => handleSalaryChange('currency', value)}
               searchable
             />
-            <div className={styles.salaryRow}>
-              <Input
-                label={`From (${filterCurrency})`}
-                type="number"
-                min="0"
-                placeholder="50,000"
-                value={localFilters?.salary?.min}
-                onChange={(e) => handleSalaryChange('min', e?.target?.value)}
-              />
-              <Input
-                label={`To (${filterCurrency})`}
-                type="number"
-                min="0"
-                placeholder="150,000"
-                value={localFilters?.salary?.max}
-                onChange={(e) => handleSalaryChange('max', e?.target?.value)}
-              />
+            <div className="space-y-2" role="group" aria-labelledby="salary-range-label">
+              <span id="salary-range-label" className="text-sm font-medium leading-none text-foreground">
+                Range
+              </span>
+              <div className={styles.salaryRow}>
+                <div className={styles.salaryField}>
+                  <span className={styles.salarySymbol} aria-hidden="true">{symbol}</span>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="50,000"
+                    aria-label={`Minimum salary (${filterCurrency})`}
+                    style={symbolPadding}
+                    value={localFilters?.salary?.min}
+                    onChange={(e) => handleSalaryChange('min', e?.target?.value)}
+                  />
+                </div>
+                <span className={styles.salaryDash} aria-hidden="true">–</span>
+                <div className={styles.salaryField}>
+                  <span className={styles.salarySymbol} aria-hidden="true">{symbol}</span>
+                  <Input
+                    type="number"
+                    min="0"
+                    placeholder="150,000"
+                    aria-label={`Maximum salary (${filterCurrency})`}
+                    style={symbolPadding}
+                    value={localFilters?.salary?.max}
+                    onChange={(e) => handleSalaryChange('max', e?.target?.value)}
+                  />
+                </div>
+              </div>
             </div>
-          </div>
+          </React.Fragment>
         );
       }
 
@@ -585,90 +631,115 @@ const FilterSidebar = ({
           </div>
         </div>
       </div>
-      {/* Saved filters */}
-      {savedFilters?.length > 0 && (
-        <div className={styles.savedFilters}>
-          <h4 className={styles.savedFiltersTitle}>Your filters</h4>
-          <div className={styles.savedFiltersList}>
-            {savedFilters?.map((entry) => (
-              <div
-                key={entry?.id}
-                className={`${styles.savedFilterChip} ${isSavedFilterCurrent(entry) ? styles.savedFilterChipActive : ''}`}
-              >
-                <button
-                  type="button"
-                  className={styles.savedFilterChipLabel}
-                  onClick={() => handleApplySavedFilter(entry)}
-                  title={entry?.name}
-                >
-                  {entry?.name}
-                </button>
-                <button
-                  type="button"
-                  className={styles.savedFilterChipDelete}
-                  onClick={() => handleDeleteSavedFilter(entry?.id)}
-                  aria-label={`Delete ${entry?.name}`}
-                >
-                  <Icon name="Trash2" size={13} />
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      {/* Filters Content */}
+      {/* Scrollable middle: saved filters + collapsible groups */}
       <div className={styles.filtersBody}>
-        {FILTER_GROUPS?.map((group) => (
-          <div className={styles.fgroup} key={group?.title}>
-            <h3 className={styles.fgroupTitle}>{group?.title}</h3>
-            <div className={styles.fgroupBody}>
-              {group?.fields?.map(renderField)}
+        {savedFilters?.length > 0 && (
+          <div className={styles.savedFilters}>
+            <h4 className={styles.savedFiltersTitle}>Your filters</h4>
+            <div className={styles.savedFiltersList}>
+              {savedFilters?.map((entry) => (
+                <div
+                  key={entry?.id}
+                  className={`${styles.savedFilterChip} ${isSavedFilterCurrent(entry) ? styles.savedFilterChipActive : ''}`}
+                >
+                  <button
+                    type="button"
+                    className={styles.savedFilterChipLabel}
+                    onClick={() => handleApplySavedFilter(entry)}
+                    title={entry?.name}
+                  >
+                    {entry?.name}
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.savedFilterChipDelete}
+                    onClick={() => handleDeleteSavedFilter(entry?.id)}
+                    aria-label={`Delete ${entry?.name}`}
+                  >
+                    <Icon name="Trash2" size={13} />
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-        <div className={styles.fgroup}>
-          {isNamingFilter ? (
-            <div className={styles.saveFilterRow}>
-              <Input
-                autoFocus
-                placeholder="Filter name"
-                value={filterNameDraft}
-                onChange={(e) => setFilterNameDraft(e?.target?.value)}
-                onKeyDown={(e) => {
-                  if (e?.key === 'Enter') handleConfirmSaveFilter();
-                  if (e?.key === 'Escape') handleCancelSaveFilter();
-                }}
-              />
-              <button
-                type="button"
-                className={styles.saveFilterConfirm}
-                onClick={handleConfirmSaveFilter}
-                disabled={!filterNameDraft?.trim()}
-                aria-label="Confirm save"
-              >
-                <Icon name="Check" size={16} />
-              </button>
-              <button
-                type="button"
-                className={styles.saveFilterCancel}
-                onClick={handleCancelSaveFilter}
-                aria-label="Cancel"
-              >
-                <Icon name="X" size={16} />
-              </button>
+        )}
+        {FILTER_GROUPS?.map((group) => {
+          const isOpen = !!openGroups?.[group?.id];
+          const activeCount = countActiveInGroup(group, localFilters);
+          const bodyId = `filter-group-${group?.id}`;
+          return (
+            <div className={styles.fgroup} key={group?.id}>
+              <h3 className={styles.fgroupHead}>
+                <button
+                  type="button"
+                  className={styles.fgroupToggle}
+                  onClick={() => handleToggleGroup(group?.id)}
+                  aria-expanded={isOpen}
+                  aria-controls={bodyId}
+                >
+                  <span className={styles.fgroupTitle}>{group?.title}</span>
+                  {activeCount > 0 && (
+                    <span className={styles.fgroupCount}>{activeCount}</span>
+                  )}
+                  <Icon
+                    name="ChevronDown"
+                    size={16}
+                    className={`${styles.fgroupChevron} ${isOpen ? styles.fgroupChevronOpen : ''}`}
+                  />
+                </button>
+              </h3>
+              {isOpen && (
+                <div className={styles.fgroupBody} id={bodyId}>
+                  {group?.fields?.map(renderField)}
+                </div>
+              )}
             </div>
-          ) : (
+          );
+        })}
+      </div>
+      {/* Pinned footer: save / name the current filter */}
+      <div className={styles.filtersFoot}>
+        {isNamingFilter ? (
+          <div className={styles.saveFilterRow}>
+            <Input
+              autoFocus
+              placeholder="Filter name"
+              value={filterNameDraft}
+              onChange={(e) => setFilterNameDraft(e?.target?.value)}
+              onKeyDown={(e) => {
+                if (e?.key === 'Enter') handleConfirmSaveFilter();
+                if (e?.key === 'Escape') handleCancelSaveFilter();
+              }}
+            />
             <button
               type="button"
-              className={styles.saveFilterBtn}
-              onClick={handleSaveFilter}
-              disabled={getActiveFiltersCount() === 0}
+              className={styles.saveFilterConfirm}
+              onClick={handleConfirmSaveFilter}
+              disabled={!filterNameDraft?.trim()}
+              aria-label="Confirm save"
             >
-              <Icon name="Save" size={16} />
-              {activeSavedFilterId ? 'Update saved filter' : 'Save filter'}
+              <Icon name="Check" size={16} />
             </button>
-          )}
-        </div>
+            <button
+              type="button"
+              className={styles.saveFilterCancel}
+              onClick={handleCancelSaveFilter}
+              aria-label="Cancel"
+            >
+              <Icon name="X" size={16} />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className={styles.saveFilterBtn}
+            onClick={handleSaveFilter}
+            disabled={getActiveFiltersCount() === 0}
+          >
+            <Icon name="Save" size={16} />
+            {activeSavedFilterId ? 'Update saved filter' : 'Save filter'}
+          </button>
+        )}
       </div>
     </div>
   );

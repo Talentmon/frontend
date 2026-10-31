@@ -79,8 +79,7 @@ export const INDUSTRIES = [
       'Media & Publishing',
       'Entertainment',
       'Film & Television',
-      'Music',
-      'Gaming & Esports'
+      'Music'
     ]
   },
   {

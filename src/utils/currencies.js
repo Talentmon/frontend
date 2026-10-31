@@ -58,7 +58,6 @@ const CURRENCIES_RAW = [
   { code: 'GYD', name: 'Guyanaese Dollar', iso: 'gy' },
   { code: 'HKD', name: 'Hong Kong Dollar', iso: 'hk' },
   { code: 'HNL', name: 'Honduran Lempira', iso: 'hn' },
-  { code: 'HRK', name: 'Croatian Kuna', iso: 'hr' },
   { code: 'HTG', name: 'Haitian Gourde', iso: 'ht' },
   { code: 'HUF', name: 'Hungarian Forint', iso: 'hu' },
   { code: 'IDR', name: 'Indonesian Rupiah', iso: 'id' },

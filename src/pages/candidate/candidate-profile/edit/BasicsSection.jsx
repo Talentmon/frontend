@@ -89,6 +89,7 @@ const BasicsSection = ({ basics, open, onToggleOpen, onChangeField, onPhotoUploa
                 <div className="phone-group">
                   <FlagSelect
                     className="phone-code"
+                    fitOptions
                     ariaLabel="Country code"
                     value={b.phoneCode || DEFAULT_PHONE_CODE}
                     onChange={(v) => onChangeField('phoneCode', v)}

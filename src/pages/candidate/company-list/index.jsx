@@ -133,6 +133,7 @@ const CompanyList = () => {
                 />
               </div>
               <Select
+                fitOptions
                 value={location}
                 onChange={setLocation}
                 placeholder="Location"
@@ -140,16 +141,18 @@ const CompanyList = () => {
                 options={filterOptions.locations.map((loc) => ({ value: loc, label: loc }))}
               />
               <Select
+                fitOptions
                 value={industry}
                 onChange={setIndustry}
                 placeholder="Industry"
                 clearable
                 options={filterOptions.industries.map((ind) => ({ value: ind, label: ind }))}
               />
-              <Select className="size-select" value={size} onChange={setSize} placeholder="Size" clearable options={filterOptions.sizes} />
-              <Select value={minRating} onChange={setMinRating} placeholder="Rating" clearable listClassName="rating-list" options={RATING_OPTIONS} />
-              <Select value={salaryRange} onChange={setSalaryRange} placeholder="Candidate salary" clearable options={SALARY_OPTIONS} />
+              <Select fitOptions className="size-select" value={size} onChange={setSize} placeholder="Size" clearable options={filterOptions.sizes} />
+              <Select fitOptions value={minRating} onChange={setMinRating} placeholder="Rating" clearable listClassName="rating-list" options={RATING_OPTIONS} />
+              <Select fitOptions value={salaryRange} onChange={setSalaryRange} placeholder="Candidate salary" clearable options={SALARY_OPTIONS} />
               <Select
+                fitOptions
                 value={sortOrder}
                 onChange={setSortOrder}
                 placeholder="Sort"

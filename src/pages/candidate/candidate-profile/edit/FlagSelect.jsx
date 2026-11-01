@@ -15,7 +15,10 @@ const optKey = (o) => `${o.value}__${o.iso}`;
 // `position: fixed` against the trigger's bounding rect. Section cards use
 // `overflow: hidden` (to keep their rounded corners), which would otherwise
 // clip an absolutely-positioned list as soon as it grows past the card edge.
-const FlagSelect = ({ value, onChange, groups, ariaLabel, className = '' }) => {
+//
+// The list is exactly as wide as the field; `fitOptions` lets it grow to fit
+// the longest option instead, for a narrow field like the phone country code.
+const FlagSelect = ({ value, onChange, groups, ariaLabel, className = '', fitOptions = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeKey, setActiveKey] = useState(null);
   const [rect, setRect] = useState(null);
@@ -119,7 +122,12 @@ const FlagSelect = ({ value, onChange, groups, ariaLabel, className = '' }) => {
             className="flagselect-list"
             role="listbox"
             ref={listRef}
-            style={{ position: 'fixed', top: rect.bottom + 4, left: rect.left, minWidth: rect.width }}
+            style={{
+              position: 'fixed',
+              top: rect.bottom + 4,
+              left: rect.left,
+              ...(fitOptions ? { width: 'max-content', minWidth: rect.width, maxWidth: '90vw' } : { width: rect.width }),
+            }}
             onMouseLeave={() => setActiveKey(selected ? optKey(selected) : null)}
           >
             {groups.map((g, gi) => (

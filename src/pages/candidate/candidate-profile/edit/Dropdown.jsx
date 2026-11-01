@@ -126,7 +126,7 @@ const Dropdown = forwardRef(({
             className="dropdown-list"
             role="listbox"
             ref={listRef}
-            style={{ position: 'fixed', top: rect.bottom + 4, left: rect.left, minWidth: rect.width }}
+            style={{ position: 'fixed', top: rect.bottom + 4, left: rect.left, width: rect.width }}
             onMouseLeave={() => setActiveValue(value || null)}
           >
             {options.map((o) => (

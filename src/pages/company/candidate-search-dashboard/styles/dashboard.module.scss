@@ -132,7 +132,9 @@ $hint: #5b6573;
   align-self: start;
   position: sticky;
   top: 84px;
-  box-shadow: 0 1px 2px rgba(11, 26, 44, 0.06), 0 12px 32px -14px rgba(11, 26, 44, 0.22);
+  box-shadow:
+    0 1px 2px rgba(11, 26, 44, 0.06),
+    0 12px 32px -14px rgba(11, 26, 44, 0.22);
   transition: width 0.2s $ease;
 
   &.collapsed {
@@ -741,7 +743,10 @@ $hint: #5b6573;
   color: $gold-text;
   font-weight: 700;
   font-size: 14px;
-  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background-color 0.15s,
+    color 0.15s,
+    border-color 0.15s;
 
   &:hover:not(:disabled) {
     background: $gold;
@@ -834,7 +839,9 @@ $hint: #5b6573;
   border-radius: $r-md;
   padding: 0 0.9em;
   box-shadow: 0 14px 30px -28px rgba(11, 26, 44, 0.4);
-  transition: border-color 0.18s, box-shadow 0.18s;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
 
   &:hover,
   &:focus-within {
@@ -2133,12 +2140,22 @@ $sc-gold: #f0ae2e;
   align-items: baseline;
   justify-content: center;
   gap: 0.4em;
+
+  // Same size as the grid card's "MATCH" (.scRingLabel); .factK itself stays
+  // small for the bookmarked cards.
+  .factK {
+    font-size: 0.8rem;
+  }
 }
 
+// Drawn as a circle rather than a "·" glyph: a bigger glyph rides up above
+// the text's middle, a box can be centred.
 .matchDot {
-  color: $gold-deep;
-  font-size: 0.9rem;
-  line-height: 1;
+  align-self: center;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: $gold-deep;
 }
 
 .scListBtns {
@@ -2573,7 +2590,11 @@ $qb-dim: #9baec0;
   border-radius: 22px;
   pointer-events: none;
   opacity: 0;
-  background: radial-gradient(circle at 50% 45%, rgba(242, 200, 113, 0.4), transparent 60%);
+  background: radial-gradient(
+    circle at 50% 45%,
+    rgba(242, 200, 113, 0.4),
+    transparent 60%
+  );
 
   .flashing & {
     animation: qbFlashGlow 0.8s $ease;
@@ -2710,7 +2731,11 @@ $qb-dim: #9baec0;
 
   &.sel {
     border-color: $gold;
-    background: linear-gradient(180deg, rgba(230, 169, 60, 0.1), rgba(230, 169, 60, 0.03));
+    background: linear-gradient(
+      180deg,
+      rgba(230, 169, 60, 0.1),
+      rgba(230, 169, 60, 0.03)
+    );
     box-shadow:
       0 0 0 1px $gold,
       0 20px 44px -30px rgba(230, 169, 60, 0.6);

@@ -229,7 +229,7 @@ const CandidateCard = forwardRef(({
           {!!matchScore && (
             <div className={styles.listMatch}>
               <span className={styles.factK}>Match</span>
-              <span className={styles.matchDot}>·</span>
+              <span className={styles.matchDot} aria-hidden="true" />
               <span className={`${styles.factV} ${styles.factVGold}`}>{matchScore}%</span>
             </div>
           )}

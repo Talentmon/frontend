@@ -77,6 +77,11 @@ const industryOptions = INDUSTRY_NAMES.map((name) => ({ value: name, label: name
 const certIssuerOptions = ISSUER_NAMES.map((name) => ({ value: name, label: name }));
 const certFamilyOptions = FAMILY_NAMES.map((name) => ({ value: name, label: name }));
 
+// Every skill / certification name in the catalog. Names outside it were
+// typed in by hand and survive a category / issuer / family change.
+const CATALOG_SKILLS = new Set(getSkillNamesFor({ categories: [] }));
+const CATALOG_CERT_NAMES = new Set(getCertificationNamesFor({ issuers: [], families: [] }));
+
 // Single source of truth for every filter: its type drives both rendering
 // and the default/active/clear logic below, so adding a filter only means
 // adding an entry here.
@@ -122,7 +127,9 @@ const FILTER_GROUPS = [
     id: 'languages',
     title: 'Languages',
     fields: [
-      { key: 'languages', type: 'languageLevel', label: 'Languages', placeholder: 'Select languages', options: languageOptions }
+      // The group title already says "Languages", so the field label is
+      // only there for screen readers.
+      { key: 'languages', type: 'languageLevel', label: 'Languages', hideLabel: true, placeholder: 'Select languages', options: languageOptions }
     ]
   },
   {
@@ -153,7 +160,7 @@ const FILTER_GROUPS = [
     title: 'Certifications',
     fields: [
       { key: 'hasCertifications', type: 'checkbox', label: 'Has at least one certification' },
-      { key: 'certIssuer', type: 'multiSelect', label: 'Issuing Organization', placeholder: 'Select issuer', options: certIssuerOptions },
+      { key: 'certIssuer', type: 'multiSelect', label: 'Issuing Organization', placeholder: 'Select issuer', options: certIssuerOptions, searchable: true },
       { key: 'certFamily', type: 'multiSelect', label: 'Certification Family', placeholder: 'Select family', options: certFamilyOptions },
       {
         key: 'certName',
@@ -195,10 +202,15 @@ const emptyValueForType = (type) => {
   }
 };
 
-const DEFAULT_FILTERS = ALL_FIELDS?.reduce((acc, field) => {
-  acc[field.key] = emptyValueForType(field?.type);
-  return acc;
-}, {});
+// skillsMatch isn't a filter of its own (it never counts as active): it
+// says whether 2+ picked skills are matched as "any of" or "all of".
+const DEFAULT_FILTERS = {
+  ...ALL_FIELDS?.reduce((acc, field) => {
+    acc[field.key] = emptyValueForType(field?.type);
+    return acc;
+  }, {}),
+  skillsMatch: 'any'
+};
 
 const isFieldActive = (field, localFilters) => {
   const value = localFilters?.[field?.key];
@@ -219,9 +231,92 @@ const isFieldActive = (field, localFilters) => {
 const countActiveInGroup = (group, localFilters) =>
   group?.fields?.filter((field) => isFieldActive(field, localFilters))?.length;
 
+// Saved filters come back from the API with empty values left out, so both
+// sides are filled in with the defaults before comparing.
+const normalizeFilters = (f = {}) => {
+  const merged = { ...DEFAULT_FILTERS, ...f, salary: { ...DEFAULT_FILTERS.salary, ...f?.salary } };
+  merged.skillsMatch = merged.skills?.length >= 2 && merged.skillsMatch === 'all' ? 'all' : 'any';
+  return merged;
+};
+const sameFilters = (a, b) => JSON.stringify(normalizeFilters(a)) === JSON.stringify(normalizeFilters(b));
+
 // Groups expanded on first render; the rest start collapsed. Open/closed
 // state lives only as long as the page does - nothing is persisted.
 const DEFAULT_OPEN_GROUPS = { basic: true, salary: true };
+
+// Saved filters listed before "Show all (N)".
+const SAVED_FILTERS_PREVIEW = 2;
+
+const optionLabel = (options, value) => options.find((option) => option.value === value)?.label || value;
+
+const formatAmount = (value) => {
+  const number = Number(value);
+  return Number.isFinite(number) ? number.toLocaleString('en-US') : String(value);
+};
+
+// What a collapsed group lists under its title, e.g. "React, TypeScript +1".
+const groupSummaryItems = (groupId, f) => {
+  switch (groupId) {
+    case 'basic':
+      return [f.position?.trim(), f.location?.trim()].filter(Boolean);
+    case 'experience':
+      return [
+        f.experience && optionLabel(experienceOptions, f.experience),
+        f.education && optionLabel(educationOptions, f.education)
+      ].filter(Boolean);
+    case 'salary': {
+      const { min, max, currency } = f.salary || {};
+      if (!min && !max) return [];
+      const symbol = currencySymbol(currency || BASE_CURRENCY);
+      const prefix = symbol.length > 1 ? `${symbol} ` : symbol;
+      const from = min ? `${prefix}${formatAmount(min)}` : '';
+      const to = max ? `${prefix}${formatAmount(max)}` : '';
+      if (from && to) return [`${from} – ${to}`];
+      return [from ? `From ${from}` : `Up to ${to}`];
+    }
+    case 'skills':
+      return [...(f.skills || []), ...(f.skillCategory || [])];
+    case 'languages':
+      return (f.languages || []).map((entry) => (entry?.levels?.length ? `${entry.name} (${entry.levels.join(', ')})` : entry?.name));
+    case 'industry': {
+      const subs = f.subIndustry || [];
+      const withoutSub = (f.industry || []).filter((name) => !getSubIndustries(name).some((sub) => subs.includes(sub)));
+      return [...subs, ...withoutSub];
+    }
+    case 'certifications':
+      return [
+        f.hasCertifications && 'Has a certification',
+        ...(f.certName || []),
+        ...(f.certIssuer || []),
+        ...(f.certFamily || [])
+      ].filter(Boolean);
+    case 'status':
+      return [
+        f.status && optionLabel(statusOptions, f.status),
+        ...(f.jobType || []).map((type) => optionLabel(jobTypeOptions, type)),
+        f.availability && optionLabel(availabilityOptions, f.availability),
+        f.relocationReady && 'Open to relocation',
+        f.travelReady && 'Open to business travel'
+      ].filter(Boolean);
+    default:
+      return [];
+  }
+};
+
+const groupSummary = (groupId, f) => {
+  const items = groupSummaryItems(groupId, f);
+  return items.length > 2 ? `${items.slice(0, 2).join(', ')} +${items.length - 2}` : items.join(', ');
+};
+
+const fieldId = (key) => `filter-${key}`;
+
+// Filter inputs are white with the same 9px corners as the dropdowns.
+const INPUT_CLASS = 'bg-white rounded-[9px]';
+
+// Salary inputs take whole numbers only.
+const blockNonDigitKeys = (e) => {
+  if (['e', 'E', '+', '-', '.', ','].includes(e?.key)) e.preventDefault();
+};
 
 const FilterSidebar = ({
   filters = {},
@@ -238,6 +333,7 @@ const FilterSidebar = ({
 
   const [savedFilters, setSavedFilters] = useState([]);
   const [activeSavedFilterId, setActiveSavedFilterId] = useState(null);
+  const [showAllSaved, setShowAllSaved] = useState(false);
   const [isNamingFilter, setIsNamingFilter] = useState(false);
   const [filterNameDraft, setFilterNameDraft] = useState('');
   const [openGroups, setOpenGroups] = useState(DEFAULT_OPEN_GROUPS);
@@ -248,10 +344,13 @@ const FilterSidebar = ({
       .catch(() => {});
   }, []);
 
-  const handleFilterChange = (key, value) => {
-    const updatedFilters = { ...localFilters, [key]: value };
+  const applyFilters = (updatedFilters) => {
     setLocalFilters(updatedFilters);
     onFiltersChange(updatedFilters);
+  };
+
+  const handleFilterChange = (key, value) => {
+    applyFilters({ ...localFilters, [key]: value });
   };
 
   const handleSalaryChange = (type, value) => {
@@ -259,49 +358,35 @@ const FilterSidebar = ({
     handleFilterChange('salary', updatedSalary);
   };
 
-  const handleMultiToggle = (key, value) => {
-    const current = localFilters?.[key] || [];
-    const updated = current?.includes(value)
-      ? current?.filter((v) => v !== value)
-      : [...current, value];
+  // Multi-selects that narrow another field also drop what no longer fits
+  // in it: subindustries of an unpicked industry, skills outside the picked
+  // categories, certification names outside the picked issuers / families.
+  // Names typed in by hand (not in the catalog) are always kept.
+  const handleMultiChange = (key, updated) => {
+    const next = { ...localFilters, [key]: updated };
 
-    // Unchecking an industry should drop any of its subindustries that were selected.
     if (key === 'industry') {
-      const stillValidSubIndustries = updated?.flatMap((industryName) => getSubIndustries(industryName));
-      const prunedSubIndustry = (localFilters?.subIndustry || [])?.filter((sub) => stillValidSubIndustries?.includes(sub));
-      const updatedFilters = { ...localFilters, industry: updated, subIndustry: prunedSubIndustry };
-      setLocalFilters(updatedFilters);
-      onFiltersChange(updatedFilters);
-      return;
+      const validSubs = updated.flatMap((industryName) => getSubIndustries(industryName));
+      next.subIndustry = (localFilters?.subIndustry || []).filter((sub) => validSubs.includes(sub));
     }
 
-    // Unchecking a skill category should drop skills that no longer match.
     if (key === 'skillCategory') {
-      const validNames = getSkillNamesFor({ categories: updated });
-      const prunedSkills = (localFilters?.skills || [])?.filter((name) => validNames?.includes(name));
-      const updatedFilters = { ...localFilters, skillCategory: updated, skills: prunedSkills };
-      setLocalFilters(updatedFilters);
-      onFiltersChange(updatedFilters);
-      return;
+      const validNames = new Set(getSkillNamesFor({ categories: updated }));
+      next.skills = (localFilters?.skills || []).filter((name) => validNames.has(name) || !CATALOG_SKILLS.has(name));
     }
 
-    // Unchecking an issuer/family should drop certification names that no longer match.
     if (key === 'certIssuer' || key === 'certFamily') {
-      const validNames = getCertificationNamesFor({
-        issuers: key === 'certIssuer' ? updated : (localFilters?.certIssuer || []),
-        families: key === 'certFamily' ? updated : (localFilters?.certFamily || [])
-      });
-      const prunedCertName = (localFilters?.certName || [])?.filter((name) => validNames?.includes(name));
-      const updatedFilters = { ...localFilters, [key]: updated, certName: prunedCertName };
-      setLocalFilters(updatedFilters);
-      onFiltersChange(updatedFilters);
-      return;
+      const validNames = new Set(getCertificationNamesFor({
+        issuers: next.certIssuer || [],
+        families: next.certFamily || []
+      }));
+      next.certName = (localFilters?.certName || []).filter((name) => validNames.has(name) || !CATALOG_CERT_NAMES.has(name));
     }
 
-    handleFilterChange(key, updated);
+    applyFilters(next);
   };
 
-  // Languages are stored as { name, minLevel }[] so proficiency can be
+  // Languages are stored as { name, levels }[] so proficiency can be
   // constrained per language. Toggling the name Select adds/removes entries
   // while preserving the levels already chosen for names that stay selected.
   // An empty `levels` array means "any level" - no proficiency constraint.
@@ -331,7 +416,22 @@ const FilterSidebar = ({
   const handleClearAll = () => {
     setLocalFilters(DEFAULT_FILTERS);
     setActiveSavedFilterId(null);
+    setIsNamingFilter(false);
     onClearFilters();
+  };
+
+  // "Clear" in an open group's header empties just that group (the salary
+  // currency stays as picked) and hands focus back to the group title.
+  const handleClearGroup = (group) => {
+    const cleared = { ...localFilters };
+    group?.fields?.forEach((field) => {
+      cleared[field.key] = field.type === 'salaryRange'
+        ? { ...localFilters?.salary, min: '', max: '' }
+        : emptyValueForType(field.type);
+    });
+    if (group?.id === 'skills') cleared.skillsMatch = 'any';
+    applyFilters(cleared);
+    document.getElementById(`filter-group-toggle-${group?.id}`)?.focus();
   };
 
   const getActiveFiltersCount = () => {
@@ -339,7 +439,7 @@ const FilterSidebar = ({
   };
 
   const isSavedFilterCurrent = (entry) =>
-    entry?.id === activeSavedFilterId && JSON.stringify(entry?.filters) === JSON.stringify(localFilters);
+    entry?.id === activeSavedFilterId && sameFilters(entry?.filters, localFilters);
 
   const handleToggleGroup = (id) => {
     setOpenGroups((prev) => ({ ...prev, [id]: !prev?.[id] }));
@@ -412,46 +512,63 @@ const FilterSidebar = ({
     setFilterNameDraft('');
   };
 
+  const renderLabel = (field) => (
+    <label
+      htmlFor={fieldId(field?.key)}
+      className={field?.hideLabel ? styles.srOnly : styles.fieldLabel}
+    >
+      {field?.label}
+    </label>
+  );
+
   const renderField = (field) => {
     switch (field?.type) {
       case 'text':
         return (
-          <Input
-            key={field?.key}
-            label={field?.label}
-            type="text"
-            placeholder={field?.placeholder}
-            value={localFilters?.[field?.key]}
-            onChange={(e) => handleFilterChange(field?.key, e?.target?.value)}
-          />
+          <div className={styles.field} key={field?.key}>
+            {renderLabel(field)}
+            <Input
+              id={fieldId(field?.key)}
+              type="text"
+              className={INPUT_CLASS}
+              placeholder={field?.placeholder}
+              value={localFilters?.[field?.key]}
+              onChange={(e) => handleFilterChange(field?.key, e?.target?.value)}
+            />
+          </div>
         );
 
       case 'select':
         return (
-          <Select
-            key={field?.key}
-            label={field?.label}
-            options={field?.options}
-            value={localFilters?.[field?.key]}
-            onChange={(value) => handleFilterChange(field?.key, value)}
-            placeholder={field?.placeholder}
-          />
+          <div className={styles.field} key={field?.key}>
+            {renderLabel(field)}
+            <Select
+              id={fieldId(field?.key)}
+              options={field?.options}
+              value={localFilters?.[field?.key]}
+              onChange={(value) => handleFilterChange(field?.key, value)}
+              placeholder={field?.placeholder}
+            />
+          </div>
         );
 
       case 'multiSelect': {
         const options = field?.getOptions ? field.getOptions(localFilters) : field?.options;
         const isDisabled = field?.disabled ? field.disabled(localFilters) : false;
         return (
-          <Select
-            key={field?.key}
-            label={field?.label}
-            options={options}
-            value={localFilters?.[field?.key]}
-            onChange={(value) => handleFilterChange(field?.key, value)}
-            placeholder={isDisabled ? (field?.disabledPlaceholder || field?.placeholder) : field?.placeholder}
-            multiple
-            disabled={isDisabled}
-          />
+          <div className={styles.field} key={field?.key}>
+            {renderLabel(field)}
+            <Select
+              id={fieldId(field?.key)}
+              options={options}
+              value={localFilters?.[field?.key]}
+              onChange={(value) => handleMultiChange(field?.key, value)}
+              placeholder={isDisabled ? (field?.disabledPlaceholder || field?.placeholder) : field?.placeholder}
+              multiple
+              searchable={!!field?.searchable}
+              disabled={isDisabled}
+            />
+          </div>
         );
       }
 
@@ -459,19 +576,21 @@ const FilterSidebar = ({
         const entries = localFilters?.[field?.key] || [];
         const selectedNames = entries?.map((entry) => entry?.name);
         return (
-          <div key={field?.key}>
+          <div className={styles.field} key={field?.key}>
+            {renderLabel(field)}
             <Select
-              label={field?.label}
+              id={fieldId(field?.key)}
               options={field?.options}
               value={selectedNames}
               onChange={(names) => handleLanguageNamesChange(field?.key, names)}
               placeholder={field?.placeholder}
               multiple
+              searchable
             />
             {entries?.length > 0 && (
-              <div className={styles.languageLevelRows}>
+              <ul className={styles.languageLevelRows} aria-label="Language levels">
                 {entries?.map((entry) => (
-                  <div className={styles.languageLevelRow} key={entry?.name}>
+                  <li className={styles.languageLevelRow} key={entry?.name}>
                     <span className={styles.languageLevelName}>{entry?.name}</span>
                     <Select
                       className={styles.languageLevelSelect}
@@ -479,6 +598,8 @@ const FilterSidebar = ({
                       value={entry?.levels || []}
                       onChange={(levels) => handleLanguageLevelChange(field?.key, entry?.name, levels)}
                       placeholder="Any level"
+                      aria-label={`Level for ${entry?.name}`}
+                      multipleLabel={(count) => `${count} levels`}
                       multiple
                     />
                     <button
@@ -487,11 +608,11 @@ const FilterSidebar = ({
                       onClick={() => handleRemoveLanguage(field?.key, entry?.name)}
                       aria-label={`Remove ${entry?.name}`}
                     >
-                      <Icon name="X" size={14} />
+                      <Icon name="X" size={14} strokeWidth={2.4} />
                     </button>
-                  </div>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
           </div>
         );
@@ -500,15 +621,17 @@ const FilterSidebar = ({
       case 'comboMulti': {
         const options = field?.getOptions ? field.getOptions(localFilters) : field?.options;
         return (
-          <Combobox
-            key={field?.key}
-            label={field?.label}
-            options={options}
-            value={localFilters?.[field?.key]}
-            onChange={(value) => handleFilterChange(field?.key, value)}
-            placeholder={field?.placeholder}
-            multiple
-          />
+          <div className={styles.field} key={field?.key}>
+            {renderLabel(field)}
+            <Combobox
+              id={fieldId(field?.key)}
+              options={options}
+              value={localFilters?.[field?.key]}
+              onChange={(value) => handleFilterChange(field?.key, value)}
+              placeholder={field?.placeholder}
+              multiple
+            />
+          </div>
         );
       }
 
@@ -516,49 +639,56 @@ const FilterSidebar = ({
         // The company picks a filter currency; both bounds are entered in
         // it and converted to the base currency once (see
         // salaryFilterService.buildBaseSalaryRange) - never per candidate.
+        // Candidates enter a net amount per period, and search compares
+        // monthly amounts, hence "Net per month".
         const filterCurrency = localFilters?.salary?.currency || 'EUR';
         const symbol = currencySymbol(filterCurrency);
         // Left padding grows with the symbol so "RSD" fits as well as "€".
         const symbolPadding = { paddingLeft: `calc(${symbol.length}ch + 20px)` };
+        const salaryInput = (bound, label, placeholder) => (
+          <div className={styles.salaryField}>
+            <span className={styles.salarySymbol} aria-hidden="true">{symbol}</span>
+            <Input
+              type="number"
+              min="0"
+              step="1"
+              inputMode="numeric"
+              className={INPUT_CLASS}
+              placeholder={placeholder}
+              aria-label={`${label} (${filterCurrency})`}
+              style={symbolPadding}
+              value={localFilters?.salary?.[bound]}
+              onKeyDown={blockNonDigitKeys}
+              onChange={(e) => handleSalaryChange(bound, String(e?.target?.value || '').replace(/\D/g, ''))}
+            />
+          </div>
+        );
         return (
           <React.Fragment key={field?.key}>
-            <Select
-              label="Filter currency"
-              options={currencyOptions}
-              value={filterCurrency}
-              onChange={(value) => handleSalaryChange('currency', value)}
-              searchable
-            />
-            <div className="space-y-2" role="group" aria-labelledby="salary-range-label">
-              <span id="salary-range-label" className="text-sm font-medium leading-none text-foreground">
-                Range
-              </span>
-              <div className={styles.salaryRow}>
-                <div className={styles.salaryField}>
-                  <span className={styles.salarySymbol} aria-hidden="true">{symbol}</span>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="50,000"
-                    aria-label={`Minimum salary (${filterCurrency})`}
-                    style={symbolPadding}
-                    value={localFilters?.salary?.min}
-                    onChange={(e) => handleSalaryChange('min', e?.target?.value)}
-                  />
-                </div>
-                <span className={styles.salaryDash} aria-hidden="true">–</span>
-                <div className={styles.salaryField}>
-                  <span className={styles.salarySymbol} aria-hidden="true">{symbol}</span>
-                  <Input
-                    type="number"
-                    min="0"
-                    placeholder="150,000"
-                    aria-label={`Maximum salary (${filterCurrency})`}
-                    style={symbolPadding}
-                    value={localFilters?.salary?.max}
-                    onChange={(e) => handleSalaryChange('max', e?.target?.value)}
-                  />
-                </div>
+            <div className={styles.field}>
+              <label htmlFor={fieldId('currency')} className={styles.fieldLabel}>Currency</label>
+              <Select
+                id={fieldId('currency')}
+                options={currencyOptions}
+                value={filterCurrency}
+                onChange={(value) => handleSalaryChange('currency', value)}
+                searchable
+              />
+            </div>
+            <div className={styles.field}>
+              <div className={styles.fieldLabelRow}>
+                <span id="salary-range-label" className={styles.fieldLabel}>Range</span>
+                <span id="salary-range-hint" className={styles.fieldHint}>Net per month</span>
+              </div>
+              <div
+                className={styles.salaryRow}
+                role="group"
+                aria-labelledby="salary-range-label"
+                aria-describedby="salary-range-hint"
+              >
+                {salaryInput('min', 'Minimum salary', '1,500')}
+                <span className={styles.salaryDash} aria-hidden="true" />
+                {salaryInput('max', 'Maximum salary', '4,000')}
               </div>
             </div>
           </React.Fragment>
@@ -569,6 +699,7 @@ const FilterSidebar = ({
         return (
           <Checkbox
             key={field?.key}
+            className={styles.checkRow}
             label={field?.label}
             checked={!!localFilters?.[field?.key]}
             onChange={() => handleBooleanToggle(field?.key)}
@@ -580,6 +711,36 @@ const FilterSidebar = ({
     }
   };
 
+  // "Match any / Match all" under Skills, once 2+ skills are picked.
+  const renderSkillsMatch = () => {
+    const matchAll = localFilters?.skillsMatch === 'all';
+    const option = (value, label) => {
+      const on = (value === 'all') === matchAll;
+      return (
+        <button
+          type="button"
+          role="radio"
+          aria-checked={on}
+          className={`${styles.matchOption} ${on ? styles.matchOptionOn : ''}`}
+          onClick={() => handleFilterChange('skillsMatch', value)}
+        >
+          {label}
+        </button>
+      );
+    };
+    return (
+      <div className={styles.skillsMatch} key="skillsMatch">
+        <div className={styles.matchToggle} role="radiogroup" aria-label="Skill matching">
+          {option('any', 'Match any')}
+          {option('all', 'Match all')}
+        </div>
+        <p className={styles.fieldHint}>
+          {matchAll ? 'Candidates must have every selected skill.' : 'Candidates need at least one of the selected skills.'}
+        </p>
+      </div>
+    );
+  };
+
   if (isCollapsed) {
     return (
       <div className={`${styles.filters} ${styles.collapsed}`}>
@@ -588,7 +749,7 @@ const FilterSidebar = ({
           className={styles.filtersHeadCollapse}
           aria-label="Expand filters"
         >
-          <Icon name="ChevronRight" size={20} />
+          <Icon name="ChevronRight" size={18} strokeWidth={2.2} />
         </button>
         {getActiveFiltersCount() > 0 && (
           <div className={styles.collapsedBadge}>
@@ -598,6 +759,8 @@ const FilterSidebar = ({
       </div>
     );
   }
+
+  const visibleSavedFilters = showAllSaved ? savedFilters : savedFilters?.slice(0, SAVED_FILTERS_PREVIEW);
 
   return (
     <div className={styles.filters}>
@@ -626,7 +789,7 @@ const FilterSidebar = ({
               className={styles.filtersHeadCollapse}
               aria-label="Hide filters"
             >
-              <Icon name="ChevronLeft" size={20} />
+              <Icon name="ChevronLeft" size={18} strokeWidth={2.2} />
             </button>
           </div>
         </div>
@@ -636,61 +799,98 @@ const FilterSidebar = ({
         {savedFilters?.length > 0 && (
           <div className={styles.savedFilters}>
             <h4 className={styles.savedFiltersTitle}>Your filters</h4>
-            <div className={styles.savedFiltersList}>
-              {savedFilters?.map((entry) => (
-                <div
-                  key={entry?.id}
-                  className={`${styles.savedFilterChip} ${isSavedFilterCurrent(entry) ? styles.savedFilterChipActive : ''}`}
-                >
-                  <button
-                    type="button"
-                    className={styles.savedFilterChipLabel}
-                    onClick={() => handleApplySavedFilter(entry)}
-                    title={entry?.name}
+            <ul className={styles.savedFiltersList} id="saved-filter-list">
+              {visibleSavedFilters?.map((entry) => {
+                const isCurrent = isSavedFilterCurrent(entry);
+                return (
+                  <li
+                    key={entry?.id}
+                    className={`${styles.savedFilterChip} ${isCurrent ? styles.savedFilterChipActive : ''}`}
                   >
-                    {entry?.name}
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.savedFilterChipDelete}
-                    onClick={() => handleDeleteSavedFilter(entry?.id)}
-                    aria-label={`Delete ${entry?.name}`}
-                  >
-                    <Icon name="Trash2" size={13} />
-                  </button>
-                </div>
-              ))}
-            </div>
+                    <button
+                      type="button"
+                      className={styles.savedFilterChipLabel}
+                      onClick={() => handleApplySavedFilter(entry)}
+                      aria-pressed={isCurrent}
+                      title={entry?.name}
+                    >
+                      {entry?.name}
+                    </button>
+                    <button
+                      type="button"
+                      className={styles.savedFilterChipDelete}
+                      onClick={() => handleDeleteSavedFilter(entry?.id)}
+                      aria-label={`Delete saved filter ${entry?.name}`}
+                    >
+                      <Icon name="Trash2" size={14} />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+            {savedFilters?.length > SAVED_FILTERS_PREVIEW && (
+              <button
+                type="button"
+                className={styles.savedFiltersMore}
+                onClick={() => setShowAllSaved((prev) => !prev)}
+                aria-controls="saved-filter-list"
+                aria-expanded={showAllSaved}
+              >
+                {showAllSaved ? 'Show less' : `Show all (${savedFilters.length})`}
+                <Icon
+                  name="ChevronDown"
+                  size={14}
+                  strokeWidth={2.4}
+                  className={`${styles.savedFiltersMoreIcon} ${showAllSaved ? styles.savedFiltersMoreIconOpen : ''}`}
+                />
+              </button>
+            )}
           </div>
         )}
         {FILTER_GROUPS?.map((group) => {
           const isOpen = !!openGroups?.[group?.id];
           const activeCount = countActiveInGroup(group, localFilters);
           const bodyId = `filter-group-${group?.id}`;
+          const showClear = isOpen && activeCount > 0;
           return (
             <div className={styles.fgroup} key={group?.id}>
-              <h3 className={styles.fgroupHead}>
+              <h3 className={`${styles.fgroupHead} ${isOpen ? styles.fgroupHeadOpen : ''}`}>
                 <button
                   type="button"
+                  id={`filter-group-toggle-${group?.id}`}
                   className={styles.fgroupToggle}
                   onClick={() => handleToggleGroup(group?.id)}
                   aria-expanded={isOpen}
                   aria-controls={bodyId}
                 >
-                  <span className={styles.fgroupTitle}>{group?.title}</span>
-                  {activeCount > 0 && (
-                    <span className={styles.fgroupCount}>{activeCount}</span>
+                  <span className={styles.fgroupRow}>
+                    <span className={styles.fgroupTitle}>{group?.title}</span>
+                    {activeCount > 0 && (
+                      <span className={styles.fgroupCount}>{activeCount}</span>
+                    )}
+                    {/* keeps room for the absolutely placed Clear button */}
+                    {showClear && <span className={styles.fgroupClearSpace} aria-hidden="true" />}
+                    <Icon name="ChevronDown" size={16} strokeWidth={2.2} className={styles.fgroupChevron} />
+                  </span>
+                  {!isOpen && activeCount > 0 && (
+                    <span className={styles.fgroupSummary}>{groupSummary(group?.id, localFilters)}</span>
                   )}
-                  <Icon
-                    name="ChevronDown"
-                    size={16}
-                    className={`${styles.fgroupChevron} ${isOpen ? styles.fgroupChevronOpen : ''}`}
-                  />
                 </button>
+                {showClear && (
+                  <button
+                    type="button"
+                    className={styles.fgroupClear}
+                    onClick={() => handleClearGroup(group)}
+                    aria-label={`Clear ${group?.title} filters`}
+                  >
+                    Clear
+                  </button>
+                )}
               </h3>
               {isOpen && (
                 <div className={styles.fgroupBody} id={bodyId}>
                   {group?.fields?.map(renderField)}
+                  {group?.id === 'skills' && localFilters?.skills?.length >= 2 && renderSkillsMatch()}
                 </div>
               )}
             </div>
@@ -701,8 +901,11 @@ const FilterSidebar = ({
       <div className={styles.filtersFoot}>
         {isNamingFilter ? (
           <div className={styles.saveFilterRow}>
+            <label htmlFor="filter-name" className={styles.srOnly}>Filter name</label>
             <Input
+              id="filter-name"
               autoFocus
+              className={INPUT_CLASS}
               placeholder="Filter name"
               value={filterNameDraft}
               onChange={(e) => setFilterNameDraft(e?.target?.value)}
@@ -716,9 +919,9 @@ const FilterSidebar = ({
               className={styles.saveFilterConfirm}
               onClick={handleConfirmSaveFilter}
               disabled={!filterNameDraft?.trim()}
-              aria-label="Confirm save"
+              aria-label="Save filter with this name"
             >
-              <Icon name="Check" size={16} />
+              <Icon name="Check" size={18} strokeWidth={2.6} />
             </button>
             <button
               type="button"
@@ -726,7 +929,7 @@ const FilterSidebar = ({
               onClick={handleCancelSaveFilter}
               aria-label="Cancel"
             >
-              <Icon name="X" size={16} />
+              <Icon name="X" size={16} strokeWidth={2.4} />
             </button>
           </div>
         ) : (
@@ -736,7 +939,7 @@ const FilterSidebar = ({
             onClick={handleSaveFilter}
             disabled={getActiveFiltersCount() === 0}
           >
-            <Icon name="Save" size={16} />
+            <Icon name="Save" size={17} />
             {activeSavedFilterId ? 'Update saved filter' : 'Save filter'}
           </button>
         )}

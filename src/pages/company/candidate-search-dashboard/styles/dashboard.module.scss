@@ -113,6 +113,11 @@ $push-bp: 1520px;
 // ===== Filter sidebar =====
 // A viewport-tall card: the head and the Save filter footer stay put and only
 // .filtersBody scrolls, so the card never runs past the bottom of the screen.
+$gold-soft: #fdf3e1; // tint behind gold text: counts, active chips, hovers
+$gold-text: #9a6410; // gold text that stays readable on white and $gold-soft
+$label: #475569;
+$hint: #5b6573;
+
 .filters {
   width: 310px;
   flex: none;
@@ -127,13 +132,20 @@ $push-bp: 1520px;
   align-self: start;
   position: sticky;
   top: 84px;
-  box-shadow: 0 18px 40px -32px rgba(11, 26, 44, 0.4);
+  box-shadow: 0 1px 2px rgba(11, 26, 44, 0.06), 0 12px 32px -14px rgba(11, 26, 44, 0.22);
   transition: width 0.2s $ease;
 
   &.collapsed {
     width: 56px;
     align-items: center;
-    padding: 16px 0;
+    gap: 8px;
+    padding: 8px 0 10px;
+
+    .filtersHeadCollapse {
+      width: 36px;
+      height: 36px;
+      border-radius: $r-sm;
+    }
   }
 
   @media (max-width: 1023px) {
@@ -162,7 +174,7 @@ $push-bp: 1520px;
 
 .filtersHead {
   flex: none;
-  padding: 14px 14px 14px 20px;
+  padding: 12px 10px 12px 20px;
   border-bottom: 1px solid $line;
 
   &Row {
@@ -174,9 +186,10 @@ $push-bp: 1520px;
   &Title {
     display: flex;
     align-items: center;
-    gap: 0.5em;
+    gap: 8px;
     font-weight: 700;
-    font-size: 1.02rem;
+    font-size: 1rem;
+    line-height: 22px;
     color: $ink;
 
     svg {
@@ -185,20 +198,25 @@ $push-bp: 1520px;
   }
 
   &Badge {
-    width: 20px;
+    min-width: 20px;
     height: 20px;
+    padding: 0 5px;
     border-radius: 999px;
     background: $gold;
-    color: #241704;
+    color: #3b2606;
     display: grid;
     place-items: center;
-    font-size: 0.68rem;
+    font-size: 11px;
     font-weight: 700;
   }
 
   &Collapse {
-    padding: 6px;
-    border-radius: $r-sm;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     color: $slate-2;
     transition: 0.2s;
 
@@ -211,15 +229,17 @@ $push-bp: 1520px;
   &Actions {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 2px;
   }
 }
 
 .filtersClear {
-  font-size: 0.8rem;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  font-size: 13px;
   font-weight: 600;
-  color: $gold-deep;
-  padding: 0;
+  color: $gold-text;
   background: none;
   border: none;
   transition: color 0.18s;
@@ -234,90 +254,143 @@ $push-bp: 1520px;
   }
 }
 
-.savedFilters {
-  padding: 16px 0;
-}
-
-.savedFiltersTitle {
-  font-family: "JetBrains Mono", monospace;
-  font-weight: 600;
-  color: $slate-2;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-
-.savedFiltersList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.savedFilterChip {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  max-width: 100%;
-  border-radius: 999px;
-  background: $mist;
-  border: 1px solid $line;
-  transition: 0.18s;
-
-  &Active {
-    background: rgba(230, 169, 60, 0.14);
-    border-color: $gold;
-  }
-}
-
-.savedFilterChipLabel {
-  padding: 0.4em 0.3em 0.4em 0.85em;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: $ink;
-  max-width: 160px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-
-  .savedFilterChipActive & {
-    color: $gold-deep;
-  }
-}
-
-.savedFilterChipDelete {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  margin-right: 4px;
-  border-radius: 999px;
-  color: $slate-2;
-  flex-shrink: 0;
-  transition: 0.15s;
-
-  &:hover {
-    background: rgba(200, 40, 40, 0.12);
-    color: #c82828;
-  }
-}
-
 .filtersBody {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
+  scrollbar-color: #cbd2da transparent;
   padding: 0 20px;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #cbd2da;
+    border-radius: 3px;
+  }
 }
 
 .filtersFoot {
   flex: none;
-  padding: 14px 20px 16px;
+  padding: 12px 20px 16px;
   border-top: 1px solid $line;
   background: $white;
 }
 
+// --- Saved filters: one per line, first two shown, the rest behind "Show all"
+.savedFilters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 0 16px;
+}
+
+.savedFiltersTitle {
+  margin: 0;
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 600;
+  color: $slate-2;
+  font-size: 11px;
+  line-height: 16px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.savedFiltersList {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.savedFilterChip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  height: 30px;
+  padding: 0 2px;
+  border-radius: 999px;
+  background: #f4f6f8;
+  border: 1px solid $line;
+  transition: 0.18s;
+
+  &Active {
+    background: $gold-soft;
+    border-color: $gold;
+  }
+}
+
+.savedFilterChipLabel {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 26px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  line-height: 26px;
+  font-weight: 600;
+  color: $ink;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  .savedFilterChipActive & {
+    color: $gold-text;
+  }
+}
+
+.savedFilterChipDelete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  color: $slate-2;
+  flex: none;
+  transition: 0.15s;
+
+  &:hover {
+    background: #fdecec;
+    color: #d14343;
+  }
+}
+
+.savedFiltersMore {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 6px;
+  margin-left: -6px;
+  border-radius: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: $label;
+  transition: 0.15s;
+
+  &:hover {
+    color: $ink;
+    background: #f1f3f6;
+  }
+
+  &Icon {
+    transition: transform 0.2s $ease;
+
+    &Open {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+// --- Groups
 .fgroup {
   border-top: 1px solid $line;
 
@@ -325,16 +398,24 @@ $push-bp: 1520px;
     border-top: none;
   }
 
+  // The open group's title sticks to the top while its fields scroll past;
+  // the next group's title pushes it out.
   &Head {
+    position: sticky;
+    top: 0;
+    z-index: 5;
     margin: 0;
+    background: $white;
   }
 
   &Toggle {
     width: 100%;
+    min-height: 48px;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 16px 0;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+    padding: 12px 0;
     background: none;
     border: none;
     text-align: left;
@@ -348,8 +429,15 @@ $push-bp: 1520px;
     &:focus-visible {
       outline: 2px solid $gold;
       outline-offset: 2px;
-      border-radius: 4px;
+      border-radius: 6px;
     }
+  }
+
+  &Row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
   }
 
   &Title {
@@ -357,8 +445,8 @@ $push-bp: 1520px;
     min-width: 0;
     font-family: "JetBrains Mono", monospace;
     font-weight: 600;
-    font-size: 0.7rem;
-    line-height: 1.2;
+    font-size: 11px;
+    line-height: 16px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
   }
@@ -367,30 +455,129 @@ $push-bp: 1520px;
     min-width: 20px;
     height: 20px;
     padding: 0 6px;
-    border-radius: 999px;
-    background: rgba(230, 169, 60, 0.14);
-    color: $gold-deep;
-    display: grid;
-    place-items: center;
-    font-size: 0.68rem;
+    border-radius: 10px;
+    background: $gold-soft;
+    color: $gold-text;
+    font-size: 11px;
+    line-height: 20px;
     font-weight: 700;
+    text-align: center;
+  }
+
+  &ClearSpace {
+    flex: none;
+    width: 46px;
   }
 
   &Chevron {
     flex: none;
     transition: transform 0.2s $ease;
+  }
 
-    &Open {
-      transform: rotate(180deg);
+  // Open: dark bold title, gold chevron pointing up.
+  &HeadOpen &Toggle {
+    color: $ink;
+  }
+
+  &HeadOpen &Title {
+    font-weight: 700;
+  }
+
+  &HeadOpen &Chevron {
+    color: $gold-deep;
+    transform: rotate(180deg);
+  }
+
+  // Collapsed with filters on: what's set, e.g. "React, TypeScript +1".
+  &Summary {
+    display: block;
+    width: 100%;
+    font-size: 12px;
+    line-height: 16px;
+    font-weight: 400;
+    color: $hint;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &Clear {
+    position: absolute;
+    top: 12px;
+    right: 22px;
+    height: 24px;
+    padding: 0 6px;
+    border-radius: 6px;
+    font-size: 12px;
+    line-height: 24px;
+    font-weight: 600;
+    color: $gold-text;
+    background: none;
+    transition: color 0.18s;
+
+    &:hover {
+      color: $gold;
+    }
+
+    &:focus-visible {
+      outline: 2px solid $gold;
+      outline-offset: 2px;
     }
   }
 
   &Body {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    padding-bottom: 18px;
+    gap: 14px;
+    padding: 4px 0 18px;
   }
+}
+
+// --- Fields
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fieldLabel {
+  display: block;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: $label;
+}
+
+.fieldLabelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.fieldHint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: $hint;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.checkRow {
+  min-height: 36px;
+}
+
+// Stacked checkboxes sit row under row, without the field gap between them.
+.checkRow + .checkRow {
+  margin-top: -14px;
 }
 
 // Salary range on one line: [€ min] – [€ max], the symbol sits inside each
@@ -431,75 +618,135 @@ $push-bp: 1520px;
 
 .salaryDash {
   flex: none;
-  color: $slate-2;
+  width: 8px;
+  height: 1.5px;
+  background: #b8c0c9;
 }
 
+// "Match any / Match all" under Skills
+.skillsMatch {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: -6px;
+}
+
+.matchToggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  padding: 3px;
+  background: #f1f3f6;
+  border-radius: $r-sm;
+}
+
+.matchOption {
+  height: 30px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: $hint;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  transition: 0.15s;
+
+  &On {
+    background: $white;
+    color: $ink;
+    box-shadow: 0 1px 2px rgba(11, 26, 44, 0.12);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+// One row per picked language: name, level dropdown, remove
 .languageLevelRows {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  margin-top: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 .languageLevelRow {
-  display: grid;
-  grid-template-columns: 1fr 132px auto;
+  display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
-  border-radius: 7px;
-  background: rgba(230, 169, 60, 0.06);
+  gap: 6px;
+  padding: 5px 4px 5px 12px;
+  border-radius: $r-sm;
+  background: #fffaf0;
   border: 1px solid $line;
 }
 
 .languageLevelName {
-  font-size: 0.82rem;
-  font-weight: 600;
+  flex: 1;
+  min-width: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
   color: $ink;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.languageLevelRemove {
-  display: grid;
-  place-items: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 999px;
-  border: none;
-  background: transparent;
-  color: $slate;
-  flex-shrink: 0;
-  transition: 0.15s;
+.languageLevelSelect {
+  flex: none;
+  width: 128px;
 
-  &:hover {
-    background: rgba(230, 169, 60, 0.18);
-    color: $gold-deep;
+  // A compact trigger, so the row stays one line.
+  button[aria-haspopup] {
+    height: 32px;
+    padding: 0 8px 0 10px;
+    border-radius: 8px;
+    font-size: 13px;
   }
 }
 
-.languageLevelSelect {
-  min-width: 0;
-}
-
-.saveFilterBtn {
-  display: flex;
+.languageLevelRemove {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5em;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  color: $slate-2;
+  flex: none;
+  transition: 0.15s;
+
+  &:hover {
+    background: $gold-soft;
+    color: $gold-text;
+  }
+}
+
+// --- Footer: Save filter is a secondary button, gold on hover
+.saveFilterBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
-  padding: 0.7em;
-  border-radius: $r-sm;
-  background: $gold;
-  color: #241704;
+  height: 42px;
+  border-radius: 10px;
+  background: $white;
+  border: 1px solid $gold;
+  color: $gold-text;
   font-weight: 700;
-  font-size: 0.85rem;
-  transition: 0.18s;
+  font-size: 14px;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
 
   &:hover:not(:disabled) {
-    background: $gold-deep;
-    color: $white;
+    background: $gold;
+    border-color: $gold;
+    color: #3b2606;
   }
 
   &:disabled {
@@ -510,7 +757,7 @@ $push-bp: 1520px;
 
 .saveFilterRow {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 6px;
 
   > div {
@@ -521,18 +768,19 @@ $push-bp: 1520px;
 
 .saveFilterConfirm,
 .saveFilterCancel {
-  display: grid;
-  place-items: center;
-  width: 38px;
-  height: 38px;
-  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
   border-radius: $r-sm;
   transition: 0.15s;
 }
 
 .saveFilterConfirm {
   background: $gold;
-  color: #241704;
+  color: #3b2606;
 
   &:hover:not(:disabled) {
     background: $gold-deep;
@@ -546,26 +794,26 @@ $push-bp: 1520px;
 }
 
 .saveFilterCancel {
-  background: $mist;
-  color: $slate-2;
+  background: #f1f3f5;
+  color: $hint;
 
   &:hover {
-    background: rgba(200, 40, 40, 0.12);
-    color: #c82828;
+    background: #fdecec;
+    color: #d14343;
   }
 }
 
 .collapsedBadge {
-  width: 22px;
-  height: 22px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
   border-radius: 999px;
   background: $gold;
-  color: #241704;
+  color: #3b2606;
   display: grid;
   place-items: center;
-  font-size: 0.7rem;
+  font-size: 11px;
   font-weight: 700;
-  margin-top: 10px;
 }
 
 // ===== Search toolbar =====

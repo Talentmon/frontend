@@ -45,6 +45,9 @@ export function filtersToBackend(filters = {}) {
   if (filters.availability) out.availability = filters.availability;
   if (filters.status) out.status = STATUS_TO_BACKEND[filters.status];
   if (filters.skills?.length) out.skills = filters.skills;
+  // "Match all" only means something with 2+ skills; "any" is the default
+  // and is never sent.
+  if (filters.skills?.length >= 2 && filters.skillsMatch === 'all') out.skillsMatch = 'all';
   if (filters.skillCategory?.length) out.skillCategory = filters.skillCategory;
   if (filters.languages?.length) out.languages = filters.languages;
   if (filters.industry?.length) out.industry = filters.industry;

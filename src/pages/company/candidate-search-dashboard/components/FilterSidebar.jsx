@@ -7,8 +7,7 @@ import { Checkbox } from 'components/ui/Checkbox';
 import { INDUSTRY_NAMES, getSubIndustries } from 'utils/industries';
 import { ISSUER_NAMES, FAMILY_NAMES, getCertificationNamesFor } from 'utils/certifications';
 import { CATEGORY_NAMES as SKILL_CATEGORY_NAMES, getSkillNamesFor } from 'utils/skills';
-import { LANGUAGE_NAMES, LEVELS } from 'utils/languages';
-import { currencySelectOptions, currencySymbol } from 'utils/currencyService';
+import { currencySymbol } from 'utils/currencyService';
 import { BASE_CURRENCY } from 'utils/exchangeRateService';
 import {
   listSavedFilters,
@@ -17,9 +16,10 @@ import {
   deleteSavedFilter,
   filtersToFrontend,
 } from '../candidateSearchApi';
+import LanguageLevelFilter from './LanguageLevelFilter';
+import SalaryRangeFilter from './SalaryRangeFilter';
+import SkillsMatchToggle from './SkillsMatchToggle';
 import styles from '../styles/dashboard.module.scss';
-
-const currencyOptions = currencySelectOptions();
 
 const experienceOptions = [
   { value: '', label: 'Any experience' },
@@ -64,13 +64,6 @@ const statusOptions = [
 ];
 
 const skillCategoryOptions = SKILL_CATEGORY_NAMES.map((name) => ({ value: name, label: name }));
-
-const languageOptions = LANGUAGE_NAMES.map((language) => ({ value: language, label: language }));
-
-// Proficiency sub-filter shown per selected language - picking one or more
-// levels matches candidates at exactly those levels; none picked ("Any
-// level", the default) keeps the language selected without constraining it.
-const languageLevelOptions = LEVELS.map((level) => ({ value: level, label: level }));
 
 const industryOptions = INDUSTRY_NAMES.map((name) => ({ value: name, label: name }));
 
@@ -129,7 +122,7 @@ const FILTER_GROUPS = [
     fields: [
       // The group title already says "Languages", so the field label is
       // only there for screen readers.
-      { key: 'languages', type: 'languageLevel', label: 'Languages', hideLabel: true, placeholder: 'Select languages', options: languageOptions }
+      { key: 'languages', type: 'languageLevel', label: 'Languages', hideLabel: true, placeholder: 'Select languages' }
     ]
   },
   {
@@ -313,11 +306,6 @@ const fieldId = (key) => `filter-${key}`;
 // Filter inputs are white with the same 9px corners as the dropdowns.
 const INPUT_CLASS = 'bg-white rounded-[9px]';
 
-// Salary inputs take whole numbers only.
-const blockNonDigitKeys = (e) => {
-  if (['e', 'E', '+', '-', '.', ','].includes(e?.key)) e.preventDefault();
-};
-
 const FilterSidebar = ({
   filters = {},
   onFiltersChange = () => {},
@@ -353,11 +341,6 @@ const FilterSidebar = ({
     applyFilters({ ...localFilters, [key]: value });
   };
 
-  const handleSalaryChange = (type, value) => {
-    const updatedSalary = { ...localFilters?.salary, [type]: value };
-    handleFilterChange('salary', updatedSalary);
-  };
-
   // Multi-selects that narrow another field also drop what no longer fits
   // in it: subindustries of an unpicked industry, skills outside the picked
   // categories, certification names outside the picked issuers / families.
@@ -384,29 +367,6 @@ const FilterSidebar = ({
     }
 
     applyFilters(next);
-  };
-
-  // Languages are stored as { name, levels }[] so proficiency can be
-  // constrained per language. Toggling the name Select adds/removes entries
-  // while preserving the levels already chosen for names that stay selected.
-  // An empty `levels` array means "any level" - no proficiency constraint.
-  const handleLanguageNamesChange = (key, names) => {
-    const current = localFilters?.[key] || [];
-    const updated = names?.map((name) => current?.find((entry) => entry?.name === name) || { name, levels: [] });
-    handleFilterChange(key, updated);
-  };
-
-  const handleLanguageLevelChange = (key, name, levels) => {
-    const current = localFilters?.[key] || [];
-    const updated = current?.map((entry) => (entry?.name === name ? { ...entry, levels } : entry));
-    handleFilterChange(key, updated);
-  };
-
-  // The X on a language row removes it the same way unchecking it in the
-  // name Select would.
-  const handleRemoveLanguage = (key, name) => {
-    const current = localFilters?.[key] || [];
-    handleFilterChange(key, current?.filter((entry) => entry?.name !== name));
   };
 
   const handleBooleanToggle = (key) => {
@@ -572,51 +532,18 @@ const FilterSidebar = ({
         );
       }
 
-      case 'languageLevel': {
-        const entries = localFilters?.[field?.key] || [];
-        const selectedNames = entries?.map((entry) => entry?.name);
+      case 'languageLevel':
         return (
           <div className={styles.field} key={field?.key}>
             {renderLabel(field)}
-            <Select
+            <LanguageLevelFilter
               id={fieldId(field?.key)}
-              options={field?.options}
-              value={selectedNames}
-              onChange={(names) => handleLanguageNamesChange(field?.key, names)}
+              value={localFilters?.[field?.key] || []}
+              onChange={(entries) => handleFilterChange(field?.key, entries)}
               placeholder={field?.placeholder}
-              multiple
-              searchable
             />
-            {entries?.length > 0 && (
-              <ul className={styles.languageLevelRows} aria-label="Language levels">
-                {entries?.map((entry) => (
-                  <li className={styles.languageLevelRow} key={entry?.name}>
-                    <span className={styles.languageLevelName}>{entry?.name}</span>
-                    <Select
-                      className={styles.languageLevelSelect}
-                      options={languageLevelOptions}
-                      value={entry?.levels || []}
-                      onChange={(levels) => handleLanguageLevelChange(field?.key, entry?.name, levels)}
-                      placeholder="Any level"
-                      aria-label={`Level for ${entry?.name}`}
-                      multipleLabel={(count) => `${count} levels`}
-                      multiple
-                    />
-                    <button
-                      type="button"
-                      className={styles.languageLevelRemove}
-                      onClick={() => handleRemoveLanguage(field?.key, entry?.name)}
-                      aria-label={`Remove ${entry?.name}`}
-                    >
-                      <Icon name="X" size={14} strokeWidth={2.4} />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
         );
-      }
 
       case 'comboMulti': {
         const options = field?.getOptions ? field.getOptions(localFilters) : field?.options;
@@ -635,65 +562,14 @@ const FilterSidebar = ({
         );
       }
 
-      case 'salaryRange': {
-        // The company picks a filter currency; both bounds are entered in
-        // it and converted to the base currency once (see
-        // salaryFilterService.buildBaseSalaryRange) - never per candidate.
-        // Candidates enter a net amount per period, and search compares
-        // monthly amounts, hence "Net per month".
-        const filterCurrency = localFilters?.salary?.currency || 'EUR';
-        const symbol = currencySymbol(filterCurrency);
-        // Left padding grows with the symbol so "RSD" fits as well as "€".
-        const symbolPadding = { paddingLeft: `calc(${symbol.length}ch + 20px)` };
-        const salaryInput = (bound, label, placeholder) => (
-          <div className={styles.salaryField}>
-            <span className={styles.salarySymbol} aria-hidden="true">{symbol}</span>
-            <Input
-              type="number"
-              min="0"
-              step="1"
-              inputMode="numeric"
-              className={INPUT_CLASS}
-              placeholder={placeholder}
-              aria-label={`${label} (${filterCurrency})`}
-              style={symbolPadding}
-              value={localFilters?.salary?.[bound]}
-              onKeyDown={blockNonDigitKeys}
-              onChange={(e) => handleSalaryChange(bound, String(e?.target?.value || '').replace(/\D/g, ''))}
-            />
-          </div>
-        );
+      case 'salaryRange':
         return (
-          <React.Fragment key={field?.key}>
-            <div className={styles.field}>
-              <label htmlFor={fieldId('currency')} className={styles.fieldLabel}>Currency</label>
-              <Select
-                id={fieldId('currency')}
-                options={currencyOptions}
-                value={filterCurrency}
-                onChange={(value) => handleSalaryChange('currency', value)}
-                searchable
-              />
-            </div>
-            <div className={styles.field}>
-              <div className={styles.fieldLabelRow}>
-                <span id="salary-range-label" className={styles.fieldLabel}>Range</span>
-                <span id="salary-range-hint" className={styles.fieldHint}>Net per month</span>
-              </div>
-              <div
-                className={styles.salaryRow}
-                role="group"
-                aria-labelledby="salary-range-label"
-                aria-describedby="salary-range-hint"
-              >
-                {salaryInput('min', 'Minimum salary', '1,500')}
-                <span className={styles.salaryDash} aria-hidden="true" />
-                {salaryInput('max', 'Maximum salary', '4,000')}
-              </div>
-            </div>
-          </React.Fragment>
+          <SalaryRangeFilter
+            key={field?.key}
+            value={localFilters?.salary}
+            onChange={(salary) => handleFilterChange('salary', salary)}
+          />
         );
-      }
 
       case 'checkbox':
         return (
@@ -709,36 +585,6 @@ const FilterSidebar = ({
       default:
         return null;
     }
-  };
-
-  // "Match any / Match all" under Skills, once 2+ skills are picked.
-  const renderSkillsMatch = () => {
-    const matchAll = localFilters?.skillsMatch === 'all';
-    const option = (value, label) => {
-      const on = (value === 'all') === matchAll;
-      return (
-        <button
-          type="button"
-          role="radio"
-          aria-checked={on}
-          className={`${styles.matchOption} ${on ? styles.matchOptionOn : ''}`}
-          onClick={() => handleFilterChange('skillsMatch', value)}
-        >
-          {label}
-        </button>
-      );
-    };
-    return (
-      <div className={styles.skillsMatch} key="skillsMatch">
-        <div className={styles.matchToggle} role="radiogroup" aria-label="Skill matching">
-          {option('any', 'Match any')}
-          {option('all', 'Match all')}
-        </div>
-        <p className={styles.fieldHint}>
-          {matchAll ? 'Candidates must have every selected skill.' : 'Candidates need at least one of the selected skills.'}
-        </p>
-      </div>
-    );
   };
 
   if (isCollapsed) {
@@ -890,7 +736,12 @@ const FilterSidebar = ({
               {isOpen && (
                 <div className={styles.fgroupBody} id={bodyId}>
                   {group?.fields?.map(renderField)}
-                  {group?.id === 'skills' && localFilters?.skills?.length >= 2 && renderSkillsMatch()}
+                  {group?.id === 'skills' && localFilters?.skills?.length >= 2 && (
+                    <SkillsMatchToggle
+                      value={localFilters?.skillsMatch}
+                      onChange={(value) => handleFilterChange('skillsMatch', value)}
+                    />
+                  )}
                 </div>
               )}
             </div>

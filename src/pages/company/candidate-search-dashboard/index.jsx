@@ -52,6 +52,8 @@ const CandidateSearchDashboard = () => {
   const [isBuyOpen, setIsBuyOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef(null);
+  // Bumped by every new search; see fetchPage.
+  const searchGeneration = useRef(0);
   const [previewId, setPreviewId] = useState(null);
 
   const bookmarkedCandidates = Object.keys(bookmarksById);
@@ -73,9 +75,21 @@ const CandidateSearchDashboard = () => {
   }, []);
 
   const fetchPage = (pageNum, { append = false } = {}) => {
+    // Every new search (page 1) starts a new generation, and only the latest
+    // one may touch the results: typing "3000" fires 3, 30, 300, 3000, and
+    // a slow reply for "3" must not land after the one for "3000". A "Load
+    // more" still in flight from the previous search is dropped the same way.
+    if (!append) {
+      searchGeneration.current += 1;
+      setLoadingMore(false);
+    }
+    const generation = searchGeneration.current;
+    const isLatest = () => generation === searchGeneration.current;
+
     append ? setLoadingMore(true) : setLoading(true);
     return searchCandidates({ q: debouncedQuery || undefined, filters, sort: sortBy, page: pageNum, limit: PAGE_SIZE })
       .then((data) => {
+        if (!isLatest()) return;
         const mapped = (data.items || []).map(candidateToFrontend);
         setCandidates((prev) => (append ? [...prev, ...mapped] : mapped));
         setPage(data.page);
@@ -83,13 +97,16 @@ const CandidateSearchDashboard = () => {
         setTotal(data.total);
       })
       .catch(() => {
-        if (!append) {
+        if (!append && isLatest()) {
           setCandidates([]);
           setTotal(0);
           setTotalPages(1);
         }
       })
-      .finally(() => (append ? setLoadingMore(false) : setLoading(false)));
+      .finally(() => {
+        if (!isLatest()) return;
+        append ? setLoadingMore(false) : setLoading(false);
+      });
   };
 
   useEffect(() => {

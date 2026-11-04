@@ -20,8 +20,8 @@ $r-sm: 9px;
 $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 $drawer-w: 45vw;
 // Push mode (drawer squeezes the page instead of floating over it) needs the
-// filter sidebar (310px) + the 450px card floor to fit in the remaining 55%
-// of the page: 0.55 * $push-bp >= 22+310+22+450+22, so anything narrower
+// filter sidebar (320px) + the 450px card floor to fit in the remaining 55%
+// of the page: 0.55 * $push-bp >= 22+320+22+450+22, so anything narrower
 // falls back to overlay mode instead of clipping the card behind the drawer.
 $push-bp: 1520px;
 
@@ -119,7 +119,7 @@ $label: #475569;
 $hint: #5b6573;
 
 .filters {
-  width: 310px;
+  width: 320px;
   flex: none;
   display: flex;
   flex-direction: column;
@@ -675,8 +675,12 @@ $hint: #5b6573;
   list-style: none;
 }
 
+// When the name and the level picker don't fit one line (a long name in the
+// narrower Bookmarked filter column), the picker and X wrap together under
+// the full name.
 .languageLevelRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   padding: 5px 4px 5px 12px;
@@ -686,8 +690,8 @@ $hint: #5b6573;
 }
 
 .languageLevelName {
-  flex: 1;
-  min-width: 0;
+  flex: 1 0 auto;
+  max-width: 100%;
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
@@ -697,9 +701,19 @@ $hint: #5b6573;
   white-space: nowrap;
 }
 
+// Level picker + X: 128px picker where there's room, down to 96px before wrapping.
+.languageLevelControls {
+  flex: 1 1 130px;
+  max-width: 162px;
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .languageLevelSelect {
-  flex: none;
-  width: 128px;
+  flex: 1 1 auto;
+  min-width: 0;
 
   // A compact trigger, so the row stays one line.
   button[aria-haspopup] {

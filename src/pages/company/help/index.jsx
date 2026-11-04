@@ -510,13 +510,13 @@ const CompanyHelp = () => {
               </div>
               <Figure
                 src="/help/bookmarks-overview.webp"
-                alt="Bookmarked candidates page with the limit ring"
-                caption="The ring shows how many of your bookmark slots are in use."
+                alt="Bookmarked candidates page with the slots strip"
+                caption="The strip under the title shows how many of your bookmark slots are in use."
                 onZoom={setZoomed}
               />
               <Callout tone="info" icon="Info" title="How many you can save">
                 Your company list holds <b>10 candidates</b>, and package bonuses can raise it to <b>30</b>. Team members
-                also get <b>5 personal slots</b> each, tagged <i>Personal</i>, and only they can remove those. Bookmarks
+                also get <b>5 personal slots</b> each, and only they can remove the candidates they save there. Bookmarks
                 are a short "decide soon" list: unlock or remove candidates to make room for new ones.
               </Callout>
               <div className={`${styles.split} ${styles.splitCard}`}>
@@ -545,7 +545,7 @@ const CompanyHelp = () => {
                 <Points
                   columns={2}
                   items={[
-                    { icon: 'Filter', title: 'Filters', text: 'By industry, experience, status, skills and salary.' },
+                    { icon: 'Filter', title: 'Filters', text: 'By industry, experience, languages, skills and salary, by who saved the candidate when you work as a team, or notes only.' },
                     { icon: 'ArrowUpDown', title: 'Sort', text: 'Recently saved, oldest, experience, salary or your custom order.' },
                     { icon: 'GripVertical', title: 'Reorder', text: 'Drag cards into your own order, for example your favourites first.' },
                     { icon: 'CheckSquare', title: 'Select', text: 'Click the cards you want, then Unlock all at once or Remove selected.' },

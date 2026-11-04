@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from 'components/ui/Header';
 import BookmarkedCandidatesHeader from './components/BookmarkedCandidatesHeader';
-import BookmarkLimitIndicator from './components/BookmarkLimitIndicator';
 import BookmarkedCandidatesFilters from './components/BookmarkedCandidatesFilters';
+import BookmarkedResultsBar from './components/BookmarkedResultsBar';
 import BulkActionsToolbar from './components/BulkActionsToolbar';
 import BookmarkedCandidatesGrid from './components/BookmarkedCandidatesGrid';
 import EmptyBookmarksState from './components/EmptyBookmarksState';
@@ -28,7 +28,21 @@ import {
   revealedToFrontend,
   UNLOCK_COST,
 } from './bookmarksApi';
+import { inExperienceRange } from './filterUtils';
 import styles from './styles/bookmarked.module.scss';
+
+const EMPTY_FILTERS = {
+  search: '',
+  experience: '',
+  languages: [],
+  salary: { min: '', max: '', currency: 'EUR' },
+  industry: [],
+  subIndustry: [],
+  skillCategory: [],
+  skills: [],
+  skillsMatch: 'any',
+  hasNotes: false
+};
 
 const BookmarkedCandidatesPage = () => {
   const navigate = useNavigate();
@@ -41,7 +55,6 @@ const BookmarkedCandidatesPage = () => {
   const [reorderMode, setReorderMode] = useState(false);
   const [hasReordered, setHasReordered] = useState(false);
   const previousSortByRef = useRef('bookmarked-date-desc');
-  const [filtersExpanded, setFiltersExpanded] = useState(false);
   const [sortBy, setSortBy] = useState('bookmarked-date-desc');
   const { balance: creditBalance } = useCreditBalance();
   const [bookmarkLimit, setBookmarkLimit] = useState(10);
@@ -51,17 +64,9 @@ const BookmarkedCandidatesPage = () => {
   const [previewId, setPreviewId] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef(null);
-  const [filters, setFilters] = useState({
-    search: '',
-    experience: '',
-    status: '',
-    salary: { min: '', max: '', currency: 'EUR' },
-    industry: [],
-    subIndustry: [],
-    skillCategory: [],
-    skills: [],
-    hasNotes: false
-  });
+  // Team members picked in the "Saved by" filter; empty = everyone.
+  const [savedBy, setSavedBy] = useState([]);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
 
   useEffect(() => {
     listBookmarks()
@@ -77,46 +82,75 @@ const BookmarkedCandidatesPage = () => {
       .catch(() => {});
   }, []);
 
+  // Everyone who saved at least one candidate, with how many — the "saved by"
+  // filter only shows up once there are two or more of them.
+  const recruiterOptions = useMemo(() => {
+    const byId = new Map();
+    allBookmarkedCandidates.forEach((c) => {
+      if (!c?.bookmarkedById) return;
+      const entry = byId.get(c.bookmarkedById) || { value: c.bookmarkedById, label: c.bookmarkedBy, count: 0 };
+      entry.count += 1;
+      byId.set(c.bookmarkedById, entry);
+    });
+    return [...byId.values()]
+      .sort((a, b) => a.label.localeCompare(b.label))
+      .map(({ count, ...option }) => ({ ...option, description: String(count) }));
+  }, [allBookmarkedCandidates]);
+
+  // Drop a pick whose last bookmark was removed, so it can't keep the list empty.
+  useEffect(() => {
+    setSavedBy((prev) => {
+      const next = prev.filter((id) => recruiterOptions.some((o) => o.value === id));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [recruiterOptions]);
+
   // Apply filters and sorting
   useEffect(() => {
     let filtered = [...allBookmarkedCandidates];
 
-    // Apply search filter
+    if (savedBy.length > 0) {
+      filtered = filtered.filter((candidate) => savedBy.includes(candidate?.bookmarkedById));
+    }
+
+    // Apply search filter - position, skills and location. (Bookmarked
+    // candidates are never unlocked - those move to Purchased - so there's no
+    // name to search.)
     if (filters?.search) {
       const searchTerm = filters?.search?.toLowerCase();
       filtered = filtered?.filter(candidate =>
-        candidate?.name?.toLowerCase()?.includes(searchTerm) ||
         candidate?.position?.toLowerCase()?.includes(searchTerm) ||
+        candidate?.location?.toLowerCase()?.includes(searchTerm) ||
         candidate?.skills?.some(skill => skill?.toLowerCase()?.includes(searchTerm))
       );
     }
 
-    // Apply experience filter
+    // Apply experience filter (same buckets as Search)
     if (filters?.experience) {
-      filtered = filtered?.filter(candidate => {
-        const exp = candidate?.experience;
-        switch (filters?.experience) {
-          case '0-1': return exp <= 1;
-          case '1-3': return exp >= 1 && exp <= 3;
-          case '3-5': return exp >= 3 && exp <= 5;
-          case '5-10': return exp >= 5 && exp <= 10;
-          case '10+': return exp > 10;
-          default: return true;
-        }
-      });
+      filtered = filtered?.filter(candidate => inExperienceRange(candidate?.experience, filters.experience));
     }
 
-    // Apply status filter
-    if (filters?.status) {
-      filtered = filtered?.filter(candidate => candidate?.searchStatus === filters?.status);
+    // Apply languages filter - same as Search: any picked language, at one
+    // of its picked levels (no levels picked = any level).
+    if (filters?.languages?.length > 0) {
+      filtered = filtered?.filter(candidate =>
+        filters?.languages?.some(entry =>
+          candidate?.languages?.some(language =>
+            language?.name?.toLowerCase() === entry?.name?.toLowerCase() &&
+            (!entry?.levels?.length || entry?.levels?.includes(language?.level))
+          )
+        )
+      );
     }
 
-    // Apply industry filter - a specific subindustry narrows to it directly;
-    // an industry with no subindustry picked yet matches any of its subindustries.
-    if (filters?.subIndustry?.length > 0) {
-      filtered = filtered?.filter(candidate => filters?.subIndustry?.includes(candidate?.subIndustry));
-    } else if (filters?.industry?.length > 0) {
-      filtered = filtered?.filter(candidate => filters?.industry?.includes(candidate?.industry));
+    // Apply industry filter - matched against the industries of the
+    // candidate's experience, like Search. A picked industry covers all its
+    // subindustries; subindustries are picked only for industries that aren't.
+    if (filters?.industry?.length > 0 || filters?.subIndustry?.length > 0) {
+      filtered = filtered?.filter(candidate =>
+        candidate?.industries?.some(industry => filters?.industry?.includes(industry)) ||
+        candidate?.subIndustries?.some(sub => filters?.subIndustry?.includes(sub))
+      );
     }
 
     // Apply salary range filter - the filter range is converted to base
@@ -131,25 +165,18 @@ const BookmarkedCandidatesPage = () => {
       filtered = filterByBaseSalary(filtered, baseRange, (candidate) => candidate?.expectedSalary?.base);
     }
 
-    // Apply skills filter - a specific skill narrows to it directly; a
-    // category with no specific skill picked yet matches any skill in it.
-    if (filters?.skills && filters?.skills?.length > 0) {
-      filtered = filtered?.filter(candidate =>
-        filters?.skills?.some(skill =>
-          candidate?.skills?.some(candidateSkill =>
-            candidateSkill?.toLowerCase()?.includes(skill?.toLowerCase())
-          )
-        )
-      );
-    } else if (filters?.skillCategory && filters?.skillCategory?.length > 0) {
-      const categorySkills = getSkillNamesFor({ categories: filters?.skillCategory });
-      filtered = filtered?.filter(candidate =>
-        categorySkills?.some(skill =>
-          candidate?.skills?.some(candidateSkill =>
-            candidateSkill?.toLowerCase()?.includes(skill?.toLowerCase())
-          )
-        )
-      );
+    // Apply skills filter - whole skill names, as in Search ("Java" doesn't
+    // match "JavaScript"). Picked skills match any or all of them (Match
+    // any / Match all); a category with no skill picked matches any skill in it.
+    if (filters?.skills?.length > 0) {
+      const names = filters.skills.map((name) => name?.toLowerCase());
+      filtered = filtered?.filter(candidate => {
+        const has = new Set(candidate?.skills?.map((skill) => skill?.toLowerCase()));
+        return filters?.skillsMatch === 'all' ? names.every((name) => has.has(name)) : names.some((name) => has.has(name));
+      });
+    } else if (filters?.skillCategory?.length > 0) {
+      const names = new Set(getSkillNamesFor({ categories: filters.skillCategory }).map((name) => name?.toLowerCase()));
+      filtered = filtered?.filter(candidate => candidate?.skills?.some(skill => names.has(skill?.toLowerCase())));
     }
 
     // Apply notes filter
@@ -182,7 +209,7 @@ const BookmarkedCandidatesPage = () => {
     });
 
     setFilteredCandidates(filtered);
-  }, [allBookmarkedCandidates, filters, sortBy]);
+  }, [allBookmarkedCandidates, filters, sortBy, savedBy]);
 
   const showToast = (message) => {
     setToastMsg(message);
@@ -433,69 +460,63 @@ const BookmarkedCandidatesPage = () => {
     setPreviewId(null);
   };
 
+  // Clears every filter (and Saved by); the salary currency stays as picked.
   const handleClearFilters = () => {
-    setFilters({
-      search: '',
-      experience: '',
-      status: '',
-      salary: { min: '', max: '', currency: 'EUR' },
-      industry: [],
-      subIndustry: [],
-      skillCategory: [],
-      skills: [],
-      hasNotes: false
-    });
+    setSavedBy([]);
+    setFilters((prev) => ({ ...EMPTY_FILTERS, salary: { ...EMPTY_FILTERS.salary, currency: prev?.salary?.currency || 'EUR' } }));
   };
+
+  // "Remove some" on a full list: straight into select mode.
+  const handleRemoveSome = () => {
+    setReorderMode(false);
+    setSelectionMode(true);
+  };
+
+  const sharedCount = allBookmarkedCandidates?.filter((c) => c?.pocket !== 'PERSONAL')?.length;
 
   return (
     <div className={styles.page}>
       <Header />
       <main className="pt-16 max-w-[1420px] mx-auto px-[22px]">
-        {/* Header */}
+        {/* Title, the slots strip and Search candidates */}
         <BookmarkedCandidatesHeader
-          candidatesCount={filteredCandidates?.length}
-          sortBy={sortBy}
-          onSortChange={setSortBy}
-          onToggleSelectionMode={handleToggleSelectionMode}
-          selectionMode={selectionMode}
+          slots={{
+            used: sharedCount,
+            limit: bookmarkLimit,
+            personalUsed: allBookmarkedCandidates?.filter((c) => c?.pocket === 'PERSONAL' && c?.canRemove)?.length,
+            personalLimit,
+            overflowDeadline
+          }}
           onSearchCandidates={handleSearchCandidates}
-          reorderMode={reorderMode}
-          hasReordered={hasReordered}
-          onToggleReorderMode={handleToggleReorderMode}
-          onSaveOrder={handleSaveOrder}
+          onRemoveSome={handleRemoveSome}
         />
 
         {!loading && allBookmarkedCandidates?.length === 0 ? (
           <EmptyBookmarksState onSearchCandidates={handleSearchCandidates} />
         ) : (
           <>
-            {/* Bookmark Limit Indicator + Filters, as two separate cards */}
-            <div className={`${styles.topRow} ${filtersExpanded ? styles.expanded : ''}`}>
-              <div className={styles.topRowLimit}>
-                <BookmarkLimitIndicator
-                  currentCount={allBookmarkedCandidates?.filter((c) => c?.pocket !== 'PERSONAL')?.length}
-                  maxCount={bookmarkLimit}
-                  personalUsed={allBookmarkedCandidates?.filter((c) => c?.pocket === 'PERSONAL' && c?.canRemove)?.length}
-                  personalLimit={personalLimit}
-                  overflowDeadline={overflowDeadline}
-                  totalCount={allBookmarkedCandidates?.length}
-                  onManageBookmarks={() => { setReorderMode(false); setSelectionMode(true); }}
-                  onSearchCandidates={handleSearchCandidates}
-                  stacked={filtersExpanded}
-                />
-              </div>
+            <BookmarkedCandidatesFilters
+              filters={filters}
+              onFiltersChange={handleFiltersChange}
+              onClearFilters={handleClearFilters}
+              candidates={allBookmarkedCandidates}
+              recruiterOptions={recruiterOptions}
+              savedBy={savedBy}
+              onSavedByChange={setSavedBy}
+            />
 
-              <div className={styles.topRowFilters}>
-                <BookmarkedCandidatesFilters
-                  filters={filters}
-                  onFiltersChange={handleFiltersChange}
-                  onClearFilters={handleClearFilters}
-                  candidatesCount={filteredCandidates?.length}
-                  isExpanded={filtersExpanded}
-                  onToggleExpand={() => setFiltersExpanded((prev) => !prev)}
-                />
-              </div>
-            </div>
+            <BookmarkedResultsBar
+              shown={filteredCandidates?.length}
+              total={allBookmarkedCandidates?.length}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+              reorderMode={reorderMode}
+              hasReordered={hasReordered}
+              onToggleReorderMode={handleToggleReorderMode}
+              onSaveOrder={handleSaveOrder}
+              selectionMode={selectionMode}
+              onToggleSelectionMode={handleToggleSelectionMode}
+            />
 
             {/* Bulk Actions Toolbar */}
             {selectionMode && (

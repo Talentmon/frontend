@@ -31,65 +31,6 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   padding: 26px 0 70px;
 }
 
-.phead {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-
-  h1 {
-    font-size: 1.7rem;
-    color: $ink;
-    display: flex;
-    align-items: center;
-    gap: 0.4em;
-  }
-
-  p {
-    color: $slate;
-    font-size: 0.95rem;
-    margin-top: 3px;
-  }
-}
-
-.count {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 28px;
-  height: 24px;
-  padding: 0 8px;
-  border-radius: 99px;
-  background: $amber-bg;
-  color: $gold-deep;
-  font-size: 0.8rem;
-  font-weight: 700;
-}
-
-.pheadTools {
-  display: flex;
-  gap: 10px;
-  align-items: stretch;
-  flex-wrap: wrap;
-}
-
-.tselect {
-  appearance: none;
-  border: 1.5px solid $line;
-  background: $white;
-  border-radius: $r-sm;
-  padding: 0.62em 2em 0.62em 0.9em;
-  font-size: 0.86rem;
-  font-weight: 500;
-  cursor: pointer;
-  color: $ink;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238693A0' stroke-width='2'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.7em center;
-}
-
 .btnPrimary {
   display: inline-flex;
   align-items: center;
@@ -107,488 +48,685 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 }
 
-.btnOutline {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  background: $white;
-  border: 1.5px solid $line;
-  color: $ink;
-  font-weight: 600;
-  font-size: 0.86rem;
-  border-radius: $r-sm;
-  padding: 0.65em 1em;
-  transition: border-color 0.2s;
-
-  &:hover {
-    border-color: $ink;
-  }
-
-  &.on {
-    background: $ink;
-    color: $gold;
-    border-color: $ink;
-  }
-}
-
-// A step louder than .btnOutline - the drag-to-reorder toggle should read as
-// its own distinct action next to "Select multiple", not blend into it.
-.btnReorder {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  background: $white;
-  border: 1.5px solid $line;
-  color: $ink;
-  font-weight: 600;
-  font-size: 0.86rem;
-  border-radius: $r-sm;
-  padding: 0.75em 1.2em;
-  transition:
-    border-color 0.2s,
-    background-color 0.2s,
-    box-shadow 0.2s;
-
-  svg {
-    color: $gold-deep;
-  }
-
-  &:hover {
-    border-color: $gold-deep;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
-  }
-
-  &.on {
-    background: $ink;
-    color: $gold;
-    border-color: $ink;
-    box-shadow: none;
-
-    svg {
-      color: $gold;
-    }
-  }
-}
-
-// Same weight as .btnOutline, but the hover matches .btnReorder's gold
-// accent so the two toggle buttons next to each other read as a pair.
-.btnSelectMultiple {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  background: $white;
-  border: 1.5px solid $line;
-  color: $ink;
-  font-weight: 600;
-  font-size: 0.86rem;
-  border-radius: $r-sm;
-  padding: 0.65em 1em;
-  transition: border-color 0.2s, box-shadow 0.2s;
-
-  &:hover {
-    border-color: $gold-deep;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
-  }
-
-  &.on {
-    background: $ink;
-    color: $gold;
-    border-color: $ink;
-    box-shadow: none;
-  }
-}
-
-// ===== Limit card =====
-.limit {
+// ===== Header: title + slots strip (left), Search candidates (right) =====
+.phead {
   display: flex;
-  align-items: center;
-  justify-content: space-evenly;
-  gap: 20px;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-  background: $white;
-  border: 1px solid $line;
-  border-radius: $r-lg;
-  padding: 16px 20px;
-  box-shadow: 0 16px 36px -32px rgba(11, 26, 44, 0.4);
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 
-  &.warn {
-    border-color: rgba(230, 169, 60, 0.4);
-  }
-  &.danger {
-    border-color: rgba(207, 75, 75, 0.35);
-  }
-
-  @media (max-width: 560px) {
-    flex-direction: column;
-    text-align: center;
-  }
-
-  &.stacked {
-    flex-direction: column;
-    text-align: center;
-
-    .limitContent h3 {
-      justify-content: center;
-    }
-
-    .limitNote {
-      justify-content: center;
-    }
-
-    .limitActions {
-      justify-content: center;
-    }
-  }
-}
-
-.limitRing {
-  position: relative;
-  flex: none;
-  width: 110px;
-  height: 110px;
-  display: grid;
-  place-items: center;
-
-  .stacked & {
-    width: 200px;
-    height: 200px;
-  }
-
-  circle:last-of-type {
-    transition: stroke-dashoffset 0.5s $ease;
-  }
-}
-
-.limitRingText {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: "JetBrains Mono", monospace;
-  font-weight: 600;
-  font-size: 1.15rem;
-  color: $ink;
-
-  .stacked & {
-    font-size: 2.5rem;
-  }
-
-  b {
-    color: $green;
-    font-size: 1.2em;
-  }
-
-  &.warn b {
-    color: $gold-deep;
-  }
-  &.danger b {
-    color: $red;
-  }
-}
-
-.limitContent {
-  flex: 0 1 auto;
-  min-width: 0;
-
-  h3 {
-    font-size: 1rem;
-    color: $ink;
+  h1 {
+    margin: 0;
     display: flex;
     align-items: center;
-    gap: 0.5em;
-    margin-bottom: 6px;
-    white-space: nowrap;
-  }
-}
-
-.limitNote {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5em;
-  font-size: 0.86rem;
-  color: $slate;
-  margin-bottom: 12px;
-
-  svg {
-    color: $green;
-    flex: none;
-    margin-top: 2px;
-  }
-
-  b {
-    color: $ink;
-  }
-
-  &.danger svg {
-    color: $red;
-  }
-  &.warn svg {
-    color: $gold-deep;
-  }
-}
-
-// Personal-slot lines under the limit note (team members only).
-.limitPersonal {
-  font-size: 0.8rem;
-  color: $slate;
-  margin: -4px 0 10px;
-
-  b {
-    color: $ink;
+    gap: 12px;
+    font-size: 28px;
+    line-height: 34px;
     font-weight: 600;
+    letter-spacing: -0.015em;
+    color: $ink;
   }
 }
 
-.limitActions {
+.pheadMain {
+  min-width: 0;
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// Header size for .btnPrimary; its colours and hover stay as they are.
+.btnSearch {
+  flex: none;
+  height: 44px;
+  padding: 0 20px 0 16px;
+  border-radius: 10px;
+  font-size: 15px;
+}
+
+// ===== Slots strip under the title =====
+// Segment colour and the "left" badge follow the tone: green, gold with 2 or
+// fewer left (.near), red when full (.full).
+// Starts at the page's left edge, in line with the filter bar and the cards.
+.slots {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 8px;
-  width: 100%;
-
-  button {
-    flex: 1;
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-  }
 }
 
-.btnDanger {
+.slotsStrip {
+  --slot-on: #2fa36b;
+  --left-bg: #e7f4ec;
+  --left-fg: #1c6b45;
+
   display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-  background: $red-bg;
-  color: $red;
-  border: 1px solid rgba(207, 75, 75, 0.3);
-  font-weight: 700;
-  font-size: 0.85rem;
-  border-radius: $r-sm;
-  padding: 0.68em 1em;
-  transition: 0.18s;
-
-  &:hover {
-    background: rgba(207, 75, 75, 0.18);
-  }
-}
-
-// ===== Limit + filters row: two separate cards side by side (grid tracks in
-// fr units - limit ~35fr, filters ~65fr) =====
-.topRow {
-  display: grid;
-  grid-template-columns: 35fr 65fr;
-  align-items: stretch;
-  gap: 16px;
-  margin-bottom: 16px;
-  transition: grid-template-columns 0.4s $ease;
-
-  // Expanded: limit column shrinks by 1/3 of its width (35fr -> ~23.33fr) so
-  // the filter grid gets the freed space; both sides animate together.
-  // align-items stays "stretch" so the limit card grows to match the taller
-  // expanded filter card's height.
-  &.expanded {
-    grid-template-columns: 23.3333fr 76.6667fr;
-  }
-
-  @media (max-width: 760px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.topRowLimit {
-  min-width: 0;
-}
-
-.topRowFilters {
-  min-width: 0;
-}
-
-// ===== Filters card =====
-.filters {
-  width: 100%;
-  height: 100%;
+  gap: 6px 14px;
+  min-height: 44px;
   box-sizing: border-box;
+  padding: 5px 6px 5px 16px;
   background: $white;
   border: 1px solid $line;
-  border-radius: $r-lg;
-  box-shadow: 0 16px 36px -32px rgba(11, 26, 44, 0.4);
-  overflow: hidden;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, 0.04);
+
+  &.near {
+    --slot-on: #{$gold};
+    --left-bg: #fdf3e1;
+    --left-fg: #9a6410;
+  }
+
+  &.full {
+    --slot-on: #d14343;
+    --left-bg: #fdecec;
+    --left-fg: #b42318;
+  }
 }
 
-.filtersHead {
-  padding: 20px 16px;
-}
-
-.filtersHeadRow {
+// One segment per slot; thinner past 10 slots so 30 still fits.
+.slotsMeter {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: var(--seg-gap);
+
+  span {
+    width: var(--seg-w);
+    height: 18px;
+    border-radius: 3px;
+    background: #e2e6eb;
+    transition: background-color 0.2s ease;
+  }
+
+  .segOn {
+    background: var(--slot-on);
+  }
 }
 
-.filtersTitle {
+.segWide {
+  --seg-w: 10px;
+  --seg-gap: 3px;
+}
+
+.segMid {
+  --seg-w: 6px;
+  --seg-gap: 2px;
+}
+
+.segThin {
+  --seg-w: 4px;
+  --seg-gap: 2px;
+}
+
+.slotsText {
+  margin: 0;
   display: flex;
-  align-items: center;
-  gap: 0.5em;
-  font-weight: 600;
-  color: $ink;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 20px;
+  color: #475569;
+  white-space: nowrap;
 
-  svg {
-    color: $gold-deep;
-  }
-}
-
-.filtersBadge {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: $gold;
-  color: #241704;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 0.72rem;
-  font-weight: 700;
-}
-
-.filtersHeadActions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.filtersClear {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: $slate;
-  padding: 0.4em 0.6em;
-  border-radius: $r-sm;
-  transition: 0.18s;
-
-  &:hover {
-    background: $mist;
-    color: $ink;
-  }
-}
-
-.filtersToggle {
-  width: 30px;
-  height: 30px;
-  border-radius: $r-sm;
-  display: grid;
-  place-items: center;
-  color: $slate;
-  transition: 0.18s;
-
-  &:hover {
-    background: $mist;
-    color: $ink;
-  }
-
-  svg {
-    transition: transform 0.2s;
-  }
-  &.open svg {
-    transform: rotate(180deg);
-  }
-}
-
-.quickSearch {
-  margin-top: 12px;
-  height: 46px;
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
-  background: $paper;
-  border: 1.5px solid $line;
-  border-radius: $r-sm;
-  padding: 0 0.9em;
-
-  &:focus-within {
-    border-color: $gold;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
-  }
-
-  svg {
-    color: $slate-2;
-    flex: none;
-  }
-
-  input {
-    flex: 1;
-    height: 100%;
-    border: none;
-    outline: none;
-    padding: 0;
-    margin: 0;
-    line-height: 46px;
-    font-size: 0.92rem;
-    background: transparent;
+  strong {
+    font-size: 18px;
+    line-height: 22px;
+    font-weight: 700;
     color: $ink;
 
-    &::placeholder {
+    span {
+      font-size: 14px;
+      font-weight: 500;
       color: $slate-2;
     }
   }
 }
 
-.filtersBody {
+.slotsLeft {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--left-bg);
+  color: var(--left-fg);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.slotsPersonal {
+  font-size: 13px;
+  line-height: 18px;
+  color: #5b6573;
+  white-space: nowrap;
+}
+
+.slotsDivider {
+  width: 1px;
+  height: 22px;
+  background: $line;
+
+  // The strip wraps on a phone; a divider would start the second line.
+  @media (max-width: 560px) {
+    display: none;
+  }
+}
+
+.slotsAction {
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #9a6410;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    background: #fdf3e1;
+    color: #7a4e0a;
+  }
+}
+
+// Past the limit after an ownership transfer.
+.slotsOver {
+  margin: 0;
+  max-width: 640px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: $red-bg;
+  color: $red;
+  font-size: 13px;
+  line-height: 18px;
+
+  svg {
+    flex: none;
+    margin-top: 1px;
+  }
+}
+
+// ===== Filter bar: search, pills, With notes only; chips below =====
+.fbar {
+  position: relative;
+  z-index: 10; // its panels open over the cards
+  margin-bottom: 20px;
+  padding: 14px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 16px;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, 0.04);
+}
+
+.fbarRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.fbarIcon {
+  flex: none;
+  margin: 0 4px 0 2px;
+  color: $gold-deep;
+}
+
+.fbarSearch {
+  position: relative;
+  flex: 1 1 280px;
+  min-width: 240px;
+
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 40px;
+    padding: 0 36px 0 38px;
+    border: 1px solid $line;
+    border-radius: 9px;
+    background: $white;
+    font-family: inherit;
+    font-size: 14px;
+    color: $ink;
+    transition:
+      border-color 0.15s,
+      box-shadow 0.15s;
+
+    &::placeholder {
+      color: $slate-2;
+    }
+
+    &::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+    }
+
+    &:hover,
+    &:focus {
+      outline: none;
+      border-color: $gold;
+      box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
+    }
+  }
+}
+
+.fbarSearchIcon {
+  position: absolute;
+  left: 12px;
+  top: 11px;
+  color: $slate-2;
+  pointer-events: none;
+}
+
+.fbarSearchClear {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  color: $slate-2;
+
+  &:hover {
+    background: $mist;
+    color: $ink;
+  }
+}
+
+.fbarDivider {
+  flex: none;
+  width: 1px;
+  height: 24px;
+  margin: 0 4px;
+  background: $line;
+}
+
+.pill {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 14px;
+  border: 1px solid $line;
+  border-radius: 9px;
+  background: $white;
+  color: $ink;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    box-shadow 0.15s;
+
+  &:hover {
+    border-color: $gold;
+  }
+}
+
+.pillActive {
+  background: #fdf3e1;
+  border-color: $gold;
+  color: #9a6410;
+}
+
+.pillOpen {
+  border-color: $gold;
+  box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
+}
+
+.pillCount {
+  min-width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: $gold;
+  color: #3b2606;
+  font-size: 11px;
+  line-height: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.pillChevron {
+  flex: none;
+  color: $slate-2;
+  transition: transform 0.2s ease;
+
+  [aria-expanded="true"] > & {
+    transform: rotate(180deg);
+  }
+}
+
+// ===== Pill / Sort panels (components/Popover.jsx) =====
+.popRoot {
+  position: relative;
+  flex: none;
+}
+
+.popPanel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  box-sizing: border-box;
+  padding: 4px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px -12px rgba(11, 26, 44, 0.28);
+}
+
+// Panels with fields (Languages, Skills, Salary).
+.popPanelPadded {
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
 }
 
-.filtersSplit {
-  display: flex;
-  align-items: stretch;
-  gap: 20px;
-
-  @media (max-width: 900px) {
-    flex-direction: column;
-    gap: 16px;
-  }
+.popPanelRight {
+  left: auto;
+  right: 0;
 }
 
-.filtersCol {
-  flex: 1 1 0;
-  min-width: 0;
+.popField {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
+  gap: 6px;
 
-.filtersColDivider {
-  width: 1px;
-  flex: none;
-  background: $line;
-
-  @media (max-width: 900px) {
-    width: auto;
-    height: 1px;
+  .fieldLabel {
+    margin-bottom: 0;
   }
 }
 
-.stackedField {
-  margin-top: 10px;
+.menuList {
+  max-height: 280px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd2da transparent;
 }
 
-.salaryRow {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+.menuNote {
+  margin: 0;
+  padding: 10px;
+  font-size: 13px;
+  line-height: 18px;
+  color: #5b6573;
+}
+
+.menuOption {
+  width: 100%;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
   gap: 10px;
-  margin-top: 10px;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: $ink;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  text-align: left;
+
+  &:hover:not(:disabled) {
+    background: #fdf3e1;
+    color: #9a6410;
+  }
+
+  &:disabled {
+    cursor: default;
+    color: $slate-2;
+  }
 }
 
+.menuOptionSub {
+  padding-left: 36px;
+}
+
+.menuOptionStrong {
+  font-weight: 600;
+}
+
+.menuOptionSelected {
+  background: #fdf3e1;
+  color: #9a6410;
+  font-weight: 600;
+}
+
+.menuLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.menuCount {
+  flex: none;
+  font-size: 12px;
+  line-height: 16px;
+  color: $slate-2;
+}
+
+.menuBox {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1.5px solid $gold;
+  background: $white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  svg {
+    opacity: 0;
+  }
+}
+
+.menuBoxRound {
+  border-radius: 50%;
+}
+
+.menuBoxOn {
+  background: $gold;
+
+  svg {
+    opacity: 1;
+  }
+}
+
+.chipsRow {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid $line;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.chipsLabel {
+  margin-right: 4px;
+  font-size: 13px;
+  line-height: 18px;
+  color: #5b6573;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 3px 0 10px;
+  border-radius: 999px;
+  background: #fdf3e1;
+  border: 1px solid #f1d39b;
+  color: #9a6410;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+}
+
+.chipRemove {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #9a6410;
+
+  &:hover {
+    background: #f6e3be;
+  }
+}
+
+.chipsClear {
+  margin-left: 4px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 7px;
+  color: #9a6410;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+
+  &:hover {
+    color: $gold;
+  }
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+// ===== Above the cards: "Showing 4 of 10", Sort, Reorder, Select multiple =====
+.resultsBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.resultsCount {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #475569;
+
+  strong {
+    font-weight: 600;
+    color: $ink;
+  }
+}
+
+.resultsTools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.toolBtn {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid $line;
+  border-radius: 9px;
+  background: $white;
+  color: $ink;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    box-shadow 0.15s;
+
+  svg {
+    color: $slate-2;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: #c9d0d8;
+    background: #f8fafc;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.toolBtnOpen {
+  border-color: $gold;
+  box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
+}
+
+// Reorder / Select multiple while on.
+.toolBtnOn {
+  background: $ink;
+  border-color: $ink;
+  color: $gold;
+
+  svg {
+    color: $gold;
+  }
+
+  &:hover:not(:disabled) {
+    background: $ink-2;
+    border-color: $ink-2;
+  }
+}
+
+.toolBtnMuted {
+  color: #5b6573;
+}
+
+.toolBtnStrong {
+  font-weight: 600;
+}
+
+// Same as Search's filter labels (dashboard.module.scss .fieldLabel).
 .fieldLabel {
   display: block;
-  font-size: 0.82rem;
-  font-weight: 600;
-  color: $ink;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 500;
+  color: #475569;
   margin-bottom: 6px;
 }
 
@@ -606,16 +744,6 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
     height: 17px;
     accent-color: $gold-deep;
     cursor: pointer;
-  }
-}
-
-.filtersFoot {
-  padding-top: 12px;
-  border-top: 1px solid $line;
-
-  p {
-    font-size: 0.86rem;
-    color: $slate;
   }
 }
 

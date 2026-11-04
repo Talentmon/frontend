@@ -16,8 +16,12 @@ export function getBookmarkLimit() {
 }
 
 export function bookmarkToFrontend(row) {
+  const experiences = row.candidate?.experiences || [];
   return {
     ...candidateToFrontend(row.candidate),
+    // From the experience entries, for the industry filter (as in Search).
+    industries: [...new Set(experiences.map((e) => e.industry).filter(Boolean))],
+    subIndustries: [...new Set(experiences.map((e) => e.subIndustry).filter(Boolean))],
     bookmarkId: row.id,
     unlockCost: UNLOCK_COST,
     // { id, text, createdAt, author, editedAt, editedBy }, oldest first — author/editedBy carry `you`.
@@ -26,6 +30,8 @@ export function bookmarkToFrontend(row) {
     bookmarkedDate: new Date(row.bookmarkedAt),
     // Team member who saved it ("Saved by Marko").
     bookmarkedBy: row.bookmarkedBy?.name || '',
+    // Their team-member id, for the "saved by" filter (null for a solo company).
+    bookmarkedById: row.bookmarkedBy?.id || null,
     // PERSONAL bookmarks sit in their bookmarker's own slots — only they can remove them (`canRemove`).
     pocket: row.pocket,
     canRemove: row.canRemove !== false,

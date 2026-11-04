@@ -1,13 +1,16 @@
 // components/ui/Select.jsx - Shadcn style Select
 //
 // The option list is portaled into document.body (position: fixed, placed
-// via the trigger's getBoundingClientRect) instead of being an absolutely
+// via the trigger's getBoundingClientRect, re-read every frame while open -
+// see useTrackedRect) instead of being an absolutely
 // positioned child - some pages (e.g. candidate-profile/edit) wrap this in a
 // card with `overflow: hidden` for rounded corners, which would otherwise
 // clip the list as soon as it grows past the card edge. Near the bottom of
 // the window it opens upward instead, so it never runs off-screen. The list
 // is exactly as wide as the field and a long option wraps to a second line,
-// unless `fitOptions` lets it grow to fit the longest option.
+// unless `fitOptions` lets it grow to fit the longest option. The list
+// carries `data-floating-menu` (as does Combobox's), so a popover holding a
+// Select can tell a click in the list from a click outside itself.
 //
 // Keyboard: ArrowDown/ArrowUp open a closed list; while open they move the
 // highlighted option (Home/End jump to the ends), Enter or Space picks it and
@@ -18,6 +21,7 @@ import { createPortal } from "react-dom";
 import { ChevronDown, Search, X } from "lucide-react";
 import { cn } from "../../utils/cn";
 import Input from "./Input";
+import useTrackedRect from "./useTrackedRect";
 
 // The list is at most max-h-60 (240px) plus padding, and a search box when
 // searchable. Open upward when that won't fit below but there's more room above.
@@ -56,10 +60,11 @@ const Select = React.forwardRef(({
 }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
-    const [rect, setRect] = useState(null);
     const [highlight, setHighlight] = useState(-1);
     const containerRef = useRef(null);
     const boxRef = useRef(null);
+    // Where the field is, kept current every frame while the list is open.
+    const rect = useTrackedRect(boxRef, isOpen);
     const listRef = useRef(null);
     const triggerRef = useRef(null);
     const searchRef = useRef(null);
@@ -168,18 +173,6 @@ const Select = React.forwardRef(({
             window.removeEventListener("ui-select-open", handleOtherSelectOpen);
         };
     }, [isOpen, instanceId]);
-
-    useEffect(() => {
-        if (!isOpen) return undefined;
-        const updateRect = () => setRect(boxRef.current?.getBoundingClientRect() ?? null);
-        updateRect();
-        window.addEventListener("scroll", updateRect, true);
-        window.addEventListener("resize", updateRect);
-        return () => {
-            window.removeEventListener("scroll", updateRect, true);
-            window.removeEventListener("resize", updateRect);
-        };
-    }, [isOpen]);
 
     // A searchable list takes the cursor as soon as it's on screen.
     const listShown = isOpen && !!rect;
@@ -360,6 +353,7 @@ const Select = React.forwardRef(({
                 {isOpen && rect && createPortal(
                     <div
                         ref={listRef}
+                        data-floating-menu=""
                         style={{
                             position: "fixed",
                             ...(opensUp(rect, searchable)

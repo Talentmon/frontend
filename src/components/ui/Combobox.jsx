@@ -18,6 +18,7 @@ import React, { useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "../../utils/cn";
+import useTrackedRect from "./useTrackedRect";
 
 const LIST_HEIGHT = 248;
 const opensUp = (rect) => {
@@ -38,10 +39,11 @@ const Combobox = React.forwardRef(({
 }, ref) => {
     const [isOpen, setIsOpen] = useState(false);
     const [draft, setDraft] = useState("");
-    const [rect, setRect] = useState(null);
     const [highlight, setHighlight] = useState(-1);
     const containerRef = useRef(null);
     const boxRef = useRef(null);
+    // Where the field is, kept current every frame while the list is open.
+    const rect = useTrackedRect(boxRef, isOpen);
     const listRef = useRef(null);
     const instanceId = useId();
     const comboId = id || `combo-${Math.random()?.toString(36)?.substr(2, 9)}`;
@@ -88,18 +90,6 @@ const Combobox = React.forwardRef(({
             window.removeEventListener("ui-select-open", handleOtherOpen);
         };
     }, [isOpen, instanceId]);
-
-    useEffect(() => {
-        if (!isOpen) return undefined;
-        const updateRect = () => setRect(boxRef.current?.getBoundingClientRect() ?? null);
-        updateRect();
-        window.addEventListener("scroll", updateRect, true);
-        window.addEventListener("resize", updateRect);
-        return () => {
-            window.removeEventListener("scroll", updateRect, true);
-            window.removeEventListener("resize", updateRect);
-        };
-    }, [isOpen]);
 
     useEffect(() => {
         if (!isOpen || highlight < 0) return;
@@ -239,6 +229,7 @@ const Combobox = React.forwardRef(({
                 createPortal(
                     <div
                         ref={listRef}
+                        data-floating-menu=""
                         style={{
                             position: "fixed",
                             ...(opensUp(rect)

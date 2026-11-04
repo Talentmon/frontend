@@ -1796,20 +1796,28 @@ $sc-gold: #f0ae2e;
   color: $slate-2;
 }
 
+// One row for the labels and one for the values, shared by all three stats
+// (subgrid), so the values start on the same line even when a narrow card
+// wraps a label or a long salary ("RSD 230,000 / mo").
 .scStats {
   margin-top: 20px;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto auto;
   padding: 14px 0;
   border-radius: 14px;
   background: $sc-soft;
 }
 
+// Label and value share a left edge, and the pair sits centred in its column.
 .scStat {
   min-width: 0;
   padding: 0 16px;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-row: span 2;
+  grid-template-rows: subgrid;
+  justify-content: center;
+  justify-items: start;
   gap: 4px;
 
   & + & {
@@ -1832,6 +1840,18 @@ $sc-gold: #f0ae2e;
   font-weight: 700;
   color: $sc-text;
   overflow-wrap: anywhere;
+}
+
+.scStatAmount {
+  white-space: nowrap;
+}
+
+// "/ mo" after the minimum salary.
+.scStatPer {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: $sc-muted;
+  white-space: nowrap;
 }
 
 // Always one line — SkillsRow (CandidateCard.jsx) drops whatever doesn't fit
@@ -1876,9 +1896,6 @@ $sc-gold: #f0ae2e;
   font-size: 0.86rem;
   font-weight: 500;
   color: $sc-muted;
-  text-decoration: underline;
-  text-underline-offset: 4px;
-  text-decoration-thickness: 1px;
 }
 
 .scDesc {
@@ -2008,6 +2025,7 @@ $sc-gold: #f0ae2e;
   }
 
   .scStat {
+    justify-content: start;
     gap: 2px;
     padding: 0 18px;
 

@@ -22,6 +22,16 @@ export const availabilityLabels = {
 export const formatSalary = (expectedSalary) =>
   formatMoney(expectedSalary?.amount, expectedSalary?.currency);
 
+const SALARY_PERIODS = {
+  month: { short: 'mo', long: 'month' },
+  week: { short: 'wk', long: 'week' },
+  year: { short: 'yr', long: 'year' }
+};
+
+// The period the candidate's minimum is per — "mo" on the cards, "month" in the CV preview.
+export const salaryPeriod = (expectedSalary, form = 'short') =>
+  SALARY_PERIODS?.[expectedSalary?.period]?.[form] || '';
+
 export const jobTypeLabels = {
   'full-time': 'Full-time',
   'part-time': 'Part-time',

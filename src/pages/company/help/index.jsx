@@ -43,7 +43,7 @@ const REQUIRED_FIELDS = [
 const FILTER_GROUPS = [
   { name: 'Basic search', text: 'Position and location' },
   { name: 'Experience & education', text: 'Years of experience and highest education' },
-  { name: 'Salary', text: 'Expected salary range, in the currency you pick' },
+  { name: 'Salary', text: 'Range for the candidate’s minimum salary (net per month), in the currency you pick' },
   { name: 'Skills', text: 'Skill categories and specific skills' },
   { name: 'Languages', text: 'Languages, each with a minimum level' },
   { name: 'Industry', text: 'Industry, then subindustry' },
@@ -205,7 +205,7 @@ const CompanyHelp = () => {
           <p className={styles.heroText}>
             You describe the person you're looking for with filters, see only the candidates who match, and contact
             them yourself. Every candidate here has a profile because they're open to new opportunities. Profiles stay
-            anonymous until you unlock them: you see experience, skills, salary expectations and availability, but not
+            anonymous until you unlock them: you see experience, skills, minimum salary and availability, but not
             the name, photo, contact details or employers. When a profile looks right, unlock it for one Credit and
             reach out.
           </p>
@@ -467,7 +467,7 @@ const CompanyHelp = () => {
                   <div className={styles.seeHide}>
                     <div className={styles.see}>
                       <span className={styles.seeHead}><Icon name="Eye" size={15} />What you see</span>
-                      Status (actively searching or open to offers), position, years of experience, expected salary,
+                      Status (actively searching or open to offers), position, years of experience, minimum salary,
                       location, work arrangement, notice period, top skills and a short summary.
                     </div>
                     <div className={styles.hide}>

@@ -31,7 +31,7 @@ const prefsRows = (d) => {
   return [
     ['Work mode', d.mode],
     ['Type', d.type],
-    ['Expected salary (net)', salary],
+    ['Minimum salary (net)', salary],
     ['Availability', notice],
   ].filter((r) => r[1]);
 };

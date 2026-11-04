@@ -6,7 +6,8 @@ import {
   availabilityLabels,
   jobTypeLabels,
   candidateCode,
-  formatSalary
+  formatSalary,
+  salaryPeriod
 } from '../utils/cvHelpers';
 import styles from '../styles/drawer.module.scss';
 
@@ -113,6 +114,7 @@ const CandidatePreviewDrawer = ({
   const availabilityLabel = candidate?.availability
     ? (availabilityLabels?.[candidate?.availability] || candidate?.availability)
     : candidate?.notice;
+  const salaryPer = salaryPeriod(candidate?.expectedSalary, 'long');
   const isEducationObject = candidate?.education && typeof candidate?.education === 'object';
 
   return (
@@ -192,8 +194,11 @@ const CandidatePreviewDrawer = ({
                   <span className={styles.pv}>{workType}</span>
                 </div>
                 <div className={styles.pref}>
-                  <span className={styles.pl}>Expected Salary</span>
-                  <span className={styles.pv}>{formatSalary(candidate?.expectedSalary)}</span>
+                  <span className={styles.pl}>Minimum Salary (net)</span>
+                  <span className={styles.pv}>
+                    {formatSalary(candidate?.expectedSalary)}
+                    {salaryPer && ` / ${salaryPer}`}
+                  </span>
                 </div>
                 {availabilityLabel && (
                   <div className={styles.pref}>

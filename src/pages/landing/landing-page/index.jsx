@@ -476,7 +476,7 @@ const LandingPage = () => {
                 <h3>Search</h3>
                 <span className="step-num">01</span>
               </div>
-              <p>Filter the pool by skills, seniority, expected salary, location, availability and other — instantly.</p>
+              <p>Filter the pool by skills, seniority, minimum salary, location, availability and other — instantly.</p>
             </div>
             <div className="step fx">
               <div className="step-head">
@@ -582,7 +582,7 @@ const LandingPage = () => {
                   <div><span className="k">Location</span><span className="v">San Francisco, USA</span></div>
                   <div><span className="k">Work mode</span><span className="v">Remote</span></div>
                   <div><span className="k">Type</span><span className="v">Full-time</span></div>
-                  <div><span className="k">Expected salary</span><span className="v gold">€78,000 / year</span></div>
+                  <div><span className="k">Minimum salary (net)</span><span className="v gold">€78,000 / year</span></div>
                   <div><span className="k">Availability</span><span className="v">2 weeks</span></div>
                   <div><span className="k">Status</span><span className="v">Actively searching</span></div>
                 </div>

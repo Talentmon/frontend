@@ -268,7 +268,7 @@ const ForCandidates = () => {
                   <div className="prefs">
                     <div className="pref"><span className="pl">Work mode</span><span className="pv">On-site</span></div>
                     <div className="pref"><span className="pl">Type</span><span className="pv">Full-time</span></div>
-                    <div className="pref"><span className="pl">Expected salary (net)</span><span className="pv">2.000 EUR / week</span></div>
+                    <div className="pref"><span className="pl">Minimum salary (net)</span><span className="pv">2.000 EUR / week</span></div>
                     <div className="pref"><span className="pl">Availability</span><span className="pv">2 weeks</span></div>
                   </div>
                 </div>

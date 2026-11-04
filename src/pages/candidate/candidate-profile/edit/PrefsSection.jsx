@@ -56,7 +56,7 @@ const PrefsSection = ({ sec, open, renaming, onToggleOpen, onStartRename, onRena
         </div>
 
         <div className={`field full${salaryInvalid ? ' invalid' : ''}`}>
-          <label>Expected salary (net)</label>
+          <label>Minimum salary (net)</label>
           <div className="trio">
             <FlagSelect ariaLabel="Currency" value={d.salaryCurrency} onChange={(v) => onChangeData('salaryCurrency', v)} groups={currencyGroups} />
             <input
@@ -70,7 +70,9 @@ const PrefsSection = ({ sec, open, renaming, onToggleOpen, onStartRename, onRena
             />
             <Dropdown ariaLabel="Period" value={d.salaryPeriod} onChange={setValue('salaryPeriod')} options={SALARY_PERIODS} />
           </div>
-          {salaryInvalid && <span className="field-hint error">{salaryValidation.errors[0]}</span>}
+          {salaryInvalid
+            ? <span className="field-hint error">{salaryValidation.errors[0]}</span>
+            : <span className="field-hint">Companies that unlock your profile agree to offer at least this.</span>}
         </div>
 
         <div className="field full">

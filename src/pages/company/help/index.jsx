@@ -535,7 +535,7 @@ const CompanyHelp = () => {
                       { icon: 'X', title: 'Remove', text: 'Takes the candidate off your list.' },
                       { icon: 'Unlock', title: 'Unlock', text: 'Unlock straight from your shortlist.' },
                       { icon: 'Eye', title: 'Preview', text: 'Opens the CV.' },
-                      { icon: 'Pencil', title: 'Notes', text: 'Write down your thoughts on the candidate. Your whole team sees the note.' },
+                      { icon: 'Pencil', title: 'Notes', text: 'Add notes on the candidate. Each shows who wrote it and when; your whole team sees them and can edit them.' },
                     ]}
                   />
                 </div>

@@ -9,7 +9,9 @@ const BookmarkedCandidatesGrid = ({
   onCandidateSelect,
   onRemoveBookmark,
   onUnlockProfile,
-  onUpdateNotes,
+  onAddNote,
+  onEditNote,
+  onDeleteNote,
   onPreviewCandidate,
   activePreviewId = null,
   creditBalance,
@@ -170,7 +172,9 @@ const BookmarkedCandidatesGrid = ({
               candidate={candidate}
               onRemoveBookmark={onRemoveBookmark}
               onUnlockProfile={onUnlockProfile}
-              onUpdateNotes={onUpdateNotes}
+              onAddNote={onAddNote}
+              onEditNote={onEditNote}
+              onDeleteNote={onDeleteNote}
               onPreviewCandidate={onPreviewCandidate}
               isActive={activePreviewId === candidate?.id}
               creditBalance={creditBalance}

@@ -20,7 +20,9 @@ export function bookmarkToFrontend(row) {
     ...candidateToFrontend(row.candidate),
     bookmarkId: row.id,
     unlockCost: UNLOCK_COST,
-    notes: row.notes || '',
+    // { id, text, createdAt, author, editedAt, editedBy }, oldest first — author/editedBy carry `you`.
+    // (A backend from before the note list sends one string; ignore it rather than break the card.)
+    notes: Array.isArray(row.notes) ? row.notes : [],
     bookmarkedDate: new Date(row.bookmarkedAt),
     // Team member who saved it ("Saved by Marko").
     bookmarkedBy: row.bookmarkedBy?.name || '',
@@ -35,8 +37,16 @@ export function removeBookmark(bookmarkId) {
   return apiClient.delete(`/companies/me/bookmarks/${bookmarkId}`).then((r) => r.data);
 }
 
-export function updateBookmarkNotes(bookmarkId, notes) {
-  return apiClient.patch(`/companies/me/bookmarks/${bookmarkId}/notes`, { notes }).then((r) => r.data);
+export function addBookmarkNote(bookmarkId, text) {
+  return apiClient.post(`/companies/me/bookmarks/${bookmarkId}/notes`, { text }).then((r) => r.data);
+}
+
+export function updateNote(noteId, text) {
+  return apiClient.patch(`/companies/me/notes/${noteId}`, { text }).then((r) => r.data);
+}
+
+export function deleteNote(noteId) {
+  return apiClient.delete(`/companies/me/notes/${noteId}`).then((r) => r.data);
 }
 
 export function reorderBookmarks(items) {

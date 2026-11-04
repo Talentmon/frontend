@@ -1,22 +1,47 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
-import Image from 'components/AppImage';
+import {
+  CardAvatar,
+  CardIdentity,
+  CardStats,
+  MatchRing,
+  SkillsRow,
+  StatusBadge
+} from '../../candidate-search-dashboard/components/CandidateCardParts';
 import dashboardStyles from '../../candidate-search-dashboard/styles/dashboard.module.scss';
-import { formatSalary } from '../../candidate-search-dashboard/utils/cvHelpers';
+import { relativeTime, shortDate } from 'utils/formatDate';
 import styles from '../styles/bookmarked.module.scss';
 
-const noticeLabels = {
-  immediately: 'Immediately',
-  '2-weeks': '2 weeks',
-  '1-month': '1 month',
-  '3-months': '3 months'
+// Older notes fold away behind "Show N older notes" past this many.
+const VISIBLE_NOTES = 3;
+
+// "You, just now" / "Mirko, 2 days ago · edited" — after an edit, the editor and the edit time.
+const noteMeta = (note) => {
+  const by = note?.editedAt ? note?.editedBy : note?.author;
+  const when = relativeTime(note?.editedAt || note?.createdAt);
+  const who = by && (by.you ? 'You' : by.name);
+  const meta = who ? `${who}, ${when}` : when.charAt(0).toUpperCase() + when.slice(1);
+  return note?.editedAt ? `${meta} · edited` : meta;
+};
+
+// Ctrl/Cmd+Enter saves, Escape cancels (when there's something to cancel).
+const noteKeys = (onSave, onCancel) => (e) => {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+    e.preventDefault();
+    onSave();
+  } else if (e.key === 'Escape' && onCancel) {
+    e.preventDefault();
+    onCancel();
+  }
 };
 
 const BookmarkedCandidateCard = ({
   candidate,
   onRemoveBookmark,
   onUnlockProfile,
-  onUpdateNotes,
+  onAddNote,
+  onEditNote,
+  onDeleteNote,
   onPreviewCandidate,
   isActive = false,
   creditBalance,
@@ -25,41 +50,52 @@ const BookmarkedCandidateCard = ({
   reorderMode = false,
   selectionMode = false
 }) => {
-  const [notes, setNotes] = useState(candidate?.notes || '');
-  const [isEditingNotes, setIsEditingNotes] = useState(!candidate?.notes);
-  const notesTextareaRef = useRef(null);
+  const notes = candidate?.notes || [];
+  const [draft, setDraft] = useState('');
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [editDraft, setEditDraft] = useState('');
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [showAllNotes, setShowAllNotes] = useState(false);
 
+  // Closing the panel drops a half-done edit and folds the older notes again.
   useEffect(() => {
-    if (isEditingNotes && notesTextareaRef.current) {
-      notesTextareaRef.current.style.minHeight = `${notesTextareaRef.current.offsetHeight}px`;
+    if (isNotesOpen) return;
+    setEditingId(null);
+    setShowAllNotes(false);
+  }, [isNotesOpen]);
+
+  const handleSaveDraft = async () => {
+    const text = draft.trim();
+    if (!text || savingDraft) return;
+    setSavingDraft(true);
+    if (await onAddNote(candidate?.id, text)) setDraft('');
+    setSavingDraft(false);
+  };
+
+  const startEdit = (note) => {
+    setEditingId(note?.id);
+    setEditDraft(note?.text);
+  };
+
+  const cancelEdit = () => setEditingId(null);
+
+  const handleSaveEdit = async (note) => {
+    const text = editDraft.trim();
+    if (!text || savingEdit) return;
+    if (text === note?.text) {
+      setEditingId(null);
+      return;
     }
-  }, [isEditingNotes]);
-
-  const handleNotesChange = (e) => {
-    setNotes(e?.target?.value);
-  };
-
-  const handleSaveNotes = () => {
-    if (!notes.trim()) return;
-    onUpdateNotes(candidate?.id, notes);
-    setIsEditingNotes(false);
-  };
-
-  const handleDeleteNotes = () => {
-    setNotes('');
-    onUpdateNotes(candidate?.id, '');
-    setIsEditingNotes(true);
-  };
-
-  const formatDate = (date) => {
-    return new Date(date)?.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    setSavingEdit(true);
+    if (await onEditNote(candidate?.id, note?.id, text)) setEditingId(null);
+    setSavingEdit(false);
   };
 
   const isUnlocked = !!candidate?.isPurchased;
+  const hasNotes = notes.length > 0;
+  const hiddenNotes = showAllNotes ? 0 : Math.max(0, notes.length - VISIBLE_NOTES);
+  const shownNotes = notes.slice(hiddenNotes);
   // In select mode a click anywhere on the card selects it, so the card's own buttons step aside.
   const mutedClass = selectionMode ? styles.mutedInSelect : '';
   const skipTab = selectionMode ? -1 : undefined;
@@ -67,250 +103,213 @@ const BookmarkedCandidateCard = ({
   const stillClass = reorderMode || selectionMode
     ? `${styles.stillCard} ${!isUnlocked && !isActive ? styles.stillCardPlain : ''}`
     : '';
-
-  const description = candidate?.description || '';
-  const truncatedDesc = description?.length > 300
-    ? `${description?.slice(0, 300)?.trimEnd()}…`
-    : description;
-
-  const workArrangement = candidate?.workArrangement || (candidate?.jobType?.includes('remote') ? 'Remote' : 'On-site');
+  const skills = candidate?.skills || [];
+  const noteFieldId = `note-${candidate?.id}`;
 
   const handlePreviewClick = () => {
     onPreviewCandidate?.(candidate?.id);
   };
 
-  const BlurredText = ({ text, redactedClassName = '', className = '' }) => (
-    isUnlocked
-      ? <span className={className}>{text}</span>
-      : <span className={redactedClassName}></span>
-  );
-
-  const Avatar = ({ size }) => (
-    <div className={dashboardStyles.avatar} style={{ width: size, height: size }}>
-      {!isUnlocked ? (
-        <div className={dashboardStyles.avatarLocked}>
-          <Image src={candidate?.avatar} alt="" className={dashboardStyles.avatarLockedImg} />
-          <span className={dashboardStyles.avatarLockedTint} />
-          <Icon name="Lock" size={size * 0.46} color="#F2C871" className={dashboardStyles.avatarLockedIcon} />
-        </div>
-      ) : (
-        <Image
-          src={candidate?.avatar}
-          alt={candidate?.name}
-          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-        />
-      )}
-    </div>
-  );
-
   return (
-    <article className={`${dashboardStyles.card} ${isUnlocked ? dashboardStyles.unlocked : ''} ${isActive ? dashboardStyles.active : ''} ${stillClass}`}>
-      {/* Top row: saved date (left) + available badge & remove (right) */}
+    <article className={`${dashboardStyles.card} ${dashboardStyles.scCard} ${isUnlocked ? dashboardStyles.unlocked : ''} ${isActive ? dashboardStyles.active : ''} ${stillClass}`}>
+      {/* Top row: who saved it and when (left) + remove (right) */}
       <div className={styles.cardTop}>
-        <span className={`${styles.savedDate} ${reorderMode || selectionMode ? styles.savedDateShifted : ''}`}>
-          Saved {formatDate(candidate?.bookmarkedDate)}{candidate?.bookmarkedBy ? ` by ${candidate.bookmarkedBy}` : ''}
-          {candidate?.pocket === 'PERSONAL' && <span className={styles.personalTag}>Personal</span>}
-        </span>
-
-        <div className={styles.cardTopRight}>
-          {candidate?.availability === 'immediately' && (
-            <span className={styles.availableBadge}>
-              <span className={styles.pulse} />
-              Available immediately
-            </span>
-          )}
-
-          {/* A teammate's personal bookmark: only they can remove it (it can still be unlocked). */}
-          {candidate?.canRemove !== false && (
-            <button
-              onClick={() => onRemoveBookmark(candidate?.id)}
-              className={`${styles.bcRemove} ${mutedClass}`}
-              tabIndex={skipTab}
-              title="Remove from saved"
-              aria-label="Remove from saved"
-            >
-              <Icon name="X" size={16} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Header */}
-      <div className={dashboardStyles.cardHead}>
-        <Avatar size={72} />
-        <div style={{ minWidth: 0 }}>
-          <BlurredText
-            text={candidate?.name}
-            className={dashboardStyles.name}
-            redactedClassName={dashboardStyles.redactedName}
-          />
-          <span className={dashboardStyles.role}>{candidate?.position}</span>
-        </div>
-      </div>
-
-      <div className={dashboardStyles.divider} />
-
-      {/* Facts */}
-      <div className={dashboardStyles.factsGrid}>
-        <div className={dashboardStyles.fact}>
-          <span className={dashboardStyles.factIcon}><Icon name="Calendar" size={16} /></span>
-          <span className={dashboardStyles.factText}>
-            <span className={dashboardStyles.factK}>Experience</span>
-            <span className={dashboardStyles.factV}>{candidate?.experience} yrs</span>
+        <p className={`${styles.savedBy} ${reorderMode || selectionMode ? styles.savedByShifted : ''}`}>
+          <Icon name="Bookmark" size={14} className={styles.savedIcon} />
+          <span>
+            Saved on {shortDate(candidate?.bookmarkedDate)}{candidate?.bookmarkedBy && <> by <strong>{candidate.bookmarkedBy}</strong></>}
           </span>
-        </div>
-        <div className={dashboardStyles.fact}>
-          <span className={dashboardStyles.factIcon}><Icon name="CreditCard" size={16} /></span>
-          <span className={dashboardStyles.factText}>
-            <span className={dashboardStyles.factK}>Salary</span>
-            <span className={dashboardStyles.factV}>{formatSalary(candidate?.expectedSalary)}</span>
-          </span>
-        </div>
-        <div className={dashboardStyles.fact}>
-          <span className={dashboardStyles.factIcon}><Icon name="MapPin" size={16} /></span>
-          <span className={dashboardStyles.factText}>
-            <span className={dashboardStyles.factK}>Location</span>
-            <span className={dashboardStyles.factV}>{candidate?.location}</span>
-          </span>
-        </div>
-        <div className={dashboardStyles.fact}>
-          <span className={dashboardStyles.factIcon}><Icon name="Building2" size={16} /></span>
-          <span className={dashboardStyles.factText}>
-            <span className={dashboardStyles.factK}>Work arrangement</span>
-            <span className={dashboardStyles.factV}>{workArrangement}</span>
-          </span>
-        </div>
-        {candidate?.availability && (
-          <div className={dashboardStyles.fact}>
-            <span className={dashboardStyles.factIcon}><Icon name="Clock" size={16} /></span>
-            <span className={dashboardStyles.factText}>
-              <span className={dashboardStyles.factK}>Notice period</span>
-              <span className={dashboardStyles.factV}>{noticeLabels?.[candidate?.availability] || candidate?.availability}</span>
-            </span>
-          </div>
-        )}
-        {!!candidate?.matchScore && (
-          <div className={dashboardStyles.fact}>
-            <span className={dashboardStyles.factIcon}><Icon name="TrendingUp" size={16} /></span>
-            <span className={dashboardStyles.factText}>
-              <span className={dashboardStyles.factK}>Match</span>
-              <span className={`${dashboardStyles.factV} ${dashboardStyles.factVGold}`}>{candidate?.matchScore}%</span>
-            </span>
-          </div>
+        </p>
+
+        {/* A teammate's personal bookmark: only they can remove it (it can still be unlocked). */}
+        {candidate?.canRemove !== false && (
+          <button
+            onClick={() => onRemoveBookmark(candidate?.id)}
+            className={`${styles.bcRemove} ${mutedClass}`}
+            tabIndex={skipTab}
+            title="Remove from saved"
+            aria-label="Remove from saved"
+          >
+            <Icon name="X" size={18} />
+          </button>
         )}
       </div>
 
-      <div className={dashboardStyles.divider} />
+      {/* Header: avatar, name/role/meta/status, match ring */}
+      <div className={dashboardStyles.scHead}>
+        <CardAvatar candidate={candidate} unlocked={isUnlocked} />
 
-      {/* Skills */}
-      <div className={dashboardStyles.skills}>
-        {candidate?.skills?.slice(0, 4)?.map((skill, index) => (
-          <span key={index} className={dashboardStyles.tag}>{skill}</span>
-        ))}
-        {candidate?.skills?.length > 4 && (
-          <span className={dashboardStyles.moreTag}>+{candidate?.skills?.length - 4}</span>
-        )}
+        <div className={dashboardStyles.scInfo}>
+          <CardIdentity candidate={candidate} unlocked={isUnlocked} />
+          <StatusBadge searchStatus={candidate?.searchStatus} />
+        </div>
+
+        {!!candidate?.matchScore && <MatchRing score={candidate?.matchScore} />}
       </div>
 
-      {description && (
-        <p className={dashboardStyles.desc}>{truncatedDesc}</p>
-      )}
+      <CardStats candidate={candidate} salaryFirst />
+      {skills.length > 0 && <SkillsRow skills={skills} />}
+      <p className={dashboardStyles.scDesc}>{candidate?.description}</p>
 
       {/* Actions */}
-      <div className={`${dashboardStyles.cardActions} ${mutedClass}`}>
+      <div className={`${dashboardStyles.scActions} ${mutedClass}`}>
         {!isUnlocked ? (
           <>
             <button
-              className={dashboardStyles.unlockBtn}
+              className={`${dashboardStyles.scPrimary} ${styles.primaryBtn}`}
               onClick={() => onUnlockProfile(candidate?.id)}
               disabled={creditBalance < candidate?.unlockCost}
               tabIndex={skipTab}
             >
-              <Icon name="Unlock" size={16} />
-              Unlock
+              <Icon name="Unlock" size={18} />
+              Unlock profile
             </button>
             <button
               onClick={handlePreviewClick}
-              className={`${dashboardStyles.previewBtn} ${isActive ? dashboardStyles.active : ''}`}
-              aria-label="View CV"
-              title="View CV"
+              className={`${dashboardStyles.scIconBtn} ${dashboardStyles.scPreviewBtn} ${isActive ? dashboardStyles.active : ''}`}
+              aria-label="Preview CV"
+              title="Preview CV"
               aria-pressed={isActive}
               tabIndex={skipTab}
             >
-              <Icon name="Eye" size={16} />
+              <Icon name="Eye" size={19} />
             </button>
           </>
         ) : (
           <button
-            className={`${dashboardStyles.unlockBtn} ${dashboardStyles.done}`}
+            className={`${dashboardStyles.scPrimary} ${dashboardStyles.done}`}
             onClick={handlePreviewClick}
             tabIndex={skipTab}
           >
-            <Icon name="Eye" size={16} />
+            <Icon name="Eye" size={18} />
             View profile
           </button>
         )}
         <button
           onClick={onToggleNotes}
           tabIndex={skipTab}
-          className={`${dashboardStyles.cardBookmark} ${notes ? dashboardStyles.on : ''}`}
+          className={`${dashboardStyles.scIconBtn} ${dashboardStyles.scSaveBtn} ${hasNotes ? dashboardStyles.on : isNotesOpen ? styles.notesOpen : ''}`}
           title="Notes"
           aria-label="Notes"
           aria-expanded={isNotesOpen}
         >
-          <Icon
-            name="Pencil"
-            size={18}
-            color={notes ? undefined : 'var(--color-muted-foreground)'}
-          />
+          <span className={styles.notesBtnInner}>
+            <Icon name="Pencil" size={18} />
+            {hasNotes && <span className={styles.notesCount}>{notes.length}</span>}
+          </span>
         </button>
       </div>
 
-      {/* Notes panel */}
-      <div className={`${styles.bcNotesWrap} ${isNotesOpen ? styles.open : ''}`}>
-        <div className={styles.bcNotesInner}>
-          <div className={styles.bcNotes}>
-            {isEditingNotes ? (
-              <>
-                <textarea
-                  ref={notesTextareaRef}
-                  tabIndex={skipTab}
-                  value={notes}
-                  onChange={handleNotesChange}
-                  placeholder="Add a note about the candidate..."
-                  className={styles.bcNotesTextarea}
-                  rows={3}
-                />
-                <button
-                  className={styles.bcNotesSave}
-                  tabIndex={skipTab}
-                  onClick={handleSaveNotes}
-                  disabled={!notes.trim()}
-                >
-                  <Icon name="Check" size={14} />
-                  Save
-                </button>
-              </>
-            ) : (
-              <>
-                <p className={styles.bcNotesText}>{notes}</p>
-                <div className={styles.bcNotesActions}>
-                  <button className={styles.bcNotesEdit} onClick={() => setIsEditingNotes(true)} tabIndex={skipTab}>
-                    <Icon name="Pencil" size={13} />
-                    Edit
-                  </button>
-                  <button
-                    className={`${styles.bcNotesDelete} ${styles.tooltip}`}
-                    tabIndex={skipTab}
-                    onClick={handleDeleteNotes}
-                    data-tooltip="Delete note"
-                    aria-label="Delete note"
-                  >
-                    <Icon name="X" size={15} />
-                  </button>
-                </div>
-              </>
+      {/* Notes: a grey band under the card, opened with the pencil */}
+      <div className={`${styles.notesWrap} ${isNotesOpen ? styles.open : ''}`}>
+        <div className={styles.notesInner}>
+          <div className={styles.notesBand}>
+            {notes.length > VISIBLE_NOTES && (
+              <button
+                type="button"
+                className={styles.notesOlder}
+                onClick={() => setShowAllNotes((prev) => !prev)}
+                tabIndex={skipTab}
+              >
+                <Icon name={showAllNotes ? 'ChevronUp' : 'ChevronDown'} size={15} />
+                {showAllNotes
+                  ? 'Hide older notes'
+                  : `Show ${hiddenNotes} older note${hiddenNotes === 1 ? '' : 's'}`}
+              </button>
             )}
+
+            {shownNotes.length > 0 && (
+              <ul aria-label="Notes" className={styles.noteList}>
+                {shownNotes.map((note) => (
+                  <li key={note?.id} className={styles.note}>
+                    {editingId === note?.id ? (
+                      <>
+                        <textarea
+                          value={editDraft}
+                          onChange={(e) => setEditDraft(e?.target?.value)}
+                          onKeyDown={noteKeys(() => handleSaveEdit(note), cancelEdit)}
+                          className={`${styles.noteInput} ${styles.noteInputEdit}`}
+                          aria-label="Edit note"
+                          maxLength={2000}
+                          rows={3}
+                          autoFocus
+                          tabIndex={skipTab}
+                        />
+                        <div className={styles.noteFormFoot}>
+                          <button type="button" className={`${styles.noteCancel} ${styles.small}`} onClick={cancelEdit} tabIndex={skipTab}>
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className={`${styles.noteSave} ${styles.small}`}
+                            onClick={() => handleSaveEdit(note)}
+                            disabled={!editDraft.trim() || savingEdit}
+                            tabIndex={skipTab}
+                          >
+                            <Icon name="Check" size={15} strokeWidth={2.2} />
+                            Save
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <span className={styles.noteText}>{note?.text}</span>
+                        <div className={styles.noteFoot}>
+                          <span className={styles.noteMeta}>{noteMeta(note)}</span>
+                          <span className={styles.noteActions}>
+                            <button
+                              type="button"
+                              className={`${styles.noteAction} ${styles.tooltip}`}
+                              onClick={() => startEdit(note)}
+                              data-tooltip="Edit note"
+                              aria-label="Edit note"
+                              tabIndex={skipTab}
+                            >
+                              <Icon name="Pencil" size={14} />
+                            </button>
+                            <button
+                              type="button"
+                              className={`${styles.noteAction} ${styles.noteDelete} ${styles.tooltip}`}
+                              onClick={() => onDeleteNote(candidate?.id, note?.id)}
+                              data-tooltip="Delete note"
+                              aria-label="Delete note"
+                              tabIndex={skipTab}
+                            >
+                              <Icon name="Trash2" size={14} />
+                            </button>
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            <label htmlFor={noteFieldId} className={styles.noteLabel}>Note</label>
+            <textarea
+              id={noteFieldId}
+              value={draft}
+              onChange={(e) => setDraft(e?.target?.value)}
+              onKeyDown={noteKeys(handleSaveDraft)}
+              placeholder="Add a note about this candidate…"
+              className={styles.noteInput}
+              maxLength={2000}
+              rows={3}
+              tabIndex={skipTab}
+            />
+            <div className={styles.noteFormFoot}>
+              <button
+                type="button"
+                className={styles.noteSave}
+                onClick={handleSaveDraft}
+                disabled={!draft.trim() || savingDraft}
+                tabIndex={skipTab}
+              >
+                <Icon name="Check" size={16} strokeWidth={2.2} />
+                Save note
+              </button>
+            </div>
           </div>
         </div>
       </div>

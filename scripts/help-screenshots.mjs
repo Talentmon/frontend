@@ -230,11 +230,20 @@ const SAVED_FILTERS = [
   { id: 'help-sf-2', name: 'Remote designers', filters: { position: 'Designer', status: 'OPEN' }, createdAt: daysAgo(9), updatedAt: daysAgo(9) },
 ];
 
-const bookmark = (cand, i, notes = null, savedDaysAgo = i + 1) => ({
+const bookmark = (cand, i, note = null, savedDaysAgo = i + 1) => ({
   id: `help-bm-${cand.id}`,
   companyId: 'help-company',
   candidateId: cand.id,
-  notes,
+  notes: note
+    ? [{
+        id: `help-note-${cand.id}`,
+        text: note,
+        createdAt: daysAgo(savedDaysAgo),
+        author: { id: 'help-member', name: 'You', removed: false, you: true },
+        editedAt: null,
+        editedBy: null,
+      }]
+    : [],
   sortIndex: i,
   pocket: 'SHARED',
   bookmarkedByMemberId: 'help-member',

@@ -19,7 +19,9 @@ import {
   getBookmarkLimit,
   bookmarkToFrontend,
   removeBookmark,
-  updateBookmarkNotes,
+  addBookmarkNote,
+  updateNote,
+  deleteNote,
   reorderBookmarks,
   bulkUnlockBookmarks,
   unlockCandidate,
@@ -152,7 +154,7 @@ const BookmarkedCandidatesPage = () => {
 
     // Apply notes filter
     if (filters?.hasNotes) {
-      filtered = filtered?.filter(candidate => candidate?.notes && candidate?.notes?.trim() !== '');
+      filtered = filtered?.filter(candidate => candidate?.notes?.length > 0);
     }
 
     // Apply sorting
@@ -236,14 +238,47 @@ const BookmarkedCandidatesPage = () => {
     }
   };
 
-  const handleUpdateNotes = async (candidateId, notes) => {
+  const updateCandidateNotes = (candidateId, update) => {
+    setAllBookmarkedCandidates((prev) => prev.map((c) => (c?.id === candidateId ? { ...c, notes: update(c?.notes || []) } : c)));
+  };
+
+  // Add and edit wait for the saved note (it carries the id, author and time);
+  // both return whether it worked so the card knows to clear its field.
+  const handleAddNote = async (candidateId, text) => {
     const candidate = allBookmarkedCandidates?.find((c) => c?.id === candidateId);
-    if (!candidate) return;
-    setAllBookmarkedCandidates((prev) => prev.map((c) => (c?.id === candidateId ? { ...c, notes } : c)));
+    if (!candidate) return false;
     try {
-      await updateBookmarkNotes(candidate.bookmarkId, notes);
+      const note = await addBookmarkNote(candidate.bookmarkId, text);
+      updateCandidateNotes(candidateId, (notes) => [...notes, note]);
+      return true;
     } catch {
       showToast('Could not save note — please try again.');
+      return false;
+    }
+  };
+
+  const handleEditNote = async (candidateId, noteId, text) => {
+    try {
+      const note = await updateNote(noteId, text);
+      updateCandidateNotes(candidateId, (notes) => notes.map((n) => (n?.id === noteId ? note : n)));
+      return true;
+    } catch {
+      showToast('Could not save note — please try again.');
+      return false;
+    }
+  };
+
+  const handleDeleteNote = async (candidateId, noteId) => {
+    const removed = allBookmarkedCandidates?.find((c) => c?.id === candidateId)?.notes?.find((n) => n?.id === noteId);
+    if (!removed) return;
+    updateCandidateNotes(candidateId, (notes) => notes.filter((n) => n?.id !== noteId));
+    try {
+      await deleteNote(noteId);
+    } catch {
+      updateCandidateNotes(candidateId, (notes) =>
+        [...notes, removed].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)),
+      );
+      showToast('Could not delete note — please try again.');
     }
   };
 
@@ -415,7 +450,7 @@ const BookmarkedCandidatesPage = () => {
   return (
     <div className={styles.page}>
       <Header />
-      <main className="pt-16 max-w-[1320px] mx-auto px-[22px]">
+      <main className="pt-16 max-w-[1420px] mx-auto px-[22px]">
         {/* Header */}
         <BookmarkedCandidatesHeader
           candidatesCount={filteredCandidates?.length}
@@ -483,7 +518,9 @@ const BookmarkedCandidatesPage = () => {
                 onCandidateSelect={handleCandidateSelect}
                 onRemoveBookmark={handleRemoveBookmark}
                 onUnlockProfile={handleRequestUnlock}
-                onUpdateNotes={handleUpdateNotes}
+                onAddNote={handleAddNote}
+                onEditNote={handleEditNote}
+                onDeleteNote={handleDeleteNote}
                 onPreviewCandidate={handlePreviewCandidate}
                 activePreviewId={previewId}
                 creditBalance={creditBalance}

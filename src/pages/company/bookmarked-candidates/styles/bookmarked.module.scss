@@ -963,7 +963,8 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 // ===== Candidate cards grid =====
 .cgrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  // 444px keeps "Minimum salary" on one line; three of them fit the 1420px page.
+  grid-template-columns: repeat(auto-fill, minmax(min(444px, 100%), 1fr));
   gap: 16px;
   align-items: stretch;
 }
@@ -1100,92 +1101,62 @@ article.stillCardPlain:hover {
   }
 }
 
-// ===== Top row: saved date (left) + available badge & remove (right) =====
+// ===== Card: same design as the search card (dashboard.module.scss sc*) =====
+// Only the bookmark-specific parts live here: the "Saved by" row and the notes band.
+$card-text: #1b2430;
+$card-muted: #5f6b78;
+$card-gold: #f0ae2e;
+
+// Top row: who saved it and when (left) + remove (right)
 .cardTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  min-height: 32px;
+  gap: 12px;
+  min-height: 40px;
+  margin: -8px -8px 16px 0;
 }
 
-.savedDate {
-  font-size: 0.76rem;
-  color: $slate-2;
-  white-space: nowrap;
+.savedBy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.8125rem;
+  line-height: 18px;
+  color: $card-muted;
   margin-left: 0;
   transition: margin-left 0.2s $ease;
 
-  // In reorder mode the drag handle sits on top of the card's top-left
-  // corner (see .dragHandle) - push the date clear of it instead of
-  // letting it get covered.
-  &.savedDateShifted {
+  strong {
+    font-weight: 600;
+    color: $card-text;
+  }
+
+  // In reorder/select mode the drag handle / checkbox sits on the card's
+  // top-left corner (see .dragHandle) - push the line clear of it.
+  &.savedByShifted {
     margin-left: 32px;
   }
 }
 
-// A bookmark sitting in its saver's personal slots — only they can remove it.
-.personalTag {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 1px 7px;
-  border-radius: 99px;
-  background: $amber-bg;
-  color: $gold-deep;
-  font-size: 0.68rem;
-  font-weight: 600;
-  vertical-align: 1px;
-}
-
-.cardTopRight {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.availableBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5em;
-  background: $green-bg;
-  border: 1px solid $green-bd;
-  color: $green;
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 0.4em 0.75em;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-
-.pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #3cc882;
-  animation: bcPulse 2s infinite;
-}
-
-@keyframes bcPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(60, 200, 130, 0.5);
-  }
-  70% {
-    box-shadow: 0 0 0 7px rgba(60, 200, 130, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(60, 200, 130, 0);
-  }
+.savedIcon {
+  flex: none;
+  color: $card-gold;
+  fill: currentColor;
 }
 
 .bcRemove {
-  width: 26px;
-  height: 26px;
-  border-radius: 7px;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
   display: grid;
   place-items: center;
-  color: $slate-2;
-  transition: 0.18s;
-  flex: none;
+  color: $card-muted;
+  transition:
+    background-color 0.18s,
+    color 0.18s;
 
   &:hover {
     background: $red-bg;
@@ -1193,110 +1164,253 @@ article.stillCardPlain:hover {
   }
 }
 
-// ===== Notes panel =====
-// Animated via the grid 0fr -> 1fr trick so the card grows/shrinks smoothly
-// instead of the notes content just popping in/out.
-.bcNotesWrap {
+// Not enough Credits: the gold button stays put instead of lighting up.
+.primaryBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+
+  &:hover {
+    background: $card-gold;
+  }
+}
+
+// Pencil with the notes band open but no notes yet: held in its hover look.
+// Once there are notes it takes the gold .on look instead (dashboard scss).
+button.notesOpen {
+  border-color: $gold;
+}
+
+// Pencil + note count inside the shared grid icon button.
+.notesBtnInner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.notesCount {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+// ===== Notes band =====
+// Bleeds to the card's edges at the bottom. Opens via the grid 0fr -> 1fr
+// trick (with the margins easing along) so the card grows smoothly.
+.notesWrap {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.32s $ease;
+  margin: 0 -24px;
+  transition:
+    grid-template-rows 0.32s $ease,
+    margin 0.32s $ease;
 
   &.open {
     grid-template-rows: 1fr;
+    margin: 20px -24px -24px;
   }
 }
 
-.bcNotesInner {
+// Hidden once closed, so its fields drop out of the tab order.
+.notesInner {
   overflow: hidden;
   min-height: 0;
+  visibility: hidden;
+  transition: visibility 0s 0.32s;
+
+  .open > & {
+    visibility: visible;
+    transition: none;
+  }
 }
 
-.bcNotes {
-  margin-bottom: 13px;
-  margin-top: 10px;
-  padding: 11px;
-  background: $paper;
-  border: 1px solid $line;
-  border-radius: $r-sm;
+.notesBand {
+  padding: 20px 24px 24px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ebef;
+  border-radius: 0 0 19px 19px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.bcNotesTextarea {
-  width: 100%;
-  padding: 8px;
-  font-size: 0.84rem;
-  font-family: inherit;
+.notesOlder {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $card-muted;
+  transition: color 0.18s;
+
+  &:hover {
+    color: $card-text;
+  }
+}
+
+.noteList {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.note {
+  padding: 12px 14px;
   background: $white;
-  border: 1px solid $line;
-  border-radius: $r-sm;
+  border: 1px solid #e3e6eb;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.noteText {
+  font-size: 0.875rem;
+  line-height: 21px;
+  color: $card-text;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.noteFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.noteMeta {
+  font-size: 0.75rem;
+  line-height: 16px;
+  color: $card-muted;
+}
+
+.noteActions {
+  flex: none;
+  display: flex;
+  gap: 2px;
+  margin: -6px -8px -6px 0;
+}
+
+.noteAction {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: $slate-2;
+  transition:
+    background-color 0.18s,
+    color 0.18s;
+
+  &:hover {
+    background: #eef0f3;
+    color: $card-text;
+  }
+
+  &.noteDelete:hover {
+    background: $red-bg;
+    color: $red;
+  }
+}
+
+.noteLabel {
+  font-size: 0.8125rem;
+  line-height: 18px;
+  font-weight: 600;
+  color: $card-text;
+}
+
+.noteInput {
+  width: 100%;
+  box-sizing: border-box;
   resize: vertical;
-  color: $ink;
-  margin-bottom: 8px;
+  min-height: 88px;
+  padding: 12px 14px;
+  border: 1px solid #dde1e6;
+  border-radius: 12px;
+  background: $white;
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 21px;
+  color: $card-text;
+
+  &::placeholder {
+    color: #6b7482;
+  }
 
   &:focus {
     outline: none;
-    border-color: $gold;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
+    border-color: $card-text;
+    box-shadow: 0 0 0 3px rgba(24, 32, 43, 0.1);
+  }
+
+  // Editing inside a note card.
+  &.noteInputEdit {
+    min-height: 72px;
+    padding: 10px 12px;
   }
 }
 
-.bcNotesSave {
+.noteFormFoot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.noteSave {
+  height: 44px;
+  padding: 0 18px;
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #241704;
-  background: $gold;
-  border-radius: 7px;
-  padding: 0.45em 0.9em;
-  transition: 0.18s;
+  gap: 6px;
+  border-radius: 12px;
+  background: $card-text;
+  color: $white;
+  font-size: 0.875rem;
+  line-height: 18px;
+  font-weight: 600;
+  transition:
+    background-color 0.18s,
+    color 0.18s;
 
-  &:hover {
-    background: $gold-2;
+  &:hover:not(:disabled) {
+    background: #2d3846;
   }
 
   &:disabled {
-    opacity: 0.5;
+    background: #e9ecf0;
+    color: #6b7482;
     cursor: not-allowed;
   }
 }
 
-.bcNotesEdit {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  font-size: 0.78rem;
+.noteCancel {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 12px;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: $gold-deep;
-  border: 1px solid $amber-bd;
-  background: $amber-bg;
-  border-radius: 7px;
-  padding: 0.45em 0.9em;
-  transition: 0.18s;
+  color: $card-muted;
+  transition:
+    background-color 0.18s,
+    color 0.18s;
 
   &:hover {
-    color: $gold;
+    background: #eef0f3;
+    color: $card-text;
   }
 }
 
-.bcNotesActions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bcNotesDelete {
-  display: grid;
-  place-items: center;
-  color: $slate-2;
-  background: none;
-  border: none;
-  padding: 0.3em;
-  transition: color 0.18s;
-
-  &:hover {
-    color: #e35b5b;
-  }
+.noteSave.small,
+.noteCancel.small {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 0.8125rem;
 }
 
 .tooltip {
@@ -1350,12 +1464,6 @@ article.stillCardPlain:hover {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
   }
-}
-
-.bcNotesText {
-  font-size: 0.82rem;
-  color: $slate;
-  margin-bottom: 8px;
 }
 
 // ===== Empty states =====

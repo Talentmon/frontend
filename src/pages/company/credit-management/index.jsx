@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import Header from 'components/ui/Header';
 import CreditBalance from './components/CreditBalance';
 import CreditPackages from './components/CreditPackages';
@@ -32,7 +33,11 @@ const CreditManagement = () => {
   // hasCreditHistory is null until the balance loads, false for a company that has never had Credits.
   const { balance: currentBalance, lowBalanceThreshold: lowThreshold, hasCreditHistory } = useCreditBalance();
   const [quickStats, setQuickStats] = useState(null);
-  const [activeTab, setActiveTab] = useState('overview');
+  // ?tab=analytics — Purchased's "View analytics" link opens straight on that tab.
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => (
+    ['overview', 'purchase', 'history', 'analytics', 'settings', 'payment'].includes(searchParams.get('tab')) ? searchParams.get('tab') : 'overview'
+  ));
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [purchaseResult, setPurchaseResult] = useState(null);

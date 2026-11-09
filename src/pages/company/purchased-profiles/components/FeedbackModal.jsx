@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Select from 'components/ui/Select';
 import styles from '../styles/purchased.module.scss';
 
@@ -20,6 +20,14 @@ const FeedbackModal = ({
 
   const [feedback, setFeedback] = useState(emptyFeedback);
   const [hoverRating, setHoverRating] = useState(0);
+
+  // Each opening starts clean for this candidate; "Position hired for" from their "Hiring for", if set.
+  useEffect(() => {
+    if (!isOpen) return;
+    setFeedback({ ...emptyFeedback, position: candidateProfile?.hiringFor || '' });
+    setHoverRating(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, candidateProfile?.id]);
 
   const handleInputChange = (field, value) => {
     setFeedback(prev => ({

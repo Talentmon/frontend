@@ -1,12 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useSearchParams } from 'react-router-dom';
 import Header from 'components/ui/Header';
 import Icon from 'components/AppIcon';
-import Select from 'components/ui/Select';
 import PurchasedProfileCard from './components/PurchasedProfileCard';
 import PurchasedProfilesTable from './components/PurchasedProfilesTable';
-import PurchaseHistorySidebar from './components/PurchaseHistorySidebar';
+import PurchasedHeader from './components/PurchasedHeader';
+import PipelineCard from './components/PipelineCard';
+import PurchasedFilters, { AttentionChip } from './components/PurchasedFilters';
+import { ListSearch } from '../candidate-filters/CandidateFilterBar';
+import { CV_PUSH_BREAKPOINT, useMinWidth } from '../candidate-filters/cvLayout';
+import PurchasedFilterSidebar from './components/PurchasedFilterSidebar';
+import PurchasedResultsBar from './components/PurchasedResultsBar';
 import FeedbackModal from './components/FeedbackModal';
 import CandidatePreviewDrawer from '../candidate-search-dashboard/components/CandidatePreviewDrawer';
 import { downloadCandidateCv, printCandidateCv } from 'utils/downloadCv';
@@ -14,10 +19,18 @@ import {
   listPurchases,
   purchaseToFrontend,
   updatePurchaseStatus,
-  updatePurchaseNotes,
+  updatePurchaseHiringFor,
+  addPurchaseNote,
+  updateNote,
+  deleteNote,
   createHire,
   buildAnalytics,
+  buildPipeline,
+  attentionList,
+  STATUS_KEYS,
 } from './purchasesApi';
+import { DEFAULT_SORT, EMPTY_FILTERS, activeFilterCount, applyFilters, sortProfiles } from './purchasedFilters';
+import cf from '../candidate-filters/candidateFilters.module.scss';
 import styles from './styles/purchased.module.scss';
 
 // Matches the drawer's own slide transition (.34s) so the scroll-to-center
@@ -25,18 +38,16 @@ import styles from './styles/purchased.module.scss';
 // settling into place.
 const LAYOUT_SETTLE_MS = 360;
 
-// ?status=new — the Analytics tab's "still at New" notice links straight to that filter.
-const LINKABLE_STATUSES = ['new', 'contacted', 'interviewed', 'hired', 'rejected'];
-
 const PurchasedProfiles = () => {
   const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState('cards');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState(() => {
+  // ?status=new — the Analytics tab's "still at New" notice links straight to that filter.
+  const [filters, setFilters] = useState(() => {
     const status = searchParams.get('status');
-    return LINKABLE_STATUSES.includes(status) ? status : '';
+    return STATUS_KEYS.includes(status) ? { ...EMPTY_FILTERS, statuses: [status] } : EMPTY_FILTERS;
   });
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [sortBy, setSortBy] = useState(DEFAULT_SORT);
+  const isPushWide = useMinWidth(CV_PUSH_BREAKPOINT);
   const [feedbackModal, setFeedbackModal] = useState({ isOpen: false, candidate: null });
   const [notification, setNotification] = useState(null);
   const [previewId, setPreviewId] = useState(null);
@@ -52,40 +63,40 @@ const PurchasedProfiles = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // Purchase history mirrors the live recruitment status of each purchased profile,
-  // so it stays in sync with status changes made from the cards/table.
-  const purchaseHistory = [...purchasedProfiles]
-    ?.sort((a, b) => b?.unlockedDate - a?.unlockedDate)
-    ?.map((p) => ({
-      candidateName: p?.name,
-      position: p?.position,
-      date: p?.unlockedDate,
-      status: p?.recruitmentStatus
-    }));
+  const analytics = useMemo(() => buildAnalytics(purchasedProfiles), [purchasedProfiles]);
+  const visibleProfiles = useMemo(
+    () => sortProfiles(applyFilters(purchasedProfiles, filters), sortBy),
+    [purchasedProfiles, filters, sortBy]
+  );
+  // The pipeline follows every filter but its own stage; "Needs attention" only the position.
+  const pipeline = useMemo(
+    () => buildPipeline(applyFilters(purchasedProfiles, { ...filters, statuses: [], attention: false })),
+    [purchasedProfiles, filters]
+  );
+  const attention = useMemo(
+    () => attentionList(filters.hiringFor.length ? purchasedProfiles.filter((p) => filters.hiringFor.includes(p?.hiringFor)) : purchasedProfiles),
+    [purchasedProfiles, filters.hiringFor]
+  );
+  // Positions already in use, offered when setting "Hiring for".
+  const positionSuggestions = useMemo(
+    () => [...new Set(purchasedProfiles.map((p) => p?.hiringFor).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
+    [purchasedProfiles]
+  );
+  const isFiltered = activeFilterCount(filters) > 0 || !!filters.search.trim();
 
-  const creditAnalytics = buildAnalytics(purchasedProfiles);
+  // One stage and one position at a time ('' = all).
+  const setStage = (stage) => setFilters((prev) => ({ ...prev, statuses: stage ? [stage] : [], attention: false }));
+  const setPosition = (position) => setFilters((prev) => ({ ...prev, hiringFor: position ? [position] : [] }));
+  // Review: exactly the candidates who need a follow-up (other filters stay), the longest waiting first.
+  const reviewAttention = () => {
+    setFilters((prev) => ({ ...prev, statuses: [], attention: true }));
+    setSortBy('waiting-desc');
+  };
+  const clearFilters = () => setFilters(EMPTY_FILTERS);
 
-  const statusOptions = [
-    { value: '', label: 'All statuses' },
-    { value: 'new', label: 'New' },
-    { value: 'contacted', label: 'Contacted' },
-    { value: 'interviewed', label: 'Interviewed' },
-    { value: 'hired', label: 'Hired' },
-    { value: 'rejected', label: 'Rejected' }
-  ];
-
-  // Filter profiles based on search and status
-  const filteredProfiles = purchasedProfiles?.filter(profile => {
-    const matchesSearch = !searchTerm ||
-      profile?.name?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-      profile?.position?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-      profile?.company?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-      profile?.skills?.some(skill => skill?.toLowerCase()?.includes(searchTerm?.toLowerCase()));
-
-    const matchesStatus = !statusFilter || profile?.recruitmentStatus === statusFilter;
-
-    return matchesSearch && matchesStatus;
-  });
+  const updateProfile = (profileId, changes) => {
+    setPurchasedProfiles((prev) => prev?.map((p) => (p?.id === profileId ? { ...p, ...(typeof changes === 'function' ? changes(p) : changes) } : p)));
+  };
 
   const showNotification = (message, type = 'success') => {
     setNotification({ message, type });
@@ -102,36 +113,78 @@ const PurchasedProfiles = () => {
 
     const purchase = purchasedProfiles?.find((p) => p?.id === profileId);
     if (!purchase) return;
-    const previousStatus = purchase.recruitmentStatus;
+    const { recruitmentStatus: previousStatus, statusChangedAt: previousChangedAt } = purchase;
 
-    setPurchasedProfiles((prev) =>
-      prev?.map((p) => (p?.id === profileId ? { ...p, recruitmentStatus: newStatus } : p))
-    );
+    updateProfile(profileId, { recruitmentStatus: newStatus, statusChangedAt: new Date() });
 
     try {
       await updatePurchaseStatus(purchase.purchaseId, newStatus);
       showNotification('Candidate status successfully updated');
     } catch {
-      setPurchasedProfiles((prev) =>
-        prev?.map((p) => (p?.id === profileId ? { ...p, recruitmentStatus: previousStatus } : p))
-      );
+      updateProfile(profileId, { recruitmentStatus: previousStatus, statusChangedAt: previousChangedAt });
       showNotification('Could not update status — please try again.', 'error');
     }
   };
 
-  const handleContactCopy = (contactInfo) => {
-    showNotification(`Contact info copied: ${contactInfo}`);
+  const handleSaveHiringFor = async (profileId, text) => {
+    const purchase = purchasedProfiles?.find((p) => p?.id === profileId);
+    if (!purchase) return false;
+    try {
+      await updatePurchaseHiringFor(purchase.purchaseId, text);
+      updateProfile(profileId, { hiringFor: text });
+      // A cleared position can't stay picked in the filter.
+      if (!text && purchase.hiringFor) {
+        const stillUsed = purchasedProfiles.some((p) => p?.id !== profileId && p?.hiringFor === purchase.hiringFor);
+        if (!stillUsed) setFilters((prev) => ({ ...prev, hiringFor: prev.hiringFor.filter((v) => v !== purchase.hiringFor) }));
+      }
+      return true;
+    } catch {
+      showNotification('Could not save the position — please try again.', 'error');
+      return false;
+    }
   };
 
-  const handleUpdateNotes = async (profileId, notes) => {
+  const updateProfileNotes = (profileId, update) => {
+    updateProfile(profileId, (p) => ({ notes: update(p?.notes || []) }));
+  };
+
+  // Same as on Bookmarked: add and edit wait for the saved note (it carries the
+  // id, author and time) and return whether it worked so the card clears its field.
+  const handleAddNote = async (profileId, text) => {
     const purchase = purchasedProfiles?.find((p) => p?.id === profileId);
-    if (!purchase) return;
-    setPurchasedProfiles((prev) => prev?.map((p) => (p?.id === profileId ? { ...p, notes } : p)));
+    if (!purchase) return false;
     try {
-      await updatePurchaseNotes(purchase.purchaseId, notes);
-      showNotification('Note saved');
+      const note = await addPurchaseNote(purchase.purchaseId, text);
+      updateProfileNotes(profileId, (notes) => [...notes, note]);
+      return true;
     } catch {
       showNotification('Could not save note — please try again.', 'error');
+      return false;
+    }
+  };
+
+  const handleEditNote = async (profileId, noteId, text) => {
+    try {
+      const note = await updateNote(noteId, text);
+      updateProfileNotes(profileId, (notes) => notes.map((n) => (n?.id === noteId ? note : n)));
+      return true;
+    } catch {
+      showNotification('Could not save note — please try again.', 'error');
+      return false;
+    }
+  };
+
+  const handleDeleteNote = async (profileId, noteId) => {
+    const removed = purchasedProfiles?.find((p) => p?.id === profileId)?.notes?.find((n) => n?.id === noteId);
+    if (!removed) return;
+    updateProfileNotes(profileId, (notes) => notes.filter((n) => n?.id !== noteId));
+    try {
+      await deleteNote(noteId);
+    } catch {
+      updateProfileNotes(profileId, (notes) =>
+        [...notes, removed].sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)),
+      );
+      showNotification('Could not delete note — please try again.', 'error');
     }
   };
 
@@ -174,9 +227,13 @@ const PurchasedProfiles = () => {
         ratingOverall: feedback?.rating,
         comments: feedback?.comments,
       });
-      setPurchasedProfiles((prev) =>
-        prev?.map((p) => (p?.id === profileId ? { ...p, recruitmentStatus: 'hired', hire } : p))
-      );
+      // The backend fills an empty "Hiring for" with the position hired for.
+      updateProfile(profileId, (p) => ({
+        recruitmentStatus: 'hired',
+        statusChangedAt: new Date(),
+        hiringFor: p?.hiringFor || feedback?.position?.trim() || '',
+        hire,
+      }));
       showNotification('Feedback submitted successfully. Thank you for your input!');
     } catch (err) {
       showNotification(err?.response?.data?.message || 'Could not submit feedback — please try again.', 'error');
@@ -192,6 +249,102 @@ const PurchasedProfiles = () => {
   // makes sense for the card grid — a table has no comfortable narrower form,
   // so table view always stays overlay+scrim instead (see forceOverlay below).
   const isCardsPreviewOpen = previewId !== null && viewMode === 'cards';
+  // CV open beside the cards (as on Search): the filters in a column on the
+  // left, the search, Sort and the cards (448px) beside it.
+  const isCompact = isCardsPreviewOpen && isPushWide;
+  const hasProfiles = purchasedProfiles.length > 0;
+
+  // The cards (or table) with the results bar; beside an open CV the search and
+  // the Needs attention chip come along above them.
+  const results = (
+    <div className={`${styles.layout} ${isCardsPreviewOpen ? styles.previewOpen : ''}`}>
+      {hasProfiles && isCompact && (
+        <>
+          <ListSearch
+            id="pp-search"
+            label="Search unlocked candidates"
+            placeholder="Name, email, phone, skills, notes…"
+            className={cf.cvSearch}
+            value={filters.search}
+            onChange={(value) => setFilters((prev) => ({ ...prev, search: value }))}
+          />
+          <AttentionChip filters={filters} onFiltersChange={setFilters} className={cf.cvChips} />
+        </>
+      )}
+      {hasProfiles && (
+        <PurchasedResultsBar
+          shown={visibleProfiles.length}
+          total={purchasedProfiles.length}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
+          compact={isCompact}
+        />
+      )}
+
+      {/* Content */}
+      {viewMode === 'cards' ? (
+        <div className={`${styles.cgrid} ${isCardsPreviewOpen ? styles.previewOpen : ''}`}>
+          {visibleProfiles.map((profile) => (
+            <PurchasedProfileCard
+              key={profile?.id}
+              ref={(el) => { cardRefs.current[profile?.id] = el; }}
+              profile={profile}
+              isActive={previewId === profile?.id}
+              onStatusChange={handleStatusChange}
+              onCvDownload={handleCvDownload}
+              onViewDetails={handleViewDetails}
+              onAddNote={handleAddNote}
+              onEditNote={handleEditNote}
+              onDeleteNote={handleDeleteNote}
+              onSaveHiringFor={handleSaveHiringFor}
+              positionSuggestions={positionSuggestions}
+            />
+          ))}
+        </div>
+      ) : (
+        <PurchasedProfilesTable
+          profiles={visibleProfiles}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          positionSuggestions={positionSuggestions}
+          onSaveHiringFor={handleSaveHiringFor}
+          onStatusChange={handleStatusChange}
+          onCvDownload={handleCvDownload}
+          onViewDetails={handleViewDetails}
+          onAddNote={handleAddNote}
+          onEditNote={handleEditNote}
+          onDeleteNote={handleDeleteNote}
+          activePreviewId={previewId}
+        />
+      )}
+
+      {/* Empty states: nothing unlocked yet, or nothing left after the filters */}
+      {!loading && !hasProfiles && (
+        <div className={styles.emptyState}>
+          <Icon name="Search" size={48} />
+          <h3>No unlocked profiles</h3>
+          <p>Unlocked profiles will appear here after purchase</p>
+          <button className={styles.textBtn} onClick={() => window.location.href = '/candidate-search-dashboard'}>
+            <Icon name="Search" size={14} />Search candidates
+          </button>
+        </div>
+      )}
+      {!loading && hasProfiles && visibleProfiles.length === 0 && (
+        <div className={styles.noMatch}>
+          <Icon name="Filter" size={28} strokeWidth={1.9} className={styles.noMatchIcon} />
+          <p className={styles.noMatchTitle}>No purchased profiles match these filters</p>
+          <p className={styles.noMatchText}>
+            {isFiltered ? 'Remove a filter or start over.' : 'Try a different search.'}
+          </p>
+          <button type="button" className={styles.noMatchBtn} onClick={clearFilters}>
+            Clear filters
+          </button>
+        </div>
+      )}
+    </div>
+  );
 
   return (
     <>
@@ -202,172 +355,65 @@ const PurchasedProfiles = () => {
       <div className={`${styles.page} ${isCardsPreviewOpen ? styles.previewOpen : ''}`}>
         <Header />
 
-        <main className="pt-16 max-w-[1320px] mx-auto px-[22px]">
-          <div className={styles.head}>
-            <h1>Purchased Profiles</h1>
-            <p>Manage your unlocked candidates and track the recruitment process</p>
-          </div>
+        <main className={`pt-16 max-w-[1420px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
+          {isCompact ? (
+            <header className={cf.cvTitle}>
+              <h1>Purchased Profiles</h1>
+            </header>
+          ) : (
+            <PurchasedHeader analytics={analytics} />
+          )}
 
-          <div className={`${styles.layout} ${isCardsPreviewOpen ? styles.previewOpen : ''}`}>
-            <div>
-              {/* Stats — collapses away while the drawer pushes this column
-                  down to 470px, since the 4-up grid has no room there. */}
-              <div className={`${styles.statsWrap} ${isCardsPreviewOpen ? styles.collapsed : ''}`}>
-                <div className={styles.statsWrapInner}>
-                  <div className={styles.stats}>
-                    <div className={styles.stat}>
-                      <span className={`${styles.statIcon} ${styles.b1}`}>
-                        <Icon name="Users" size={20} />
-                      </span>
-                      <div>
-                        <div className={styles.statN}>{purchasedProfiles?.length}</div>
-                        <div className={styles.statL}>Profiles unlocked</div>
-                      </div>
-                    </div>
-
-                    <div className={styles.stat}>
-                      <span className={`${styles.statIcon} ${styles.b2}`}>
-                        <Icon name="UserCheck" size={20} />
-                      </span>
-                      <div>
-                        <div className={styles.statN}>
-                          {purchasedProfiles?.filter(p => p?.recruitmentStatus === 'hired')?.length}
-                        </div>
-                        <div className={styles.statL}>Hired</div>
-                      </div>
-                    </div>
-
-                    <div className={styles.stat}>
-                      <span className={`${styles.statIcon} ${styles.b3}`}>
-                        <Icon name="MessageCircle" size={20} />
-                      </span>
-                      <div>
-                        <div className={styles.statN}>
-                          {purchasedProfiles?.filter(p => ['contacted', 'interviewed']?.includes(p?.recruitmentStatus))?.length}
-                        </div>
-                        <div className={styles.statL}>In progress</div>
-                      </div>
-                    </div>
-
-                    <div className={styles.stat}>
-                      <span className={`${styles.statIcon} ${styles.b4}`}>
-                        <Icon name="Coins" size={20} />
-                      </span>
-                      <div>
-                        <div className={styles.statN}>
-                          {purchasedProfiles?.reduce((sum, p) => sum + p?.creditsCost, 0)}
-                        </div>
-                        <div className={styles.statL}>Credits spent</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Toolbar — search breaks onto its own row above the status
-                  filter/view toggle once the drawer squeezes this column
-                  down to 470px, so nothing gets cramped side by side. */}
-              <div className={`${styles.toolbar} ${isCardsPreviewOpen ? styles.previewOpen : ''}`}>
-                <div className={styles.search}>
-                  <Icon name="Search" size={17} />
-                  <input
-                    type="search"
-                    placeholder="Search by name, position, company, or skills..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e?.target?.value)}
-                  />
-                </div>
-                <Select value={statusFilter} onChange={setStatusFilter} placeholder="All statuses" options={statusOptions} />
-                <div className={styles.viewtoggle}>
-                  <button
-                    className={`${styles.viewtoggleBtn} ${viewMode === 'cards' ? styles.on : ''}`}
-                    onClick={() => setViewMode('cards')}
-                    aria-label="Cards"
-                  >
-                    <Icon name="Grid3X3" size={17} />
-                  </button>
-                  <button
-                    className={`${styles.viewtoggleBtn} ${viewMode === 'table' ? styles.on : ''}`}
-                    onClick={() => setViewMode('table')}
-                    aria-label="Table"
-                  >
-                    <Icon name="List" size={17} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Content */}
-              {viewMode === 'cards' ? (
-                <div className={`${styles.cgrid} ${isCardsPreviewOpen ? styles.previewOpen : ''}`}>
-                  {filteredProfiles?.map((profile) => (
-                    <PurchasedProfileCard
-                      key={profile?.id}
-                      ref={(el) => { cardRefs.current[profile?.id] = el; }}
-                      profile={profile}
-                      isActive={previewId === profile?.id}
-                      onStatusChange={handleStatusChange}
-                      onContactCopy={handleContactCopy}
-                      onCvDownload={handleCvDownload}
-                      onViewDetails={handleViewDetails}
-                      onUpdateNotes={handleUpdateNotes}
-                    />
-                  ))}
-                </div>
-              ) : (
-                <PurchasedProfilesTable
-                  profiles={filteredProfiles}
-                  onStatusChange={handleStatusChange}
-                  onContactCopy={handleContactCopy}
-                  onCvDownload={handleCvDownload}
-                  onViewDetails={handleViewDetails}
-                  onUpdateNotes={handleUpdateNotes}
-                  activePreviewId={previewId}
+          {/* Pipeline — folds away while the CV drawer pushes the page aside. */}
+          {hasProfiles && (
+            <div className={`${styles.statsWrap} ${isCardsPreviewOpen ? styles.collapsed : ''}`}>
+              <div className={styles.statsWrapInner}>
+                <PipelineCard
+                  pipeline={pipeline}
+                  attention={attention}
+                  stages={filters.statuses}
+                  onStageChange={setStage}
+                  position={filters.hiringFor[0] || ''}
+                  positions={analytics.byPosition}
+                  onPositionChange={setPosition}
+                  onReviewAttention={reviewAttention}
                 />
-              )}
-
-              {/* Empty State */}
-              {!loading && filteredProfiles?.length === 0 && (
-                <div className={styles.emptyState}>
-                  <Icon name="Search" size={48} />
-                  <h3>{searchTerm || statusFilter ? 'No results' : 'No unlocked profiles'}</h3>
-                  <p>
-                    {searchTerm || statusFilter
-                      ? 'Try different search criteria' : 'Unlocked profiles will appear here after purchase'
-                    }
-                  </p>
-                  {!searchTerm && !statusFilter && (
-                    <button className={styles.textBtn} onClick={() => window.location.href = '/candidate-search-dashboard'}>
-                      <Icon name="Search" size={14} />Search candidates
-                    </button>
-                  )}
-                </div>
-              )}
+              </div>
             </div>
+          )}
 
-            {/* Purchase History Sidebar */}
-            <PurchaseHistorySidebar
-              purchaseHistory={purchaseHistory}
-              creditAnalytics={creditAnalytics}
-              isCollapsed={isSidebarCollapsed}
-              onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+          {hasProfiles && !isCompact && (
+            <PurchasedFilters
+              filters={filters}
+              onFiltersChange={setFilters}
+              onClearFilters={clearFilters}
+              profiles={purchasedProfiles}
             />
-          </div>
+          )}
+
+          {isCompact ? (
+            <div className={cf.cvLayout}>
+              <div className={cf.cvSide}>
+                <PurchasedFilterSidebar filters={filters} onFiltersChange={setFilters} profiles={purchasedProfiles} />
+              </div>
+              <div className={cf.cvResults}>{results}</div>
+            </div>
+          ) : results}
         </main>
 
-        {/* CV preview drawer — enters from the left (mirror of the search
-            dashboard's right-hand drawer) since results sit to its right
-            here. Every profile is already purchased, so it always renders
+        {/* CV preview drawer — enters from the right, as on Search, with the
+            cards column packed against it. Every profile is already purchased, so it always renders
             fully unlocked (no anonymity banner) with send-mail/print actions
-            instead of bookmark/unlock. */}
+            instead of bookmark/unlock. It gets every unlocked candidate, not
+            just the filtered ones, so filtering beside an open CV keeps it open. */}
         <CandidatePreviewDrawer
-          candidates={filteredProfiles}
+          candidates={purchasedProfiles}
           activeId={previewId}
           onClose={handleClosePreview}
-          purchasedCandidates={filteredProfiles?.map((p) => p?.id)}
+          purchasedCandidates={purchasedProfiles.map((p) => p?.id)}
           onPrint={handleCvPrint}
-          side="left"
           variant="purchased"
-          pushBreakpoint={1320}
+          pushBreakpoint={CV_PUSH_BREAKPOINT}
           forceOverlay={viewMode === 'table'}
         />
 

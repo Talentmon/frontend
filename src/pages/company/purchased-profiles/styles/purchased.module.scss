@@ -1,6 +1,7 @@
 // Gold/ink theme for the purchased-profiles page.
 // Scoped via CSS Modules so it can't leak into the rest of the Tailwind-based app.
 @use "sass:color";
+@use "sass:list";
 
 $ink: #0b1a2c;
 $ink-2: #10243a;
@@ -29,83 +30,45 @@ $r-sm: 9px;
 $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 $drawer-w: 45vw;
 // Push mode (the CV drawer squeezes the page instead of floating over it)
-// needs the single-column card floor (330px) + the 312px analytics sidebar
-// to fit in the remaining 55% of the page: 0.55 * $push-bp >= 22+330+22+312+22,
-// so anything narrower falls back to overlay mode instead of clipping the
-// sidebar behind the drawer. Kept separate from the search dashboard's own
-// $push-bp (1520px) since this page's layout has no filter sidebar to
-// account for and can push at a narrower width.
-$push-bp: 1320px;
+// needs the filters (at least 256px) and a 448px card side by side in the
+// remaining 55% of the page: 0.55 * $push-bp >= 22+256+22+448+22, so anything
+// narrower falls back to overlay mode. Search pushes from 1520px, where its
+// 320px filters fit; here the filters column shrinks down to 256px first.
+// Same value as CV_PUSH_BREAKPOINT in candidate-filters/cvLayout.js.
+$push-bp: 1400px;
 
 // ===== Page shell =====
 .page {
   background: $paper;
   min-height: 100vh;
   padding: 26px 0 70px;
-  transition: padding-left 0.34s $ease;
+  transition: padding-right 0.34s $ease;
 
-  // Wide screens: the CV preview drawer pushes the page content right
-  // instead of overlaying it — mirrors dashboard.module.scss's push mode,
-  // but this drawer slides in from the left, so the analytics sidebar on
-  // the right never has to move.
+  // Wide screens: the CV preview drawer (from the right, as on Search) pushes
+  // the page content left instead of overlaying it — dashboard.module.scss's push mode.
   @media (min-width: $push-bp) {
     &.previewOpen {
-      padding-left: $drawer-w;
+      padding-right: $drawer-w;
     }
   }
 }
 
-.head {
-  margin-bottom: 20px;
-
-  h1 {
-    font-size: 1.7rem;
-    color: $ink;
-  }
-
-  p {
-    color: $slate;
-    font-size: 0.95rem;
-    margin-top: 3px;
-  }
-}
-
+// The results bar and the cards or table. min-width: 0 lets a wide table
+// scroll inside its own box instead of stretching the page.
 .layout {
-  display: grid;
-  grid-template-columns: 1fr 312px;
-  gap: 22px;
-  align-items: start;
-
-  @media (max-width: 1080px) {
-    grid-template-columns: 1fr;
-  }
-
-  // Wide screens with the CV drawer open: fix both column widths instead of
-  // leaving the card column at 1fr — otherwise 1fr keeps stretching to fill
-  // the remaining page width, leaving a gap between the (now capped) card
-  // and the analytics sidebar. justify-content packs the pair snugly against
-  // the left edge (right where the drawer ends) instead of centering/
-  // spreading them across the leftover space.
-  &.previewOpen {
-    @media (min-width: $push-bp) {
-      grid-template-columns: 470px 312px;
-      justify-content: start;
-    }
-  }
+  min-width: 0;
 }
 
-// ===== Stats =====
-// Collapses away while the CV drawer is pushing the card column down to
-// 470px (see .layout.previewOpen above) — at that width the 4-up grid has
-// nowhere to put its numbers, so instead of squeezing we hide the whole
-// row. grid-template-rows: 0fr/1fr gives an animatable height without a
+// ===== Pipeline wrapper =====
+// Collapses away while the CV drawer pushes the page aside — at 470px the
+// stages have nowhere to go, so instead of squeezing we hide the whole card. grid-template-rows: 0fr/1fr gives an animatable height without a
 // hardcoded max-height; duration matches the drawer's own 0.34s slide
 // (drawer.module.scss) so both move as one motion.
 .statsWrap {
   display: grid;
   grid-template-rows: 1fr;
   opacity: 1;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
   transition: grid-template-rows 0.34s $ease, opacity 0.34s $ease, margin-bottom 0.34s $ease;
 
   &.collapsed {
@@ -118,130 +81,6 @@ $push-bp: 1320px;
 .statsWrapInner {
   overflow: hidden;
   min-height: 0;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
-
-  @media (max-width: 1080px) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.stat {
-  background: $white;
-  border: 1px solid $line;
-  border-radius: $r-md;
-  padding: 16px 18px;
-  display: flex;
-  align-items: center;
-  gap: 13px;
-}
-
-.statIcon {
-  width: 42px;
-  height: 42px;
-  border-radius: 11px;
-  display: grid;
-  place-items: center;
-  flex: none;
-
-  &.b1 {
-    background: $amber-bg;
-    color: $gold-deep;
-  }
-  &.b2 {
-    background: $green-bg;
-    color: $green;
-  }
-  &.b3 {
-    background: $blue-bg;
-    color: $blue;
-  }
-  &.b4 {
-    background: $mist;
-    color: $ink;
-  }
-}
-
-.statN {
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-weight: 700;
-  font-size: 1.55rem;
-  line-height: 1;
-  color: $ink;
-}
-
-.statL {
-  font-size: 0.78rem;
-  color: $slate;
-  margin-top: 3px;
-}
-
-// ===== Toolbar =====
-.toolbar {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-
-  // Force the search bar onto its own full-width row so the status select
-  // and view toggle wrap together underneath it, instead of the three
-  // fighting for space in whatever order they happen to wrap in.
-  &.previewOpen .search {
-    flex-basis: 100%;
-  }
-
-  // Push the grid/list toggle to the right end of that second row, away
-  // from the status select.
-  &.previewOpen .viewtoggle {
-    margin-left: auto;
-  }
-}
-
-.search {
-  flex: 1;
-  min-width: 200px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  gap: 0.6em;
-  background: $white;
-  border: 1.5px solid $line;
-  border-radius: $r-sm;
-  padding: 0 0.9em;
-
-  &:focus-within {
-    border-color: $gold;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
-  }
-
-  svg {
-    color: $slate-2;
-    flex: none;
-  }
-
-  input {
-    flex: 1;
-    height: 100%;
-    border: none;
-    outline: none;
-    padding: 0;
-    font-size: 0.92rem;
-    background: transparent;
-    color: $ink;
-
-    &::placeholder {
-      color: $slate-2;
-    }
-  }
 }
 
 .tselect {
@@ -269,34 +108,6 @@ $push-bp: 1320px;
 
 .pagSizeSelect {
   color: $slate;
-}
-
-.viewtoggle {
-  display: flex;
-  gap: 6px;
-}
-
-.viewtoggleBtn {
-  width: 44px;
-  height: 44px;
-  border: 1.5px solid $line;
-  background: $white;
-  border-radius: $r-sm;
-  color: $slate-2;
-  display: grid;
-  place-items: center;
-  transition: 0.2s;
-
-  &:hover {
-    border-color: $ink;
-    color: $ink;
-  }
-
-  &.on {
-    background: $ink;
-    border-color: $ink;
-    color: $gold;
-  }
 }
 
 .bulkBar {
@@ -344,415 +155,382 @@ $push-bp: 1320px;
 // ===== Candidate cards =====
 .cgrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+  // Same width as the Bookmarked cards: 444px keeps "Minimum salary" on one line.
+  grid-template-columns: repeat(auto-fill, minmax(min(444px, 100%), 1fr));
+  // Each card keeps its own height, so opening notes or Hire tracking on one
+  // doesn't stretch the others in its row.
   align-items: start;
-  gap: 14px;
+  gap: 16px;
   transition: grid-template-columns 0.34s $ease;
 
-  // Wide screens with the CV drawer open: collapse to a single column so the
-  // list and the open detail panel can be compared side by side (mirrors
-  // dashboard.module.scss's .grid.previewOpen). Capped at a fixed width
-  // instead of 1fr so the card doesn't stretch to fill the leftover page
-  // width — .layout's own previewOpen rule below uses the same 470px so the
-  // analytics sidebar sits snugly right after this column, not stranded
-  // further right.
+  // Wide screens with the CV drawer open: one column of cards beside the CV
+  // (mirrors dashboard.module.scss's .grid.previewOpen), in the 448px
+  // results column (candidateFilters.module.scss .cvLayout).
   &.previewOpen {
     @media (min-width: $push-bp) {
-      grid-template-columns: minmax(0, 470px);
-      justify-content: start;
+      grid-template-columns: minmax(0, 1fr);
     }
   }
 }
 
-.pc {
-  background: $white;
-  border: 1px solid $green-bd;
-  border-radius: $r-lg;
-  padding: 18px;
-  box-shadow:
-    0 0 0 1px $green-bd,
-    0 20px 40px -28px rgba(47, 158, 105, 0.35);
-  transition: transform 0.25s $ease, box-shadow 0.25s, border-color 0.25s;
+// ===== Card: same design as the Bookmarked card (dashboard.module.scss sc*) =====
+// Only the Purchased parts live here: the "Unlocked on" row, the notes panel,
+// Contact and Hire tracking.
+$card-text: #1b2430;
+$card-muted: #5f6b78;
 
-  // The card whose CV is currently open in the drawer — every card already
-  // has a subtle green "unlocked" ring, so this intensifies it instead of
-  // switching to the gold highlight used elsewhere (there's nothing to
-  // "select for purchase" here, everything's already bought).
-  &.pcActive {
-    border-color: $green;
-    box-shadow:
-      0 0 0 2px $green,
-      0 24px 48px -24px rgba(47, 158, 105, 0.55);
-  }
+// The shared card fills its grid row (height: 100%); here it sizes to its content.
+.cgrid > .pcCard {
+  height: auto;
 }
 
-.pcHead {
+// Same spot and height as Bookmarked's "Saved on" row (which also holds the X);
+// "Hiring for" sits on the right.
+.cardTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 14px;
+  gap: 12px;
+  min-height: 40px;
+  margin: -8px 0 16px;
 }
 
-.unlockedTag {
+.unlockedBy {
   display: inline-flex;
   align-items: center;
-  gap: 0.45em;
-  font-size: 0.72rem;
-  font-weight: 700;
-  font-family: "JetBrains Mono", monospace;
-  letter-spacing: 0.03em;
-  color: $green;
-  text-transform: uppercase;
+  gap: 8px;
+  min-width: 0;
+  font-size: 0.8125rem;
+  line-height: 18px;
+  color: $card-muted;
 
-  svg {
-    width: 14px;
-    height: 14px;
+  strong {
+    font-weight: 600;
+    color: $card-text;
   }
 }
 
-.availableBadge {
+.unlockedIcon {
+  flex: none;
+  color: $green;
+}
+
+// The notes pencil in the match ring's spot: the shared grid icon button, sized to its content.
+.headNotesBtn {
+  min-width: 48px;
+  padding: 0 12px;
+}
+
+// Notes panel under the header. Opens via the grid 0fr -> 1fr trick, with the
+// gap above it easing along, so the card grows smoothly.
+.notesWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition:
+    grid-template-rows 0.32s $ease,
+    margin 0.32s $ease;
+
+  &.open {
+    grid-template-rows: 1fr;
+    margin-top: 20px;
+  }
+}
+
+// Hidden once closed, so its fields drop out of the tab order.
+.notesInner {
+  overflow: hidden;
+  min-height: 0;
+  visibility: hidden;
+  transition: visibility 0s 0.32s;
+
+  .open > & {
+    visibility: visible;
+    transition: none;
+  }
+}
+
+.notesPanel {
+  padding: 16px;
+  background: #f8f9fa;
+  border: 1px solid #e9ebef;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+// At most 3 lines here (Bookmarked and Search show 4), with room for all 3 even
+// when it's shorter, so closed cards line up. Two classes so it wins over .scDesc.
+.pcCard .pcDesc {
+  -webkit-line-clamp: 3;
+  min-height: calc(0.9rem * 1.55 * 3);
+}
+
+// ===== Contact =====
+.contact {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.contactTitle {
+  font-size: 0.8125rem;
+  line-height: 18px;
+  font-weight: 600;
+  color: $card-text;
+}
+
+.contactList {
+  border: 1px solid #e3e6eb;
+  border-radius: 14px;
+}
+
+.contactRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 60px;
+  padding: 10px 6px 10px 14px;
+
+  & + & {
+    border-top: 1px solid #eef0f3;
+  }
+}
+
+.contactIcon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #f1f3f6;
+  color: #3d4652;
+  display: grid;
+  place-items: center;
+}
+
+.contactText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.contactLabel {
+  font-size: 0.75rem;
+  line-height: 16px;
+  color: $card-muted;
+}
+
+.contactValue {
+  font-size: 0.875rem;
+  line-height: 20px;
+  font-weight: 500;
+  color: $card-text;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  &:is(a):hover {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+
+.contactMissing {
+  font-weight: 400;
+  color: $card-muted;
+}
+
+// Copy (turns into a green check for a moment) / open LinkedIn.
+.contactAction {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: $card-muted;
+  transition:
+    background-color 0.18s,
+    color 0.18s;
+
+  &:hover {
+    background: #f1f3f6;
+    color: $card-text;
+  }
+
+  &.copied {
+    color: $green;
+  }
+}
+
+// Download CV: a square next to Open CV.
+.downloadBtn {
+  flex: none;
+  width: 48px;
+}
+
+// ===== Hire tracking =====
+// A bar across the bottom of the card: the toggle (showing the current status
+// while it's closed) and, opened, the status pills that set it.
+.hireTracking {
+  margin: 16px -24px -24px;
+  padding: 4px 16px 16px;
+  border-top: 1px solid #e9ebef;
+}
+
+.htToggle {
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  border-radius: 10px;
+  color: $card-text;
+  font-size: 0.875rem;
+  line-height: 18px;
+  font-weight: 600;
+  text-align: left;
+  transition: background-color 0.18s;
+
+  &:hover {
+    background: #f6f7f9;
+  }
+}
+
+.htIcon {
+  flex: none;
+  color: $card-muted;
+}
+
+.htLabel {
+  flex: 1;
+}
+
+.htChevron {
+  flex: none;
+  color: $card-muted;
+  transition: transform 0.2s ease;
+
+  &.up {
+    transform: rotate(180deg);
+  }
+}
+
+// The current status on the closed bar.
+.htCurrent {
+  height: 24px;
   display: inline-flex;
   align-items: center;
-  gap: 0.5em;
-  background: $green-bg;
-  border: 1px solid $green-bd;
-  color: $green;
-  font-size: 0.76rem;
-  font-weight: 700;
-  padding: 0.35em 0.75em;
-  border-radius: 99px;
-  flex: none;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  line-height: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
 
-  &.openBadge {
-    background: $amber-bg;
-    border-color: rgba(230, 169, 60, 0.38);
-    color: $gold-deep;
+// Status tones; --ring is the current pill's frame.
+.htCurrent,
+.stage {
+  &.sNew { background: $mist; color: $slate; --ring: #{$slate}; }
+  &.sContacted { background: $blue-bg; color: $blue; --ring: #{$blue}; }
+  &.sInterviewed { background: $amber-bg; color: $gold-deep; --ring: #{$gold}; }
+  &.sHired { background: $green-bg; color: $green; --ring: #{$green}; }
+  &.sRejected { background: $red-bg; color: $red; --ring: #{$red}; }
+}
 
-    .pulse {
-      background: $gold-deep;
+.expandWrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s $ease;
+
+  &.open {
+    grid-template-rows: 1fr;
+  }
+}
+
+// Hidden once closed, so the pills drop out of the tab order.
+.expandInner {
+  overflow: hidden;
+  min-height: 0;
+  visibility: hidden;
+  transition: visibility 0s 0.32s;
+
+  .open > & {
+    visibility: visible;
+    transition: none;
+  }
+}
+
+.pipeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  // 2px between pills keeps the whole row on one line in a two-column grid card.
+  gap: 6px 2px;
+  margin-top: 6px;
+  padding: 10px;
+  background: #f8f9fa;
+  border: 1px solid #e9ebef;
+  border-radius: 12px;
+}
+
+.stage {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  line-height: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    border-color 0.2s $ease,
+    box-shadow 0.2s $ease;
+
+  &:hover {
+    filter: brightness(0.96);
+  }
+
+  &:focus-visible {
+    outline: 3px solid $gold;
+    outline-offset: 2px;
+  }
+
+  // The candidate's current status: a frame in its own colour, a soft ring and bolder text.
+  &.stageOn {
+    border-color: var(--ring);
+    box-shadow:
+      0 0 0 2px $white,
+      0 0 0 3px color-mix(in srgb, var(--ring) 20%, transparent);
+    font-weight: 700;
+    cursor: default;
+
+    &:hover {
+      filter: none;
     }
   }
 }
 
-.pulse {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #3cc882;
-}
-
-.pcTop {
-  display: flex;
-  gap: 13px;
-  align-items: center;
-  margin-bottom: 13px;
-}
-
-.pcTopInfo {
-  flex: 1;
-  min-width: 0;
-}
-
-.pcAv {
-  width: 72px;
-  height: 72px;
-  border-radius: 15px;
+.pipeArrow {
   flex: none;
-  overflow: hidden;
-  background: linear-gradient(140deg, #5b8fc4, #2c4d72);
-  display: grid;
-  place-items: center;
-  color: #fff;
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-weight: 700;
-  font-size: 1.4rem;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-}
-
-.pcName {
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-weight: 700;
-  font-size: 1.02rem;
-  color: $ink;
-  line-height: 1.2;
-}
-
-.pcRole {
-  font-size: 0.92rem;
-  letter-spacing: 0.05rem;
-  color: $gold-deep;
-  font-weight: 700;
-  margin-top: 5px;
-  display: block;
-}
-
-.pcCo {
-  font-size: 0.8rem;
-  color: $slate;
-}
-
-.pcMeta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 14px;
-  font-size: 0.82rem;
-  color: $slate;
-  margin-bottom: 11px;
-
-  span {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35em;
-  }
-}
-
-.pcSal {
-  color: $ink;
-  font-weight: 600;
-}
-
-.divider {
-  height: 1px;
-  background: $line;
-  margin: 16px 0;
-}
-
-.headerDivider {
-  height: 1px;
-  background: $line;
-  margin: 16px 0 0;
-}
-
-.factsGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 13px 12px;
-}
-
-.fact {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-}
-
-.factIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: $mist;
-  color: $slate;
-  display: grid;
-  place-items: center;
-  flex: none;
-}
-
-.factText {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.factK {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.66rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
   color: $slate-2;
 }
 
-.factV {
-  font-weight: 700;
-  font-size: 0.94rem;
-  color: $ink;
-}
-
-.factGold {
-  color: $gold-deep;
-}
-
-.pcSkills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin-bottom: 13px;
-}
-
-.tag {
-  font-size: 0.73rem;
-  font-weight: 500;
-  color: #33424f;
-  background: $mist;
-  border: 1px solid $line;
-  padding: 0.26em 0.58em;
-  border-radius: 6px;
-}
-
-.moreTag {
-  font-size: 0.73rem;
-  font-weight: 600;
-  color: $slate-2;
-  padding: 0.26em 0.3em;
-}
-
-.pcDesc {
-  font-size: 0.85rem;
-  color: $slate;
-  line-height: 1.55;
-  margin-bottom: 14px;
-  min-height: 63px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.contactBox {
-  background: $green-bg;
-  border: 1px solid $green-bd;
-  border-radius: 13px;
-  padding: 13px 14px;
-  display: grid;
-  gap: 10px;
-  min-height: 134px;
-  margin-bottom: 14px;
-}
-
-.contactHead {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.66rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: $green;
-  font-weight: 600;
-
-  svg {
-    width: 14px;
-    height: 14px;
-  }
-}
-
-.ctIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: $white;
-  border: 1px solid $green-bd;
-  display: grid;
-  place-items: center;
-  color: $green;
-  flex: none;
-}
-
-.ct {
-  flex: 1;
-  line-height: 1.2;
-}
-
-.ctLabel {
-  font-size: 0.68rem;
-  color: $slate;
-  font-family: "JetBrains Mono", monospace;
-}
-
-.ctValue {
-  display: block;
-  font-weight: 600;
-  color: $ink;
-  font-size: 0.86rem;
-}
-
-.cvBtnRow {
-  display: grid;
-  grid-template-columns: 3fr 1fr;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.openCvBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-  background: $gold;
-  color: #241704;
-  font-weight: 700;
-  font-size: 0.88rem;
-  border-radius: $r-sm;
-  padding: 0.72em 1em;
-  box-shadow: 0 12px 26px -14px rgba(230, 169, 60, 0.8);
-  transition:
-    background-color 0.18s,
-    transform 0.18s $ease;
-
-  &:hover {
-    background: $gold-2;
-    transform: translateY(-1px);
-  }
-}
-
-.downloadCvBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1.5px solid $line;
-  background: $white;
-  color: $ink;
-  border-radius: $r-sm;
-  padding: 0.72em;
-  transition:
-    border-color 0.18s,
-    transform 0.18s $ease;
-
-  &:hover {
-    border-color: $ink;
-    transform: translateY(-1px);
-  }
-}
-
-.statusBlock {
-  display: block;
-  margin-bottom: 10px;
-
-  select {
-    width: 100%;
-  }
-}
-
-.expandToggle {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-  width: 100%;
-  border-top: 1px solid $line;
-  padding-top: 13px;
-}
-
-.expandToggleAction {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  flex: none;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: $slate;
-  white-space: nowrap;
-  transition: color 0.18s;
-}
-
-.expandToggle:hover .expandToggleAction {
-  color: $ink;
+.pipeOr {
+  padding: 0 3px;
+  font-size: 0.75rem;
+  line-height: 16px;
+  color: $card-muted;
 }
 
 .pcFoot {
@@ -764,35 +542,11 @@ $push-bp: 1320px;
   border-top: 1px solid $line;
 }
 
-.pcDate {
-  font-size: 0.76rem;
-  color: $slate-2;
-  font-family: "JetBrains Mono", monospace;
-}
-
 .pcActions {
   display: flex;
   align-items: center;
   gap: 6px;
   margin-top: 10px;
-}
-
-.iconBtn {
-  width: 32px;
-  height: 32px;
-  border-radius: $r-sm;
-  border: 1px solid $line;
-  display: grid;
-  place-items: center;
-  color: $slate;
-  background: $white;
-  transition: 0.18s;
-  flex: none;
-
-  &:hover {
-    border-color: $ink;
-    color: $ink;
-  }
 }
 
 .textBtn {
@@ -813,192 +567,6 @@ $push-bp: 1320px;
   }
 }
 
-.expandWrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.32s $ease;
-
-  &.open {
-    grid-template-rows: 1fr;
-  }
-}
-
-.expandInner {
-  overflow: hidden;
-  min-height: 0;
-}
-
-.expand {
-  border-top: 1px solid $line;
-  margin-top: 13px;
-  padding-top: 13px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.expandGrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-
-  @media (max-width: 560px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.expandCol {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.expandColHead {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.expandColIcon {
-  width: 32px;
-  height: 32px;
-  border-radius: 9px;
-  background: $green-bg;
-  color: $green;
-  display: grid;
-  place-items: center;
-  flex: none;
-}
-
-.expandColLabel {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: $slate;
-  font-weight: 600;
-}
-
-.timeline {
-  border: 1px solid $line;
-  border-radius: $r-md;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-}
-
-.timelineItem {
-  position: relative;
-  padding-left: 18px;
-  padding-bottom: 14px;
-  font-size: 0.82rem;
-
-  &:not(:last-child) {
-    border-left: 1px solid $line;
-    margin-left: 3px;
-  }
-
-  &:last-child {
-    margin-left: 3px;
-    padding-bottom: 0;
-  }
-
-  b {
-    display: block;
-    color: $ink;
-    font-weight: 700;
-  }
-}
-
-.timelineDot {
-  position: absolute;
-  left: -4px;
-  top: 4px;
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: $green;
-}
-
-.timelineCompany {
-  display: block;
-  color: $green;
-  font-weight: 600;
-  margin-top: 2px;
-}
-
-.timelinePeriod {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: $slate-2;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.72rem;
-  margin-top: 4px;
-}
-
-.timelineDesc {
-  color: $slate;
-  margin-top: 6px;
-  line-height: 1.5;
-}
-
-.eduBox {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid $line;
-  border-radius: $r-md;
-  padding: 14px;
-  font-size: 0.82rem;
-
-  b {
-    display: block;
-    color: $ink;
-    font-weight: 700;
-    margin-bottom: 2px;
-  }
-}
-
-.activitiesBox {
-  background: $amber-bg;
-  border: 1px solid rgba(230, 169, 60, 0.35);
-  border-radius: $r-md;
-  padding: 14px;
-}
-
-.activitiesHead {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.activitiesIcon {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
-  background: rgba(230, 169, 60, 0.22);
-  color: $gold-deep;
-  display: grid;
-  place-items: center;
-  flex: none;
-}
-
-.activitiesLabel {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: $gold-deep;
-  font-weight: 600;
-}
-
-.activitiesText {
-  font-size: 0.82rem;
-  color: $slate;
-  line-height: 1.5;
-}
-
 .contactRow {
   display: flex;
   align-items: center;
@@ -1007,221 +575,154 @@ $push-bp: 1320px;
   color: $slate;
 }
 
-.copyBtn {
-  color: $slate-2;
-  display: grid;
-  place-items: center;
-  flex: none;
-  padding: 2px;
-  border-radius: 6px;
-  transition: 0.18s;
+// ===== Table view: the unlocked candidates list =====
+// A grid "table": a header row, a row per candidate and a notes row under
+// each one. It needs 1164px; in a narrower column it scrolls sideways inside
+// its box (the pagination below stays put).
+// Actions fits Preview, Download and the notes pencil with its count.
+$t-cols: minmax(200px, 1.3fr) 104px 148px 124px 160px minmax(260px, 1.9fr) 168px;
 
-  &:hover {
-    background: $mist;
-    color: $ink;
-  }
-}
-
-// ===== Status pill select =====
-.status {
-  position: relative;
-  flex: none;
-
-  select {
-    appearance: none;
-    font-family: inherit;
-    font-weight: 600;
-    font-size: 0.82rem;
-    border-radius: 99px;
-    padding: 0.42em 2em 0.42em 1.6em;
-    cursor: pointer;
-    border: 1px solid transparent;
-    transition:
-      background-color 0.3s $ease,
-      color 0.3s $ease,
-      border-color 0.3s $ease,
-      box-shadow 0.3s $ease,
-      transform 0.3s $ease;
-  }
-
-  select:hover {
-    transform: translateY(-1px);
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    left: 0.7em;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    z-index: 1;
-    transition: background-color 0.3s $ease;
-  }
-
-  &::after {
-    content: "";
-    position: absolute;
-    right: 0.8em;
-    top: 50%;
-    width: 7px;
-    height: 7px;
-    border-right: 2px solid currentColor;
-    border-bottom: 2px solid currentColor;
-    transform: translateY(-65%) rotate(45deg);
-    opacity: 0.6;
-    pointer-events: none;
-    transition: transform 0.3s $ease;
-  }
-
-  select:focus,
-  select:focus-visible {
-    outline: 3px solid $gold;
-    outline-offset: 2px;
-    border-color: transparent;
-    box-shadow: none;
-  }
-
-  &.sNew,
-  &.sPending {
-    select {
-      background: $mist;
-      color: #445;
-    }
-    &::before {
-      background: $slate-2;
-    }
-  }
-
-  &.sContacted {
-    select {
-      background: $blue-bg;
-      color: $blue;
-    }
-    &::before {
-      background: $blue;
-    }
-  }
-
-  &.sInterviewed {
-    select {
-      background: $amber-bg;
-      color: $gold-deep;
-    }
-    &::before {
-      background: $gold;
-    }
-  }
-
-  &.sHired {
-    select {
-      background: $green-bg;
-      color: $green;
-    }
-    &::before {
-      background: #3cc882;
-    }
-  }
-
-  &.sRejected {
-    select {
-      background: $red-bg;
-      color: $red;
-    }
-    &::before {
-      background: $red;
-    }
-  }
-}
-
-// ===== Table view =====
 .ptable {
   background: $white;
   border: 1px solid $line;
-  border-radius: $r-lg;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 16px 36px -32px rgba(11, 26, 44, 0.4);
+  box-shadow:
+    0 1px 2px rgba(11, 26, 44, 0.04),
+    0 10px 28px -16px rgba(11, 26, 44, 0.16);
+}
 
-  table {
-    width: 100%;
-    border-collapse: collapse;
-  }
+.tScroll {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd2da transparent;
+}
 
-  th {
-    text-align: left;
-    font-size: 0.74rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: color.adjust($slate-2, $lightness: -14%);
-    font-weight: 600;
-    padding: 14px 16px;
-    border-bottom: 1px solid $line;
-    font-family: "JetBrains Mono", monospace;
-  }
+.tGrid {
+  min-width: 1164px;
+}
 
-  td {
-    padding: 14px 16px;
-    border-bottom: 1px solid $line;
-    font-size: 0.88rem;
-    vertical-align: middle;
-    color: $ink;
-  }
+.tRow {
+  display: grid;
+  grid-template-columns: $t-cols;
+  align-items: center;
+}
 
-  tr:last-child td {
-    border-bottom: none;
-  }
-  tr:hover td {
-    background: #fafbfc;
-  }
+.tHeadRow {
+  height: 48px;
+  background: #f8f9fa;
+}
 
-  // The row whose CV is currently open in the drawer — green to match the
-  // page's "unlocked" theme (same intensified-green idea as .pcActive in
-  // the card view) rather than the gold used for other "active" states.
-  tr.rowActive td {
-    background: $green-bg;
+.tHead {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 0.6875rem;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: $card-muted;
 
-    &:first-child {
-      box-shadow: inset 3px 0 0 $green;
-    }
+  &.tEnd {
+    justify-content: flex-end;
   }
 }
 
-.sortBtn {
+.tSort {
   display: inline-flex;
   align-items: center;
-  gap: 0.45em;
+  gap: 6px;
+  height: 32px;
+  padding: 0 6px;
+  margin: 0 -6px;
+  border-radius: 7px;
   font: inherit;
   letter-spacing: inherit;
   text-transform: inherit;
   color: inherit;
-  transition: 0.18s;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 
   &:hover {
-    color: $gold-deep;
+    background: #eef0f3;
+    color: $ink;
+  }
+
+  &.on {
+    color: $ink;
   }
 }
 
-.tcCand {
-  display: flex;
-  align-items: center;
-  gap: 11px;
+// Both arrows grey; the sorted column dims the other arrow and turns its own gold.
+.tSortIcon path {
+  fill: $slate-2;
+  opacity: 0.35;
+
+  .tSort.on & {
+    opacity: 0.25;
+  }
+
+  .tSort.on &.tSortOn {
+    fill: $gold-deep;
+    opacity: 1;
+  }
 }
 
-.tcAv {
-  width: 48px;
-  height: 48px;
-  border-radius: 11px;
+.tBodyRow {
+  min-height: 76px;
+  border-top: 1px solid #eef0f3;
+  transition: background-color 0.12s ease;
+
+  &:hover {
+    background: #fafbfc;
+  }
+}
+
+// Its notes are open, or its CV is open in the drawer.
+.tRowOn {
+  background: #fafbfc;
+  box-shadow: inset 3px 0 0 $gold;
+}
+
+.tCell {
+  min-width: 0;
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  line-height: 20px;
+  color: $card-text;
+
+  &.tEnd {
+    text-align: right;
+  }
+}
+
+.tNowrap {
+  white-space: nowrap;
+}
+
+.tCandidate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tAvatar {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
   overflow: hidden;
-  background: linear-gradient(140deg, #5b8fc4, #2c4d72);
+  background: $amber-bg;
+  color: $gold-deep;
   display: grid;
   place-items: center;
-  color: #fff;
+  font-size: 0.8125rem;
+  line-height: 16px;
   font-weight: 700;
-  font-size: 0.92rem;
-  font-family: "Bricolage Grotesque", sans-serif;
-  flex: none;
+  letter-spacing: 0.02em;
 
   img {
     width: 100%;
@@ -1230,52 +731,272 @@ $push-bp: 1320px;
   }
 }
 
-.tcCand b {
-  display: block;
-  font-weight: 600;
-}
-.tcCand span {
-  font-size: 0.78rem;
-  color: $slate;
-}
-
-.tcContact {
-  font-size: 0.8rem;
-  color: $slate;
+.tWho {
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+}
 
-  div {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.tName,
+.tRole {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tName {
+  font-weight: 600;
+  color: $ink;
+}
+
+.tRole {
+  font-size: 0.8125rem;
+  line-height: 18px;
+  color: $card-muted;
+}
+
+.tSalary {
+  font-weight: 600;
+  color: $ink;
+}
+
+.tPer {
+  font-size: 0.75rem;
+  line-height: 16px;
+  color: $card-muted;
+}
+
+// "by Mirko" under the date, only when the company works as a team.
+.tBy {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.75rem;
+  line-height: 16px;
+  color: $card-muted;
+}
+
+// Status pill (opens the menu) and the dots, toned per status through --dot.
+.tStatus {
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 8px 0 10px;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  line-height: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: filter 0.15s ease;
+
+  &:hover {
+    filter: brightness(0.96);
+  }
+
+  &.sNew { background: $mist; color: $slate; }
+  &.sContacted { background: $blue-bg; color: $blue; }
+  &.sInterviewed { background: $amber-bg; color: $gold-deep; }
+  &.sHired { background: $green-bg; color: $green; }
+  &.sRejected { background: $red-bg; color: $red; }
+}
+
+.tStatus,
+.tDot {
+  &.sNew { --dot: #{$slate-2}; }
+  &.sContacted { --dot: #{$blue}; }
+  &.sInterviewed { --dot: #{$gold}; }
+  &.sHired { --dot: #{$green}; }
+  &.sRejected { --dot: #{$red}; }
+}
+
+.tDot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+
+.tStatusChevron {
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+
+  &.up {
+    transform: rotate(180deg);
   }
 }
 
-.tcAct {
+// Portalled to <body>, placed under (or above) the pill.
+.tMenu {
+  position: fixed;
+  z-index: 1250;
+  width: 196px;
+  padding: 4px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px -12px rgba(11, 26, 44, 0.28);
+
+  .tDot {
+    width: 8px;
+    height: 8px;
+  }
+}
+
+.tMenuItem {
+  width: 100%;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  font-size: 0.875rem;
+  line-height: 20px;
+  font-weight: 500;
+  color: $ink;
+  text-align: left;
+
+  &:hover {
+    background: $amber-bg;
+    color: $gold-deep;
+  }
+
+  &.on {
+    font-weight: 700;
+  }
+}
+
+.tMenuLabel {
+  flex: 1;
+}
+
+.tMenuCheck {
+  color: $gold-deep;
+  opacity: 0;
+
+  .on > & {
+    opacity: 1;
+  }
+}
+
+.tContact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.tContactLine {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  min-height: 28px;
+}
+
+.tContactIcon {
+  flex: none;
+  margin-right: 4px;
+  color: $slate-2;
+}
+
+.tContactLink {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8125rem;
+  line-height: 18px;
+  color: $card-text;
+
+  &:hover {
+    color: $ink;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+
+.tContactMissing {
+  font-size: 0.8125rem;
+  line-height: 18px;
+  color: $card-muted;
+}
+
+// Copy: turns into a green check for a moment.
+.tCopy {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: $slate-2;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    background: #eef0f3;
+    color: $ink;
+  }
+
+  &.copied {
+    color: $green;
+  }
+}
+
+// From the left, so Preview and Download line up whatever the notes count.
+.tActions {
   display: flex;
   gap: 6px;
-  justify-content: flex-end;
 }
 
-.iconBtnActive {
-  border-color: $gold-deep;
-  color: $gold-deep;
-  background: $amber-bg;
+.tIconBtn {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e3e6eb;
+  border-radius: 9px;
+  background: $white;
+  color: #3d4652;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    color 0.15s;
+
+  &:hover {
+    border-color: $gold;
+    background: $amber-bg;
+    color: $gold-deep;
+  }
+
+  // Preview: this row's CV is open in the drawer.
+  &[aria-pressed="true"] {
+    background: $ink;
+    border-color: $ink;
+    color: $white;
+  }
 }
 
-.iconBtnPreview {
-  border-color: $green;
-  color: $green;
-  background: $green-bg;
+// The notes pencil: the card's button (count, gold once there are notes) at
+// this row's 36px size. Two classes, so it wins over the shared .scIconBtn size.
+.tActions .tNotesBtn {
+  flex: none;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 8px;
+  border-width: 1px;
+  border-radius: 9px;
 }
 
-.notesCell {
-  padding: 0 !important;
-}
-
-.notesWrap {
+// Notes row under a candidate: opens via the grid 0fr -> 1fr trick.
+.tNotesWrap {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 0.32s $ease;
@@ -1285,37 +1006,63 @@ $push-bp: 1320px;
   }
 }
 
-.notesRow {
-  background: $paper;
-  padding: 16px;
+// Hidden once closed, so its fields drop out of the tab order.
+.tNotesInner {
+  overflow: hidden;
+  min-height: 0;
+  visibility: hidden;
+  transition: visibility 0s 0.32s;
 
-  .bcNotes {
-    background: $white;
-    border: 1px solid $line;
-    border-radius: $r-sm;
-    padding: 11px;
+  .open > & {
+    visibility: visible;
+    transition: none;
   }
+}
+
+.tNotesPanel {
+  padding: 4px 24px 20px 66px;
+  background: #fafbfc;
+  box-shadow: inset 3px 0 0 $gold;
 }
 
 .pagBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   flex-wrap: wrap;
-  padding: 14px 16px;
+  padding: 12px 16px 12px 20px;
   border-top: 1px solid $line;
 }
 
 .pagInfo {
-  font-size: 0.82rem;
+  font-size: 0.875rem;
+  line-height: 20px;
   color: $slate;
+
+  strong {
+    font-weight: 600;
+    color: $ink;
+  }
 }
 
 .pagControls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
+}
+
+.pagSize {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pagSizeLabel {
+  font-size: 0.8125rem;
+  line-height: 18px;
+  color: $card-muted;
+  white-space: nowrap;
 }
 
 .pagNav {
@@ -1324,47 +1071,38 @@ $push-bp: 1320px;
   gap: 4px;
 }
 
-.pagArrow {
-  width: 30px;
-  height: 30px;
-  border-radius: $r-sm;
-  border: 1.5px solid $line;
-  background: $white;
-  color: $slate;
+.pagArrow,
+.pagBtn {
+  width: 36px;
+  height: 36px;
   display: grid;
   place-items: center;
-  transition: 0.18s;
+  border: 1px solid #e3e6eb;
+  border-radius: 9px;
+  background: $white;
+  color: #3d4652;
+  transition: border-color 0.15s;
 
   &:hover:not(:disabled) {
-    border-color: $ink;
-    color: $ink;
-  }
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+    border-color: #c9d0d8;
   }
 }
 
-.pagBtn {
-  width: 30px;
-  height: 30px;
-  border-radius: $r-sm;
-  border: 1.5px solid transparent;
-  color: $slate;
-  font-size: 0.85rem;
-  font-weight: 600;
-  display: grid;
-  place-items: center;
-  transition: 0.18s;
+.pagArrow:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 
-  &:hover {
-    color: $ink;
-  }
+.pagBtn {
+  font-size: 0.875rem;
+  line-height: 18px;
+  font-weight: 600;
 
   &.on {
+    border-color: $gold;
     background: $amber-bg;
-    color: $ink;
-    border-color: transparent;
+    color: $gold-deep;
+    font-weight: 700;
   }
 }
 
@@ -1372,7 +1110,8 @@ $push-bp: 1320px;
   padding: 48px 20px;
   text-align: center;
 
-  svg {
+  // The big icon on top (not the one in the button).
+  > svg {
     color: $slate-2;
     opacity: 0.5;
     margin: 0 auto 16px;
@@ -1394,328 +1133,6 @@ $push-bp: 1320px;
 }
 .hideTable .ptable {
   display: none;
-}
-
-// ===== Sidebar analytics =====
-.side {
-  position: sticky;
-  top: 84px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 16px;
-
-  @media (max-width: 1080px) {
-    position: static;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-
-    @media (max-width: 680px) {
-      grid-template-columns: minmax(0, 1fr);
-    }
-  }
-}
-
-.collapsedSide {
-  width: 48px;
-  background: $white;
-  border: 1px solid $line;
-  border-radius: $r-md;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px 0;
-  gap: 14px;
-}
-
-.scard {
-  background: $white;
-  border: 1px solid $line;
-  border-radius: $r-lg;
-  padding: 18px;
-  box-shadow: 0 16px 36px -32px rgba(11, 26, 44, 0.4);
-}
-
-.scardHead {
-  font-size: 1rem;
-  font-weight: 700;
-  color: $ink;
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.tabs {
-  display: flex;
-  background: $mist;
-  border-radius: $r-sm;
-  padding: 3px;
-  margin-bottom: 14px;
-}
-
-.tabBtn {
-  flex: 1;
-  padding: 0.5em 0.6em;
-  border-radius: 7px;
-  color: $slate-2;
-  display: grid;
-  place-items: center;
-  transition: 0.18s;
-
-  &.on {
-    background: $white;
-    color: $ink;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-  }
-}
-
-.kpis {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.kpi {
-  background: $paper;
-  border: 1px solid $line;
-  border-radius: 11px;
-  padding: 12px;
-}
-
-.kpiN {
-  font-family: "Bricolage Grotesque", sans-serif;
-  font-weight: 700;
-  font-size: 1.4rem;
-  line-height: 1;
-  color: $ink;
-
-  &.green {
-    color: $green;
-  }
-  &.gold {
-    color: $gold-deep;
-  }
-}
-
-.kpiL {
-  font-size: 0.72rem;
-  color: $slate;
-  margin-top: 4px;
-}
-
-.spark {
-  display: flex;
-  align-items: flex-end;
-  gap: 6px;
-  height: 96px;
-  margin-top: 4px;
-}
-
-.sparkCol {
-  flex: 1;
-  background: linear-gradient(180deg, $blue, #5b8fc4);
-  border-radius: 5px 5px 0 0;
-  min-height: 6px;
-  transition: height 0.4s $ease;
-}
-
-.sparkX {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.66rem;
-  color: $slate-2;
-  font-family: "JetBrains Mono", monospace;
-  margin-top: 6px;
-}
-
-.donutWrap {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.donut {
-  width: 110px;
-  height: 110px;
-  border-radius: 50%;
-  flex: none;
-  position: relative;
-
-  &::after {
-    content: "";
-    position: absolute;
-    inset: 24px;
-    background: $white;
-    border-radius: 50%;
-  }
-}
-
-.donutCenter {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  text-align: center;
-  z-index: 2;
-
-  b {
-    font-family: "Bricolage Grotesque", sans-serif;
-    font-size: 1.3rem;
-    line-height: 1;
-    color: $ink;
-  }
-
-  span {
-    font-size: 0.62rem;
-    color: $slate;
-  }
-}
-
-.legend {
-  flex: 1;
-  min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 7px;
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
-  gap: 0.5em;
-  font-size: 0.82rem;
-  color: $slate;
-
-  .dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 3px;
-    flex: none;
-  }
-
-  .legendName {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .v {
-    margin-left: auto;
-    flex: none;
-    font-weight: 700;
-    font-family: "JetBrains Mono", monospace;
-    color: $ink;
-  }
-}
-
-.insights {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 11px;
-}
-
-.insight {
-  display: flex;
-  align-items: center;
-  gap: 0.7em;
-  font-size: 0.85rem;
-  color: #334;
-
-  svg {
-    color: $gold-deep;
-    flex: none;
-  }
-
-  span {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  b {
-    margin-left: auto;
-    flex: none;
-    white-space: nowrap;
-    font-family: "JetBrains Mono", monospace;
-    font-weight: 700;
-    color: $ink;
-  }
-}
-
-.historyList {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.historyItem {
-  border: 1px solid $line;
-  border-radius: $r-md;
-  padding: 12px;
-}
-
-.historyName {
-  display: flex;
-  align-items: baseline;
-  gap: 0.35em;
-  min-width: 0;
-  margin-bottom: 10px;
-
-  b {
-    flex: none;
-    font-size: 0.88rem;
-    color: $ink;
-    white-space: nowrap;
-  }
-
-  span {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    font-size: 0.76rem;
-    color: $slate;
-  }
-}
-
-.historyBottom {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.76rem;
-  color: $slate;
-}
-
-.pill {
-  padding: 0.2em 0.6em;
-  border-radius: 99px;
-  font-weight: 600;
-
-  &.sNew,
-  &.sPending {
-    background: $mist;
-    color: $slate;
-  }
-  &.sContacted {
-    background: $blue-bg;
-    color: $blue;
-  }
-  &.sInterviewed {
-    background: $amber-bg;
-    color: $gold-deep;
-  }
-  &.sHired {
-    background: $green-bg;
-    color: $green;
-  }
-  &.sRejected {
-    background: $red-bg;
-    color: $red;
-  }
 }
 
 // ===== Toast =====
@@ -1749,169 +1166,6 @@ $push-bp: 1320px;
     color: $gold;
     flex: none;
   }
-}
-
-// ===== Notes (pencil) =====
-.bcNotesWrap {
-  display: grid;
-  grid-template-rows: 0fr;
-  margin-bottom: 16px;
-  transition: grid-template-rows 0.32s $ease;
-
-  &.open {
-    grid-template-rows: 1fr;
-  }
-}
-
-.bcNotesInner {
-  overflow: hidden;
-  min-height: 0;
-}
-
-.bcNotes {
-  padding: 11px;
-  background: $paper;
-  border: 1px solid $line;
-  border-top: none;
-  border-radius: 0 0 $r-sm $r-sm;
-}
-
-.bcNotesTextarea {
-  width: 100%;
-  padding: 8px;
-  font-size: 0.84rem;
-  font-family: inherit;
-  background: $white;
-  border: 1px solid $line;
-  border-radius: $r-sm;
-  resize: vertical;
-  color: $ink;
-  margin-bottom: 8px;
-
-  &:focus {
-    outline: none;
-    border-color: $gold;
-    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
-  }
-}
-
-.bcNotesSave {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: #241704;
-  background: $gold;
-  border-radius: 7px;
-  padding: 0.45em 0.9em;
-  transition: 0.18s;
-
-  &:hover {
-    background: $gold-2;
-  }
-
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-}
-
-.bcNotesEdit {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4em;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: $gold-deep;
-  border: 1px solid rgba(230, 169, 60, 0.35);
-  background: $amber-bg;
-  border-radius: 7px;
-  padding: 0.45em 0.9em;
-  transition: 0.18s;
-
-  &:hover {
-    color: $gold;
-  }
-}
-
-.bcNotesActions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bcNotesDelete {
-  display: grid;
-  place-items: center;
-  color: $slate-2;
-  background: none;
-  border: none;
-  padding: 0.3em;
-  transition: color 0.18s;
-
-  &:hover {
-    color: #e35b5b;
-  }
-}
-
-.tooltip {
-  position: relative;
-
-  &::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%) translateY(4px);
-    background: $ink;
-    color: $white;
-    font-size: 0.72rem;
-    font-weight: 600;
-    white-space: nowrap;
-    padding: 0.4em 0.75em;
-    border-radius: 6px;
-    opacity: 0;
-    pointer-events: none;
-    transition:
-      opacity 0.18s $ease,
-      transform 0.18s $ease;
-    z-index: 20;
-  }
-
-  &::before {
-    content: "";
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%) translateY(4px);
-    border: 5px solid transparent;
-    border-top-color: $ink;
-    opacity: 0;
-    pointer-events: none;
-    transition:
-      opacity 0.18s $ease,
-      transform 0.18s $ease;
-    z-index: 20;
-  }
-
-  &:hover::after,
-  &:focus-visible::after {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-
-  &:hover::before,
-  &:focus-visible::before {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
-}
-
-.bcNotesText {
-  font-size: 0.82rem;
-  color: $slate;
-  margin-bottom: 8px;
 }
 
 // ===== Feedback modal =====
@@ -2248,4 +1502,874 @@ $push-bp: 1320px;
     box-shadow: none;
     transform: none;
   }
+}
+
+// ===== "Hiring for" (HiringForField): a small button, and its panel =====
+.hfTrigger {
+  flex: none;
+  max-width: 55%;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid rgba(230, 169, 60, 0.45);
+  border-radius: 999px;
+  background: $amber-bg;
+  color: $gold-deep;
+  font-size: 0.78rem;
+  line-height: 16px;
+  font-weight: 600;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s,
+    color 0.15s;
+
+  svg {
+    flex: none;
+  }
+
+  &:hover,
+  &[aria-expanded="true"] {
+    border-color: $gold;
+  }
+
+  // Not set yet: a quiet dashed button.
+  &.hfEmpty {
+    border-style: dashed;
+    border-color: #cdd3da;
+    background: transparent;
+    color: $card-muted;
+    font-weight: 500;
+
+    &:hover,
+    &[aria-expanded="true"] {
+      border-color: $gold;
+      color: $gold-deep;
+    }
+  }
+
+  // In the table, under the status pill.
+  &.hfRow {
+    max-width: 100%;
+    height: 24px;
+    padding: 0 8px;
+    font-size: 0.75rem;
+  }
+}
+
+.hfText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hfPanel {
+  position: fixed;
+  z-index: 1250;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 12px;
+  box-shadow: 0 16px 36px -12px rgba(11, 26, 44, 0.28);
+}
+
+.hfLabel {
+  font-size: 0.8125rem;
+  line-height: 18px;
+  font-weight: 600;
+  color: $card-text;
+}
+
+.hfHint {
+  font-size: 0.75rem;
+  line-height: 16px;
+  color: $card-muted;
+}
+
+.hfFoot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.hfRemove,
+.hfCancel,
+.hfSave {
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 9px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
+}
+
+.hfRemove {
+  margin-right: auto;
+  color: $red;
+
+  &:hover:not(:disabled) {
+    background: $red-bg;
+  }
+}
+
+.hfCancel {
+  color: $card-muted;
+
+  &:hover {
+    background: #eef0f3;
+    color: $card-text;
+  }
+}
+
+.hfSave {
+  background: $card-text;
+  color: $white;
+
+  &:hover:not(:disabled) {
+    background: #2d3846;
+  }
+
+  &:disabled {
+    background: #e9ecf0;
+    color: #6b7482;
+    cursor: not-allowed;
+  }
+}
+
+// Table: the status pill with "Hiring for" under it.
+.tStatusCell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+// ===== Header: title, and the key numbers in a card ending with Analytics =====
+.phead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 28px;
+  margin-bottom: 20px;
+
+  @media (max-width: 1180px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.pheadTitle {
+  min-width: 0;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  h1 {
+    font-size: 1.7rem;
+    line-height: 1.2;
+    font-weight: 700;
+    color: $ink;
+  }
+
+  p {
+    color: $slate;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 1180px) {
+    max-width: none;
+  }
+}
+
+.kpiCard {
+  flex: none;
+  display: flex;
+  align-items: stretch;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 16px;
+  box-shadow:
+    0 1px 2px rgba(11, 26, 44, 0.04),
+    0 10px 26px -18px rgba(11, 26, 44, 0.25);
+
+  @media (max-width: 1180px) {
+    flex-direction: column;
+  }
+}
+
+.kpis {
+  display: flex;
+  align-items: stretch;
+
+  @media (max-width: 1180px) {
+    flex-wrap: wrap;
+  }
+}
+
+.kpi {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+
+  & + & {
+    border-left: 1px solid #eef0f3;
+  }
+
+  @media (max-width: 1180px) {
+    flex: 1 1 220px;
+  }
+}
+
+// Icon tiles and chips share these tones.
+$kpi-tones: (
+  green: (#e7f4ec, #1c6b45),
+  blue: (#e8effc, #2f5bb7),
+  gold: (#fdf3e1, #9a6410),
+  red: (#fdecec, #b42318),
+  neutral: (#f1f3f6, #475569)
+);
+
+.kpiIcon,
+.kpiChip {
+  @each $name, $tone in $kpi-tones {
+    &.#{$name} {
+      background: list.nth($tone, 1);
+      color: list.nth($tone, 2);
+    }
+  }
+}
+
+.kpiIcon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+}
+
+.kpiText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.kpiLabel {
+  font-size: 0.75rem;
+  line-height: 16px;
+  font-weight: 500;
+  color: $card-muted;
+  white-space: nowrap;
+}
+
+.kpiBody {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.kpiValue {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.375rem;
+  line-height: 28px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: $ink;
+
+  &.green {
+    color: #1c6b45;
+  }
+}
+
+.kpiChip {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.kpiLink {
+  font-size: 0.75rem;
+  line-height: 16px;
+  font-weight: 700;
+  color: $gold-deep;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: #7a4e0a;
+  }
+}
+
+// The card's last part: Analytics, opening the full report on the Credits page.
+.analyticsBtn {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 18px 0 16px;
+  border-left: 1px solid #eef0f3;
+  border-radius: 0 15px 15px 0;
+  background: #fffbf3;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background: $amber-bg;
+  }
+
+  @media (max-width: 1180px) {
+    padding: 12px 18px;
+    border-left: 0;
+    border-top: 1px solid #eef0f3;
+    border-radius: 0 0 15px 15px;
+  }
+}
+
+.analyticsTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  line-height: 18px;
+  font-weight: 700;
+  color: $ink;
+
+  svg {
+    color: $gold-deep;
+  }
+}
+
+.analyticsSub {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  line-height: 16px;
+  font-weight: 500;
+  color: $card-muted;
+}
+
+// ===== Pipeline: a stage per status (a click filters), the position, who waits =====
+.pipeCard {
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 18px;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, 0.04);
+}
+
+.pipeBody {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px 20px;
+}
+
+.pipeHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+
+.pipeTitle {
+  font-size: 0.9375rem;
+  line-height: 20px;
+  font-weight: 600;
+  color: $ink;
+}
+
+.pipeCount {
+  font-size: 0.8125rem;
+  line-height: 18px;
+  color: $card-muted;
+}
+
+// "Hiring for: All positions ▾" — scopes the pipeline, Needs attention and the list.
+.scopeBtn {
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 6px;
+  padding: 0 10px;
+  border: 1px solid $line;
+  border-radius: 9px;
+  background: $white;
+  color: $ink;
+  font-size: 0.8125rem;
+  line-height: 18px;
+  white-space: nowrap;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s,
+    background-color 0.15s;
+
+  svg {
+    flex: none;
+    color: $slate-2;
+  }
+
+  &:hover {
+    border-color: $gold;
+  }
+
+  &.open {
+    border-color: $gold;
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.18);
+  }
+
+  &.on {
+    border-color: $gold;
+    background: $amber-bg;
+
+    svg {
+      color: $gold-deep;
+    }
+  }
+}
+
+.scopeMuted {
+  color: $card-muted;
+}
+
+.scopeValue {
+  max-width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.scopeChevron {
+  margin-left: 2px;
+}
+
+.scopeOption {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  text-align: left;
+}
+
+.scopeName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.scopeMeta {
+  font-size: 0.75rem;
+  line-height: 16px;
+  font-weight: 400;
+  color: $card-muted;
+}
+
+.pipeSpacer {
+  flex: 1;
+}
+
+.pipeShowAll {
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $gold-deep;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background: $amber-bg;
+  }
+}
+
+.pipeHint {
+  font-size: 0.8125rem;
+  line-height: 18px;
+  color: $slate-2;
+}
+
+.pipeRow {
+  display: flex;
+  align-items: stretch;
+  gap: 14px;
+}
+
+// New → Contacted → Interviewed → Hired as one arrow strip.
+.pipePath {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.pipeOrText {
+  align-self: center;
+  font-size: 0.8125rem;
+  color: $slate-2;
+}
+
+.seg {
+  position: relative;
+  min-width: 0;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  background: color-mix(in srgb, var(--tone) 6%, $white);
+  transition:
+    background-color 0.15s,
+    filter 0.15s;
+
+  &.sNew { --tone: #{$slate-2}; --ink: #{$slate}; }
+  &.sContacted { --tone: #{$blue}; --ink: #{$blue}; }
+  &.sInterviewed { --tone: #{$gold}; --ink: #{$gold-deep}; }
+  &.sHired { --tone: #{$green}; --ink: #{$green}; }
+  &.sRejected { --tone: #{$red}; --ink: #{$red}; }
+
+  &:hover {
+    filter: brightness(0.98);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: inset 0 0 0 2px $gold;
+  }
+
+  // The picked stage: a stronger tint and a line along the bottom.
+  &.on {
+    background: color-mix(in srgb, var(--tone) 16%, $white);
+
+    &::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 3px;
+      background: var(--tone);
+    }
+
+    .segN,
+    .segLabel {
+      color: var(--ink);
+    }
+  }
+}
+
+.segChevron {
+  flex: 1 1 0;
+  margin-left: -10px;
+  padding: 0 30px 0 30px;
+  clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%, 16px 50%);
+
+  &.segFirst {
+    margin-left: 0;
+    padding-left: 18px;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%);
+  }
+}
+
+.segBox {
+  flex: none;
+  width: 196px;
+  padding: 0 16px 0 18px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.segMain {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.segTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.segN {
+  font-family: "Bricolage Grotesque", sans-serif;
+  font-size: 1.625rem;
+  line-height: 30px;
+  font-weight: 700;
+  color: $ink;
+}
+
+.segLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8125rem;
+  line-height: 18px;
+  font-weight: 600;
+  color: #3d4652;
+  white-space: nowrap;
+}
+
+.segDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+}
+
+.segSub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 0.75rem;
+  line-height: 16px;
+  color: $card-muted;
+  white-space: nowrap;
+
+  strong {
+    font-weight: 600;
+    color: #3d4652;
+  }
+}
+
+.segSep {
+  flex: none;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #a0a8b3;
+}
+
+.segEmpty {
+  font-size: 0.8125rem;
+  line-height: 18px;
+  color: #6b7482;
+}
+
+// Someone at this stage has waited ATTENTION_DAYS or more.
+.segWait {
+  flex: none;
+  align-self: flex-start;
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 10px;
+  background: $white;
+  border: 1px solid #f1d39b;
+  color: $gold-deep;
+  font-size: 0.6875rem;
+  line-height: 14px;
+  font-weight: 700;
+}
+
+// Narrow pages (and phones): the stages as tiles, without the arrows.
+@media (max-width: 900px) {
+  .pipeRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .pipeOrText {
+    display: none;
+  }
+
+  .pipePath {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  .segChevron,
+  .segChevron.segFirst,
+  .segBox {
+    width: auto;
+    margin-left: 0;
+    padding: 0 14px;
+    border-radius: 12px;
+    clip-path: none;
+    overflow: hidden;
+  }
+}
+
+// "Needs attention" under the stages (or a quiet all-clear).
+.attentionBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px 12px 20px;
+  border-top: 1px solid #eef0f3;
+  border-radius: 0 0 18px 18px;
+  background: #fffbf3;
+
+  p {
+    flex: 1;
+    min-width: 0;
+    font-size: 0.875rem;
+    line-height: 20px;
+    color: #3d4652;
+  }
+
+  strong {
+    font-weight: 600;
+    color: $ink;
+  }
+
+  &.attentionOk {
+    gap: 10px;
+    padding: 12px 20px;
+    background: transparent;
+
+    p {
+      font-size: 0.8125rem;
+      line-height: 18px;
+    }
+
+    svg {
+      flex: none;
+      color: $green;
+    }
+  }
+}
+
+.attentionIcon {
+  flex: none;
+  color: $gold-deep;
+}
+
+.attentionReview {
+  flex: none;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px 0 10px;
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: $gold-deep;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background: $amber-bg;
+  }
+}
+
+// ===== Cards / Table switch in the results bar =====
+.viewSeg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 3px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 10px;
+
+  button {
+    width: 32px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 7px;
+    color: $card-muted;
+    transition:
+      background-color 0.15s,
+      color 0.15s;
+
+    &:hover {
+      background: #eef0f3;
+      color: $ink;
+    }
+
+    &.on {
+      background: $ink;
+      color: $white;
+    }
+  }
+}
+
+// ===== Nothing matches the filters =====
+.noMatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 56px 24px;
+  background: $white;
+  border: 1px dashed #d5dae0;
+  border-radius: 18px;
+  text-align: center;
+}
+
+.noMatchIcon {
+  color: $gold-deep;
+}
+
+.noMatchTitle {
+  font-size: 1rem;
+  line-height: 22px;
+  font-weight: 600;
+  color: $ink;
+}
+
+.noMatchText {
+  font-size: 0.875rem;
+  line-height: 20px;
+  color: $card-muted;
+}
+
+.noMatchBtn {
+  margin-top: 4px;
+  height: 40px;
+  padding: 0 16px;
+  border: 1px solid $line;
+  border-radius: 9px;
+  background: $white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: $ink;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
+
+  &:hover {
+    border-color: #c9d0d8;
+    background: #f8fafc;
+  }
+}
+
+// The card whose CV is open: a soft gold ring around the gold border.
+.cgrid > .pcCard.pcActive {
+  box-shadow:
+    0 0 0 1px $gold,
+    0 0 0 5px rgba(230, 169, 60, 0.16);
 }

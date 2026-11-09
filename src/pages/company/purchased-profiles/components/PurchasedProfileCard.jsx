@@ -1,8 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Icon from 'components/AppIcon';
-import Image from 'components/AppImage';
+import {
+  CardAvatar,
+  CardIdentity,
+  CardStats,
+  SkillsRow,
+  StatusBadge
+} from '../../candidate-search-dashboard/components/CandidateCardParts';
+import CandidateNotes, { NotesButton } from '../../candidate-search-dashboard/components/CandidateNotes';
 import dashboardStyles from '../../candidate-search-dashboard/styles/dashboard.module.scss';
-import { formatSalary } from '../../candidate-search-dashboard/utils/cvHelpers';
+import { shortDate } from 'utils/formatDate';
+import HiringForField from './HiringForField';
 import styles from '../styles/purchased.module.scss';
 
 const STATUS_OPTIONS = [
@@ -21,343 +29,217 @@ const STATUS_CLASS = {
   rejected: 'sRejected'
 };
 
+// How long a copy button shows its check mark.
+const COPIED_MS = 1600;
+
+// Same card as Bookmarked (shared CandidateCardParts and notes), with the
+// notes pencil where the match ring would be, "Hiring for", the contact details and Hire tracking.
 const PurchasedProfileCard = React.forwardRef(({
   profile,
   onStatusChange,
-  onContactCopy,
   onCvDownload,
   onViewDetails,
-  onUpdateNotes,
+  onAddNote,
+  onEditNote,
+  onDeleteNote,
+  onSaveHiringFor,
+  positionSuggestions = [],
   isActive = false
 }, ref) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const skills = profile?.skills || [];
-
   const [isNotesOpen, setIsNotesOpen] = useState(false);
-  const [notes, setNotes] = useState(profile?.notes || '');
-  const [isEditingNotes, setIsEditingNotes] = useState(!profile?.notes);
-  const notesTextareaRef = useRef(null);
+  const [isTrackingOpen, setIsTrackingOpen] = useState(false);
+  const [copied, setCopied] = useState(null);
+  const copiedTimer = useRef(null);
 
-  useEffect(() => {
-    if (isEditingNotes && notesTextareaRef.current) {
-      notesTextareaRef.current.style.minHeight = `${notesTextareaRef.current.offsetHeight}px`;
-    }
-  }, [isEditingNotes]);
+  useEffect(() => () => clearTimeout(copiedTimer.current), []);
 
-  const handleNotesChange = (e) => {
-    setNotes(e?.target?.value);
+  const notes = profile?.notes || [];
+  const skills = profile?.skills || [];
+  const contactId = `contact-${profile?.id}`;
+  const stagesId = `hire-stages-${profile?.id}`;
+  const currentStage = STATUS_OPTIONS.find((stage) => stage.value === profile?.recruitmentStatus);
+
+  const handleCopy = (key, text) => {
+    navigator.clipboard?.writeText(text)?.catch(() => {});
+    setCopied(key);
+    clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(null), COPIED_MS);
   };
 
-  const handleSaveNotes = () => {
-    if (!notes.trim()) return;
-    onUpdateNotes?.(profile?.id, notes);
-    setIsEditingNotes(false);
-  };
+  const copyButton = (key, text, label) => (
+    <button
+      type="button"
+      className={`${styles.contactAction} ${copied === key ? styles.copied : ''}`}
+      onClick={() => handleCopy(key, text)}
+      aria-label={copied === key ? `${label} copied` : `Copy ${label.toLowerCase()}`}
+    >
+      <Icon name={copied === key ? 'Check' : 'Copy'} size={18} />
+    </button>
+  );
 
-  const handleDeleteNotes = () => {
-    setNotes('');
-    onUpdateNotes?.(profile?.id, '');
-    setIsEditingNotes(true);
-  };
-
-  const formatDate = (date) => {
-    return new Date(date)?.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-  };
-
-  const description = profile?.description || '';
-
-  const handleContactCopy = (contactInfo) => {
-    navigator.clipboard?.writeText(contactInfo);
-    onContactCopy(contactInfo);
-  };
+  const notProvided = <span className={`${styles.contactValue} ${styles.contactMissing}`}>Not provided</span>;
 
   return (
-    <article ref={ref} className={`${styles.pc} ${isActive ? styles.pcActive : ''}`}>
-      <div className={styles.pcHead}>
-        <span className={styles.unlockedTag}>
-          <Icon name="Unlock" size={14} />
-          Unlocked {formatDate(profile?.unlockedDate)}{profile?.unlockedBy ? ` by ${profile.unlockedBy}` : ''}
-        </span>
-        {profile?.isAvailable ? (
-          <span className={styles.availableBadge}>
-            <span className={styles.pulse} />
-            Available immediately
+    <article
+      ref={ref}
+      className={`${dashboardStyles.card} ${dashboardStyles.scCard} ${dashboardStyles.unlocked} ${isActive ? `${dashboardStyles.active} ${styles.pcActive}` : ''} ${styles.pcCard}`}
+    >
+      {/* Who unlocked it and when ("by" only for a team), and the position they are considered for */}
+      <div className={styles.cardTop}>
+        <p className={styles.unlockedBy}>
+          <Icon name="Unlock" size={14} className={styles.unlockedIcon} />
+          <span>
+            Unlocked on {shortDate(profile?.unlockedDate)}{profile?.unlockedBy && <> by <strong>{profile.unlockedBy}</strong></>}
           </span>
-        ) : (
-          <span className={`${styles.availableBadge} ${styles.openBadge}`}>
-            <span className={styles.pulse} />
-            Open to offers
-          </span>
-        )}
+        </p>
+        <HiringForField
+          id={`hiring-for-${profile?.id}`}
+          value={profile?.hiringFor}
+          suggestions={positionSuggestions}
+          onSave={(text) => onSaveHiringFor(profile?.id, text)}
+        />
       </div>
 
-      <div className={styles.pcTop}>
-        <span className={styles.pcAv}>
-          <Image src={profile?.avatar} alt={profile?.name} />
-        </span>
-        <div className={styles.pcTopInfo}>
-          <div className={styles.pcName}>{profile?.name}</div>
-          <div className={styles.pcRole}>{profile?.position}</div>
+      {/* Header: avatar, name/role/meta/status, notes pencil */}
+      <div className={dashboardStyles.scHead}>
+        <CardAvatar candidate={profile} unlocked />
+
+        <div className={dashboardStyles.scInfo}>
+          <CardIdentity candidate={profile} unlocked />
+          <StatusBadge searchStatus={profile?.searchStatus} />
         </div>
-        <button
+
+        <NotesButton
+          count={notes.length}
+          isOpen={isNotesOpen}
           onClick={() => setIsNotesOpen(!isNotesOpen)}
-          className={`${dashboardStyles.cardBookmark} ${notes ? dashboardStyles.on : ''}`}
-          title="Notes"
-          aria-label="Notes"
-          aria-expanded={isNotesOpen}
-        >
-          <Icon
-            name="Pencil"
-            size={18}
-            color={notes ? undefined : 'var(--color-muted-foreground)'}
-          />
-        </button>
+          className={styles.headNotesBtn}
+        />
       </div>
 
-      <div className={styles.headerDivider} />
-
-      <div className={`${styles.bcNotesWrap} ${isNotesOpen ? styles.open : ''}`}>
-        <div className={styles.bcNotesInner}>
-          <div className={styles.bcNotes}>
-            {isEditingNotes ? (
-              <>
-                <textarea
-                  ref={notesTextareaRef}
-                  value={notes}
-                  onChange={handleNotesChange}
-                  placeholder="Add a note about the candidate..."
-                  className={styles.bcNotesTextarea}
-                  rows={3}
-                />
-                <button
-                  className={styles.bcNotesSave}
-                  onClick={handleSaveNotes}
-                  disabled={!notes.trim()}
-                >
-                  <Icon name="Check" size={14} />
-                  Save
-                </button>
-              </>
-            ) : (
-              <>
-                <p className={styles.bcNotesText}>{notes}</p>
-                <div className={styles.bcNotesActions}>
-                  <button className={styles.bcNotesEdit} onClick={() => setIsEditingNotes(true)}>
-                    <Icon name="Pencil" size={13} />
-                    Edit
-                  </button>
-                  <button
-                    className={`${styles.bcNotesDelete} ${styles.tooltip}`}
-                    onClick={handleDeleteNotes}
-                    data-tooltip="Delete note"
-                    aria-label="Delete note"
-                  >
-                    <Icon name="X" size={15} />
-                  </button>
-                </div>
-              </>
-            )}
+      {/* Notes: a grey panel under the header, opened with the pencil */}
+      <div className={`${styles.notesWrap} ${isNotesOpen ? styles.open : ''}`}>
+        <div className={styles.notesInner}>
+          <div className={styles.notesPanel}>
+            <CandidateNotes
+              notes={notes}
+              visibleNotes={2}
+              fieldId={`note-${profile?.id}`}
+              isOpen={isNotesOpen}
+              onAdd={(text) => onAddNote(profile?.id, text)}
+              onEdit={(noteId, text) => onEditNote(profile?.id, noteId, text)}
+              onDelete={(noteId) => onDeleteNote(profile?.id, noteId)}
+            />
           </div>
         </div>
       </div>
 
-      <div className={styles.factsGrid}>
-        <div className={styles.fact}>
-          <span className={styles.factIcon}><Icon name="Calendar" size={16} /></span>
-          <span className={styles.factText}>
-            <span className={styles.factK}>Experience</span>
-            <span className={styles.factV}>{profile?.experience} yrs</span>
-          </span>
-        </div>
-        <div className={styles.fact}>
-          <span className={styles.factIcon}><Icon name="CreditCard" size={16} /></span>
-          <span className={styles.factText}>
-            <span className={styles.factK}>Salary</span>
-            <span className={styles.factV}>{formatSalary(profile?.expectedSalary)}</span>
-          </span>
-        </div>
-        <div className={styles.fact}>
-          <span className={styles.factIcon}><Icon name="MapPin" size={16} /></span>
-          <span className={styles.factText}>
-            <span className={styles.factK}>Location</span>
-            <span className={styles.factV}>{profile?.location}</span>
-          </span>
-        </div>
-        <div className={styles.fact}>
-          <span className={styles.factIcon}><Icon name="Building2" size={16} /></span>
-          <span className={styles.factText}>
-            <span className={styles.factK}>Work arrangement</span>
-            <span className={styles.factV}>{profile?.workArrangement}</span>
-          </span>
-        </div>
-        <div className={styles.fact}>
-          <span className={styles.factIcon}><Icon name="Clock" size={16} /></span>
-          <span className={styles.factText}>
-            <span className={styles.factK}>Notice period</span>
-            <span className={styles.factV}>{profile?.notice}</span>
-          </span>
-        </div>
-        <div className={styles.fact}>
-          <span className={styles.factIcon}><Icon name="TrendingUp" size={16} /></span>
-          <span className={styles.factText}>
-            <span className={styles.factK}>Match</span>
-            <span className={`${styles.factV} ${styles.factGold}`}>{profile?.matchScore}%</span>
-          </span>
-        </div>
-      </div>
+      <CardStats candidate={profile} salaryFirst />
+      {skills.length > 0 && <SkillsRow skills={skills} />}
+      <p className={`${dashboardStyles.scDesc} ${styles.pcDesc}`}>{profile?.description}</p>
 
-      <div className={styles.divider} />
+      <section className={styles.contact} aria-labelledby={contactId}>
+        <h3 id={contactId} className={styles.contactTitle}>Contact</h3>
+        <ul className={styles.contactList}>
+          <li className={styles.contactRow}>
+            <span className={styles.contactIcon} aria-hidden="true"><Icon name="Mail" size={18} /></span>
+            <div className={styles.contactText}>
+              <span className={styles.contactLabel}>Email</span>
+              {profile?.email ? (
+                <a href={`mailto:${profile.email}`} className={styles.contactValue}>{profile.email}</a>
+              ) : notProvided}
+            </div>
+            {profile?.email && copyButton('email', profile.email, 'Email')}
+          </li>
 
-      <div className={styles.pcSkills}>
-        {skills?.slice(0, 5)?.map((skill, index) => (
-          <span key={index} className={styles.tag}>{skill}</span>
-        ))}
-        {skills?.length > 5 && (
-          <span className={styles.moreTag}>+{skills?.length - 5}</span>
-        )}
-      </div>
+          <li className={styles.contactRow}>
+            <span className={styles.contactIcon} aria-hidden="true"><Icon name="Phone" size={18} /></span>
+            <div className={styles.contactText}>
+              <span className={styles.contactLabel}>Phone</span>
+              {profile?.phone ? (
+                <a href={`tel:${profile.phone.replace(/[^\d+]/g, '')}`} className={styles.contactValue}>{profile.phone}</a>
+              ) : notProvided}
+            </div>
+            {profile?.phone && copyButton('phone', profile.phone, 'Phone number')}
+          </li>
 
-      <p className={styles.pcDesc}>{description}</p>
-
-      <div className={styles.contactBox}>
-        <div className={styles.contactHead}>
-          <Icon name="Check" size={14} />
-          Contact unlocked
-        </div>
-        <div className={styles.contactRow}>
-          <span className={styles.ctIcon}><Icon name="Mail" size={15} /></span>
-          <div className={styles.ct}>
-            <span className={styles.ctLabel}>Email</span>
-            <div className={styles.ctValue}>{profile?.email}</div>
-          </div>
-          <button className={styles.copyBtn} onClick={() => handleContactCopy(profile?.email)} aria-label="Copy email">
-            <Icon name="Copy" size={13} />
-          </button>
-        </div>
-        <div className={styles.contactRow}>
-          <span className={styles.ctIcon}><Icon name="Phone" size={15} /></span>
-          <div className={styles.ct}>
-            <span className={styles.ctLabel}>Phone</span>
-            <div className={styles.ctValue}>{profile?.phone}</div>
-          </div>
-          <button className={styles.copyBtn} onClick={() => handleContactCopy(profile?.phone)} aria-label="Copy phone">
-            <Icon name="Copy" size={13} />
-          </button>
-        </div>
-        <div className={styles.contactRow}>
-          <span className={styles.ctIcon}><Icon name="Linkedin" size={15} /></span>
-          <div className={styles.ct}>
-            <span className={styles.ctLabel}>LinkedIn</span>
-            {profile?.linkedin ? (
-              <a href={profile?.linkedin} target="_blank" rel="noopener noreferrer" className={styles.ctValue}>
-                {profile?.linkedin?.replace(/^https?:\/\//, '')}
+          <li className={styles.contactRow}>
+            <span className={styles.contactIcon} aria-hidden="true"><Icon name="Linkedin" size={18} /></span>
+            <div className={styles.contactText}>
+              <span className={styles.contactLabel}>LinkedIn</span>
+              {profile?.linkedin ? (
+                <a href={profile.linkedin} target="_blank" rel="noopener noreferrer" className={styles.contactValue}>
+                  {profile.linkedin.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}
+                </a>
+              ) : notProvided}
+            </div>
+            {profile?.linkedin && (
+              <a
+                href={profile.linkedin}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.contactAction}
+                aria-label="Open LinkedIn profile in a new tab"
+              >
+                <Icon name="ExternalLink" size={18} />
               </a>
-            ) : (
-              <span className={styles.ctValue}>No profile</span>
             )}
-          </div>
-          {profile?.linkedin && (
-            <button className={styles.copyBtn} onClick={() => window.open(profile?.linkedin, '_blank')} aria-label="Open LinkedIn">
-              <Icon name="ExternalLink" size={13} />
-            </button>
-          )}
-        </div>
-      </div>
+          </li>
+        </ul>
+      </section>
 
-      <div className={styles.cvBtnRow}>
-        <button className={styles.openCvBtn} onClick={() => onViewDetails(profile?.id)}>
-          <Icon name="ExternalLink" size={15} />
+      <div className={dashboardStyles.scActions}>
+        <button className={dashboardStyles.scPrimary} onClick={() => onViewDetails(profile?.id)}>
+          <Icon name="FileText" size={18} />
           Open CV
         </button>
-        <button className={styles.downloadCvBtn} onClick={() => onCvDownload(profile?.id)} aria-label="Download CV">
-          <Icon name="Download" size={15} />
+        <button
+          className={`${dashboardStyles.scIconBtn} ${dashboardStyles.scSaveBtn} ${styles.downloadBtn}`}
+          onClick={() => onCvDownload(profile?.id)}
+          aria-label="Download CV"
+          title="Download CV"
+        >
+          <Icon name="Download" size={19} />
         </button>
       </div>
 
-      <span className={`${styles.status} ${styles[STATUS_CLASS?.[profile?.recruitmentStatus]]} ${styles.statusBlock}`}>
-        <select
-          value={profile?.recruitmentStatus}
-          onChange={(e) => {
-            onStatusChange(profile?.id, e?.target?.value);
-            e?.target?.blur();
-          }}
+      {/* Hire tracking: a bar across the card's bottom; the pills set the status */}
+      <div className={styles.hireTracking}>
+        <button
+          type="button"
+          className={styles.htToggle}
+          onClick={() => setIsTrackingOpen(!isTrackingOpen)}
+          aria-expanded={isTrackingOpen}
+          aria-controls={stagesId}
         >
-          {STATUS_OPTIONS?.map((opt) => (
-            <option key={opt?.value} value={opt?.value}>{opt?.label}</option>
-          ))}
-        </select>
-      </span>
+          <Icon name="Route" size={16} className={styles.htIcon} />
+          <span className={styles.htLabel}>Hire tracking</span>
+          {!isTrackingOpen && currentStage && (
+            <span className={`${styles.htCurrent} ${styles[STATUS_CLASS?.[currentStage.value]]}`}>{currentStage.label}</span>
+          )}
+          <Icon name="ChevronDown" size={16} strokeWidth={2.2} className={`${styles.htChevron} ${isTrackingOpen ? styles.up : ''}`} />
+        </button>
 
-      <button
-        className={styles.expandToggle}
-        onClick={() => setIsExpanded(!isExpanded)}
-        aria-expanded={isExpanded}
-      >
-        <span className={styles.expandToggleAction}>
-          {isExpanded ? 'Show less' : 'Show more'}
-          <Icon name={isExpanded ? 'ChevronUp' : 'ChevronDown'} size={15} />
-        </span>
-      </button>
-
-      <div className={`${styles.expandWrap} ${isExpanded ? styles.open : ''}`}>
-        <div className={styles.expandInner}>
-          <div className={styles.expand}>
-            <div className={styles.expandGrid}>
-              <div className={styles.expandCol}>
-                <div className={styles.expandColHead}>
-                  <span className={styles.expandColIcon}><Icon name="Calendar" size={16} /></span>
-                  <span className={styles.expandColLabel}>Work experience</span>
-                </div>
-                <div className={styles.timeline}>
-                  {profile?.workHistory?.slice(0, 2)?.map((work, index) => (
-                    <div key={index} className={styles.timelineItem}>
-                      <span className={styles.timelineDot} />
-                      <b>{work?.position}</b>
-                      <span className={styles.timelineCompany}>{work?.company}</span>
-                      <span className={styles.timelinePeriod}>
-                        <Icon name="Calendar" size={12} />
-                        {work?.period}
-                      </span>
-                      {work?.description && (
-                        <p className={styles.timelineDesc}>{work?.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className={styles.expandCol}>
-                {profile?.education && (
-                  <>
-                    <div className={styles.expandColHead}>
-                      <span className={styles.expandColIcon}><Icon name="GraduationCap" size={16} /></span>
-                      <span className={styles.expandColLabel}>Education</span>
-                    </div>
-                    <div className={styles.eduBox}>
-                      <b>{profile?.education?.degree}</b>
-                      <span className={styles.timelineCompany}>{profile?.education?.institution}</span>
-                      <span className={styles.timelinePeriod}>
-                        <Icon name="Calendar" size={12} />
-                        {profile?.education?.year}
-                      </span>
-                    </div>
-                  </>
-                )}
-
-                {profile?.additionalActivities && (
-                  <div className={styles.activitiesBox}>
-                    <div className={styles.activitiesHead}>
-                      <span className={styles.activitiesIcon}><Icon name="Award" size={16} /></span>
-                      <span className={styles.activitiesLabel}>Additional activities</span>
-                    </div>
-                    <p className={styles.activitiesText}>{profile?.additionalActivities}</p>
-                  </div>
-                )}
-              </div>
+        <div className={`${styles.expandWrap} ${isTrackingOpen ? styles.open : ''}`}>
+          <div className={styles.expandInner}>
+            <div id={stagesId} role="group" aria-label="Hire stage" className={styles.pipeline}>
+              {STATUS_OPTIONS?.map((stage, index) => {
+                const isCurrent = stage?.value === profile?.recruitmentStatus;
+                return (
+                  <React.Fragment key={stage?.value}>
+                    {index > 0 && index < 4 && <Icon name="ChevronRight" size={12} strokeWidth={2.6} className={styles.pipeArrow} />}
+                    {index === 4 && <span className={styles.pipeOr} aria-hidden="true">or</span>}
+                    <button
+                      type="button"
+                      className={`${styles.stage} ${styles[STATUS_CLASS?.[stage?.value]]} ${isCurrent ? styles.stageOn : ''}`}
+                      onClick={() => !isCurrent && onStatusChange(profile?.id, stage?.value)}
+                      aria-pressed={isCurrent}
+                    >
+                      {stage?.label}
+                    </button>
+                  </React.Fragment>
+                );
+              })}
             </div>
           </div>
         </div>

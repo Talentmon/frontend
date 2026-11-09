@@ -1,8 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
-import { formatSalary } from '../../candidate-search-dashboard/utils/cvHelpers';
+import CandidateNotes, { NotesButton } from '../../candidate-search-dashboard/components/CandidateNotes';
+import { formatSalary, salaryPeriod } from '../../candidate-search-dashboard/utils/cvHelpers';
+import { shortDate } from 'utils/formatDate';
+import HiringForField from './HiringForField';
+import { COLUMN_FIRST_DIR, parseSort } from '../purchasedFilters';
 import styles from '../styles/purchased.module.scss';
 
 const STATUS_OPTIONS = [
@@ -21,325 +26,386 @@ const STATUS_CLASS = {
   rejected: 'sRejected'
 };
 
-const PurchasedProfilesTable = ({
-  profiles,
-  onStatusChange,
-  onContactCopy,
-  onCvDownload,
-  onViewDetails,
-  onUpdateNotes,
-  activePreviewId = null
-}) => {
-  const [sortConfig, setSortConfig] = useState({ key: 'unlockedDate', direction: 'desc' });
-  const [pageSize, setPageSize] = useState(10);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [notesOpenId, setNotesOpenId] = useState(null);
-  const [editingNotesId, setEditingNotesId] = useState(null);
-  const [notesDraft, setNotesDraft] = useState('');
+const PAGE_SIZES = [10, 25, 50];
+const COPIED_MS = 1600;
+const MENU_HEIGHT = 196;
 
-  const handleToggleNotes = (profile) => {
-    if (notesOpenId === profile?.id) {
-      setNotesOpenId(null);
-      return;
-    }
-    setNotesOpenId(profile?.id);
-    setNotesDraft(profile?.notes || '');
-    setEditingNotesId(profile?.notes ? null : profile?.id);
+const initials = (name = '') => name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+const hasPhoto = (avatar) => !!avatar && !avatar.includes('no_image');
+
+const SortHeader = ({ id, label, sort, onSort, end = false }) => {
+  const active = sort.key === id;
+  return (
+    <div
+      role="columnheader"
+      aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : 'none'}
+      className={`${styles.tHead} ${end ? styles.tEnd : ''}`}
+    >
+      <button type="button" className={`${styles.tSort} ${active ? styles.on : ''}`} onClick={() => onSort(id)}>
+        {label}
+        <svg aria-hidden="true" width="10" height="14" viewBox="0 0 10 14" className={styles.tSortIcon}>
+          <path d="M5 1l4 4.5H1z" className={active && sort.dir === 'asc' ? styles.tSortOn : ''} />
+          <path d="M5 13l4-4.5H1z" className={active && sort.dir === 'desc' ? styles.tSortOn : ''} />
+        </svg>
+      </button>
+    </div>
+  );
+};
+
+/**
+ * The status pill and its menu. The menu is portalled to <body> with a fixed
+ * position, so the table's own horizontal scroll can't clip it, and follows
+ * the pill on scroll; it closes on a click outside or Escape, and opens
+ * upwards near the bottom of the window.
+ */
+const StatusCell = ({ profile, onStatusChange }) => {
+  const [menuPos, setMenuPos] = useState(null);
+  const buttonRef = useRef(null);
+  const menuRef = useRef(null);
+  const isOpen = !!menuPos;
+  const current = STATUS_OPTIONS.find((option) => option.value === profile?.recruitmentStatus) || STATUS_OPTIONS[0];
+
+  const placement = () => {
+    const rect = buttonRef.current.getBoundingClientRect();
+    const below = rect.bottom + 4;
+    const top = below + MENU_HEIGHT > window.innerHeight ? Math.max(8, rect.top - MENU_HEIGHT - 4) : below;
+    return { left: rect.left - 4, top };
   };
-
-  const handleSaveNotes = (profileId) => {
-    onUpdateNotes?.(profileId, notesDraft);
-    setEditingNotesId(null);
-  };
-
-  const handleDeleteNotes = (profileId) => {
-    setNotesDraft('');
-    onUpdateNotes?.(profileId, '');
-    setEditingNotesId(profileId);
-  };
-
-  const handleSort = (key) => {
-    let direction = 'asc';
-    if (sortConfig?.key === key && sortConfig?.direction === 'asc') {
-      direction = 'desc';
-    }
-    setSortConfig({ key, direction });
-  };
-
-  const sortedProfiles = React.useMemo(() => {
-    let sortableProfiles = [...profiles];
-    if (sortConfig?.key) {
-      // expectedSalary is a {amount, currency, base, ...} object - always
-      // compare its base-EUR value, never the object itself.
-      const valueOf = (profile) =>
-        sortConfig?.key === 'expectedSalary' ? (profile?.expectedSalary?.base ?? 0) : profile?.[sortConfig?.key];
-      sortableProfiles?.sort((a, b) => {
-        const av = valueOf(a);
-        const bv = valueOf(b);
-        if (av < bv) {
-          return sortConfig?.direction === 'asc' ? -1 : 1;
-        }
-        if (av > bv) {
-          return sortConfig?.direction === 'asc' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
-    return sortableProfiles;
-  }, [profiles, sortConfig]);
-
-  const totalItems = sortedProfiles?.length;
-  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 
   useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
+    if (!isOpen) return undefined;
+    const close = () => setMenuPos(null);
+    const follow = () => {
+      if (buttonRef.current) setMenuPos(placement());
+    };
+    const onDown = (e) => {
+      if (!menuRef.current?.contains(e.target) && !buttonRef.current?.contains(e.target)) close();
+    };
+    // Escape is the menu's (the CV drawer behind it stays open).
+    const onKey = (e) => {
+      if (e.key !== 'Escape' || e.defaultPrevented) return;
+      e.preventDefault();
+      close();
+      buttonRef.current?.focus();
+    };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey, true);
+    window.addEventListener('scroll', follow, true);
+    window.addEventListener('resize', follow);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey, true);
+      window.removeEventListener('scroll', follow, true);
+      window.removeEventListener('resize', follow);
+    };
+  }, [isOpen]);
+
+  const toggle = () => {
+    if (isOpen) {
+      setMenuPos(null);
+      return;
     }
-  }, [totalPages, currentPage]);
-
-  const paginatedProfiles = sortedProfiles?.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
-
-  const rangeStart = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
-  const rangeEnd = Math.min(currentPage * pageSize, totalItems);
-
-  const formatDate = (date) => {
-    return new Date(date)?.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
+    setMenuPos(placement());
   };
 
-  const getSortIcon = (columnKey) => {
-    if (sortConfig?.key !== columnKey) {
-      return <Icon name="ArrowUpDown" size={14} />;
-    }
-    return sortConfig?.direction === 'asc'
-      ? <Icon name="ArrowUp" size={14} />
-      : <Icon name="ArrowDown" size={14} />;
+  const pick = (value) => {
+    setMenuPos(null);
+    buttonRef.current?.focus();
+    if (value !== current.value) onStatusChange(profile?.id, value);
   };
 
   return (
+    <>
+      <button
+        ref={buttonRef}
+        type="button"
+        className={`${styles.tStatus} ${styles[STATUS_CLASS[current.value]]}`}
+        onClick={toggle}
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        aria-label={`Status for ${profile?.name}: ${current.label}`}
+      >
+        <span className={styles.tDot} aria-hidden="true" />
+        {current.label}
+        <Icon name="ChevronDown" size={14} strokeWidth={2.4} className={`${styles.tStatusChevron} ${isOpen ? styles.up : ''}`} />
+      </button>
+
+      {isOpen && createPortal(
+        <div ref={menuRef} role="listbox" aria-label="Hire stage" className={styles.tMenu} style={{ left: menuPos.left, top: menuPos.top }}>
+          {STATUS_OPTIONS.map((option) => {
+            const selected = option.value === current.value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                className={`${styles.tMenuItem} ${selected ? styles.on : ''}`}
+                onClick={() => pick(option.value)}
+              >
+                <span className={`${styles.tDot} ${styles[STATUS_CLASS[option.value]]}`} aria-hidden="true" />
+                <span className={styles.tMenuLabel}>{option.label}</span>
+                <Icon name="Check" size={14} strokeWidth={2.6} className={styles.tMenuCheck} />
+              </button>
+            );
+          })}
+        </div>,
+        document.body
+      )}
+    </>
+  );
+};
+
+// `profiles` come sorted by the page's `sortBy` — the same one as the cards' Sort menu;
+// a header click picks that column (or flips its direction).
+const PurchasedProfilesTable = ({
+  profiles,
+  sortBy,
+  onSortChange,
+  positionSuggestions = [],
+  onSaveHiringFor,
+  onStatusChange,
+  onCvDownload,
+  onViewDetails,
+  onAddNote,
+  onEditNote,
+  onDeleteNote,
+  activePreviewId = null
+}) => {
+  const sort = parseSort(sortBy);
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [notesOpenId, setNotesOpenId] = useState(null);
+  const [copied, setCopied] = useState(null);
+  const copiedTimer = useRef(null);
+
+  useEffect(() => () => clearTimeout(copiedTimer.current), []);
+
+  const handleSort = (key) => {
+    const dir = sort.key === key ? (sort.dir === 'asc' ? 'desc' : 'asc') : COLUMN_FIRST_DIR[key];
+    onSortChange(`${key}-${dir}`);
+  };
+
+  const sortedProfiles = profiles;
+  const totalItems = sortedProfiles.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(totalPages);
+  }, [totalPages, currentPage]);
+
+  const pageProfiles = sortedProfiles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const rangeStart = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const rangeEnd = Math.min(currentPage * pageSize, totalItems);
+
+  const handleCopy = (key, text) => {
+    navigator.clipboard?.writeText(text)?.catch(() => {});
+    setCopied(key);
+    clearTimeout(copiedTimer.current);
+    copiedTimer.current = setTimeout(() => setCopied(null), COPIED_MS);
+  };
+
+  // One contact line: icon, mailto/tel link and copy (a check mark for a moment), or "Not provided".
+  const contactLine = (profile, kind) => {
+    const value = profile?.[kind];
+    const key = `${profile?.id}:${kind}`;
+    const isEmail = kind === 'email';
+    const label = isEmail ? 'email' : 'phone number';
+    return (
+      <div className={styles.tContactLine}>
+        <Icon name={isEmail ? 'Mail' : 'Phone'} size={14} strokeWidth={1.9} className={styles.tContactIcon} />
+        {value ? (
+          <>
+            <a href={isEmail ? `mailto:${value}` : `tel:${value.replace(/[^\d+]/g, '')}`} className={styles.tContactLink}>{value}</a>
+            <button
+              type="button"
+              className={`${styles.tCopy} ${copied === key ? styles.copied : ''}`}
+              onClick={() => handleCopy(key, value)}
+              aria-label={copied === key ? `${isEmail ? 'Email' : 'Phone number'} copied` : `Copy ${label} of ${profile?.name}`}
+            >
+              <Icon name={copied === key ? 'Check' : 'Copy'} size={14} strokeWidth={copied === key ? 2.6 : 1.9} />
+            </button>
+          </>
+        ) : (
+          <span className={styles.tContactMissing}>Not provided</span>
+        )}
+      </div>
+    );
+  };
+
+  // The page's own empty state covers "no candidates" and "no results".
+  if (totalItems === 0) return null;
+
+  return (
     <div className={styles.ptable}>
-      <table>
-        <thead>
-          <tr>
-            <th>
-              <button className={styles.sortBtn} onClick={() => handleSort('name')}>
-                <span>Candidate</span>{getSortIcon('name')}
-              </button>
-            </th>
-            <th>
-              <button className={styles.sortBtn} onClick={() => handleSort('position')}>
-                <span>Position</span>{getSortIcon('position')}
-              </button>
-            </th>
-            <th>
-              <button className={styles.sortBtn} onClick={() => handleSort('experience')}>
-                <span>Experience</span>{getSortIcon('experience')}
-              </button>
-            </th>
-            <th>
-              <button className={styles.sortBtn} onClick={() => handleSort('expectedSalary')}>
-                <span>Salary</span>{getSortIcon('expectedSalary')}
-              </button>
-            </th>
-            <th>
-              <button className={styles.sortBtn} onClick={() => handleSort('unlockedDate')}>
-                <span>Unlocked</span>{getSortIcon('unlockedDate')}
-              </button>
-            </th>
-            <th>Status</th>
-            <th>Contact</th>
-            <th style={{ textAlign: 'right' }}>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {paginatedProfiles?.map((profile) => (
-            <React.Fragment key={profile?.id}>
-            <tr className={profile?.id === activePreviewId ? styles.rowActive : ''}>
-              <td>
-                <div className={styles.tcCand}>
-                  <span className={styles.tcAv}>
-                    <Image src={profile?.avatar} alt={profile?.name} />
-                  </span>
-                  <div>
-                    <b>{profile?.name}</b>
+      <div className={styles.tScroll}>
+        <div role="table" aria-label="Unlocked candidates" aria-rowcount={totalItems} className={styles.tGrid}>
+          <div role="row" className={`${styles.tRow} ${styles.tHeadRow}`}>
+            <SortHeader id="name" label="Candidate" sort={sort} onSort={handleSort} />
+            <SortHeader id="experience" label="Experience" sort={sort} onSort={handleSort} />
+            <SortHeader id="salary" label="Salary" sort={sort} onSort={handleSort} end />
+            <SortHeader id="unlocked" label="Unlocked" sort={sort} onSort={handleSort} />
+            <div role="columnheader" className={styles.tHead}>Status</div>
+            <div role="columnheader" className={styles.tHead}>Contact</div>
+            <div role="columnheader" className={styles.tHead}>Actions</div>
+          </div>
+
+          {pageProfiles.map((profile) => {
+            const id = profile?.id;
+            const notes = profile?.notes || [];
+            const isNotesOpen = notesOpenId === id;
+            const isPreviewed = activePreviewId === id;
+            const period = salaryPeriod(profile?.expectedSalary);
+            const experience = profile?.experience || 0;
+            const notesId = `table-notes-${id}`;
+
+            return (
+              <React.Fragment key={id}>
+                <div role="row" className={`${styles.tRow} ${styles.tBodyRow} ${isNotesOpen || isPreviewed ? styles.tRowOn : ''}`}>
+                  <div role="cell" className={`${styles.tCell} ${styles.tCandidate}`}>
+                    <span className={styles.tAvatar} aria-hidden="true">
+                      {hasPhoto(profile?.avatar) ? <Image src={profile.avatar} alt="" /> : initials(profile?.name)}
+                    </span>
+                    <span className={styles.tWho}>
+                      <span className={styles.tName} title={profile?.name}>{profile?.name}</span>
+                      <span className={styles.tRole} title={profile?.position}>{profile?.position}</span>
+                    </span>
                   </div>
-                </div>
-              </td>
-              <td>
-                <div>{profile?.position}</div>
-              </td>
-              <td>{profile?.experience} years</td>
-              <td>{formatSalary(profile?.expectedSalary)}</td>
-              <td className={styles.pcDate}>
-                {formatDate(profile?.unlockedDate)}
-                {profile?.unlockedBy && <div style={{ fontSize: '.78em', opacity: 0.75 }}>by {profile.unlockedBy}</div>}
-              </td>
-              <td>
-                <span className={`${styles.status} ${styles[STATUS_CLASS?.[profile?.recruitmentStatus]]}`}>
-                  <select
-                    value={profile?.recruitmentStatus}
-                    onChange={(e) => {
-                      onStatusChange(profile?.id, e?.target?.value);
-                      e?.target?.blur();
-                    }}
-                  >
-                    {STATUS_OPTIONS?.map((opt) => (
-                      <option key={opt?.value} value={opt?.value}>{opt?.label}</option>
-                    ))}
-                  </select>
-                </span>
-              </td>
-              <td>
-                <div className={styles.tcContact}>
-                  <div>
-                    <span>{profile?.email}</span>
-                    <button className={styles.copyBtn} onClick={() => onContactCopy(profile?.email)} aria-label="Copy email">
-                      <Icon name="Copy" size={13} />
+                  <div role="cell" className={styles.tCell}>{experience} {experience === 1 ? 'year' : 'years'}</div>
+                  <div role="cell" className={`${styles.tCell} ${styles.tEnd} ${styles.tNowrap}`}>
+                    {profile?.expectedSalary ? (
+                      <>
+                        <span className={styles.tSalary}>{formatSalary(profile.expectedSalary)}</span>
+                        {period && <> <span className={styles.tPer}>/ {period}</span></>}
+                      </>
+                    ) : '—'}
+                  </div>
+                  <div role="cell" className={`${styles.tCell} ${styles.tNowrap}`}>
+                    {shortDate(profile?.unlockedDate)}
+                    {profile?.unlockedBy && <span className={styles.tBy}>by {profile.unlockedBy}</span>}
+                  </div>
+                  <div role="cell" className={`${styles.tCell} ${styles.tStatusCell}`}>
+                    <StatusCell profile={profile} onStatusChange={onStatusChange} />
+                    <HiringForField
+                      id={`table-hiring-for-${id}`}
+                      size="row"
+                      value={profile?.hiringFor}
+                      suggestions={positionSuggestions}
+                      onSave={(text) => onSaveHiringFor(id, text)}
+                    />
+                  </div>
+                  <div role="cell" className={`${styles.tCell} ${styles.tContact}`}>
+                    {contactLine(profile, 'email')}
+                    {contactLine(profile, 'phone')}
+                  </div>
+                  <div role="cell" className={`${styles.tCell} ${styles.tActions}`}>
+                    <button
+                      type="button"
+                      className={styles.tIconBtn}
+                      onClick={() => onViewDetails(id)}
+                      title="Preview"
+                      aria-label={`Preview profile of ${profile?.name}`}
+                      aria-pressed={isPreviewed}
+                    >
+                      <Icon name="Eye" size={18} strokeWidth={1.8} />
                     </button>
-                  </div>
-                  <div>
-                    <span>{profile?.phone}</span>
-                    <button className={styles.copyBtn} onClick={() => onContactCopy(profile?.phone)} aria-label="Copy phone">
-                      <Icon name="Copy" size={13} />
+                    <button
+                      type="button"
+                      className={styles.tIconBtn}
+                      onClick={() => onCvDownload(id)}
+                      title="Download CV"
+                      aria-label={`Download CV of ${profile?.name}`}
+                    >
+                      <Icon name="Download" size={18} strokeWidth={1.8} />
                     </button>
+                    <NotesButton
+                      count={notes.length}
+                      isOpen={isNotesOpen}
+                      onClick={() => setNotesOpenId(isNotesOpen ? null : id)}
+                      className={styles.tNotesBtn}
+                      iconSize={17}
+                      label={notes.length ? `Notes for ${profile?.name}` : `Add note for ${profile?.name}`}
+                      controls={notesId}
+                    />
                   </div>
                 </div>
-              </td>
-              <td>
-                <div className={styles.tcAct}>
-                  <button
-                    className={`${styles.iconBtn} ${profile?.id === activePreviewId ? styles.iconBtnPreview : ''}`}
-                    onClick={() => onViewDetails(profile?.id)}
-                    title="Preview"
-                    aria-pressed={profile?.id === activePreviewId}
-                  >
-                    <Icon name="Eye" size={15} />
-                  </button>
-                  <button className={styles.iconBtn} onClick={() => onCvDownload(profile?.id)} title="CV">
-                    <Icon name="Download" size={15} />
-                  </button>
-                  <button
-                    className={`${styles.iconBtn} ${profile?.notes ? styles.iconBtnActive : ''}`}
-                    onClick={() => handleToggleNotes(profile)}
-                    title="Notes"
-                    aria-expanded={notesOpenId === profile?.id}
-                  >
-                    <Icon name="Pencil" size={15} />
-                  </button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td colSpan={8} className={styles.notesCell}>
-                <div className={`${styles.notesWrap} ${notesOpenId === profile?.id ? styles.open : ''}`}>
-                  <div className={styles.bcNotesInner}>
-                    <div className={styles.notesRow}>
-                      <div className={styles.bcNotes}>
-                        {editingNotesId === profile?.id ? (
-                          <>
-                            <textarea
-                              value={notesDraft}
-                              onChange={(e) => setNotesDraft(e?.target?.value)}
-                              placeholder="Add a note about the candidate..."
-                              className={styles.bcNotesTextarea}
-                              rows={3}
-                            />
-                            <button className={styles.bcNotesSave} onClick={() => handleSaveNotes(profile?.id)}>
-                              <Icon name="Check" size={14} />
-                              Save
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <p className={styles.bcNotesText}>{profile?.notes}</p>
-                            <div className={styles.bcNotesActions}>
-                              <button className={styles.bcNotesEdit} onClick={() => setEditingNotesId(profile?.id)}>
-                                <Icon name="Pencil" size={13} />
-                                Edit
-                              </button>
-                              <button
-                                className={`${styles.bcNotesDelete} ${styles.tooltip}`}
-                                onClick={() => handleDeleteNotes(profile?.id)}
-                                data-tooltip="Delete note"
-                                aria-label="Delete note"
-                              >
-                                <Icon name="X" size={15} />
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </div>
+
+                {/* Notes: the new note on the left, the saved ones on the right */}
+                <div role="row" id={notesId} className={`${styles.tNotesWrap} ${isNotesOpen ? styles.open : ''}`}>
+                  <div role="cell" aria-label="Notes" className={styles.tNotesInner}>
+                    <div className={styles.tNotesPanel}>
+                      <CandidateNotes
+                        layout="columns"
+                        candidateName={profile?.name}
+                        notes={notes}
+                        fieldId={`table-note-${id}`}
+                        isOpen={isNotesOpen}
+                        onAdd={(text) => onAddNote(id, text)}
+                        onEdit={(noteId, text) => onEditNote(id, noteId, text)}
+                        onDelete={(noteId) => onDeleteNote(id, noteId)}
+                        onCancel={() => setNotesOpenId(null)}
+                      />
                     </div>
                   </div>
                 </div>
-              </td>
-            </tr>
-            </React.Fragment>
-          ))}
-        </tbody>
-      </table>
-      {totalItems > 0 && (
-        <div className={styles.pagBar}>
-          <span className={styles.pagInfo}>
-            Showing {rangeStart}–{rangeEnd} of {totalItems} candidates
-          </span>
-          <div className={styles.pagControls}>
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className={styles.pagBar}>
+        <p role="status" className={styles.pagInfo}>
+          Showing <strong>{rangeStart}–{rangeEnd}</strong> of {totalItems} candidates
+        </p>
+        <div className={styles.pagControls}>
+          <div className={styles.pagSize}>
+            <label htmlFor="purchased-rows-per-page" className={styles.pagSizeLabel}>Rows per page</label>
             <Select
+              id="purchased-rows-per-page"
               className={styles.pagSizeSelect}
               value={pageSize}
               onChange={(value) => {
                 setPageSize(value);
                 setCurrentPage(1);
               }}
-              options={[
-                { value: 5, label: '5 per page' },
-                { value: 10, label: '10 per page' },
-                { value: 15, label: '15 per page' },
-              ]}
+              options={PAGE_SIZES.map((size) => ({ value: size, label: String(size) }))}
             />
-            <div className={styles.pagNav}>
-              <button
-                className={styles.pagArrow}
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage((p) => p - 1)}
-                aria-label="Previous page"
-              >
-                <Icon name="ChevronLeft" size={16} />
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1)?.map((page) => (
-                <button
-                  key={page}
-                  className={`${styles.pagBtn} ${page === currentPage ? styles.on : ''}`}
-                  onClick={() => setCurrentPage(page)}
-                >
-                  {page}
-                </button>
-              ))}
-              <button
-                className={styles.pagArrow}
-                disabled={currentPage === totalPages}
-                onClick={() => setCurrentPage((p) => p + 1)}
-                aria-label="Next page"
-              >
-                <Icon name="ChevronRight" size={16} />
-              </button>
-            </div>
           </div>
+          <nav aria-label="Pagination" className={styles.pagNav}>
+            <button
+              type="button"
+              className={styles.pagArrow}
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((p) => p - 1)}
+              aria-label="Previous page"
+            >
+              <Icon name="ChevronLeft" size={16} strokeWidth={2.2} />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                type="button"
+                className={`${styles.pagBtn} ${page === currentPage ? styles.on : ''}`}
+                onClick={() => setCurrentPage(page)}
+                aria-label={`Page ${page}`}
+                aria-current={page === currentPage ? 'page' : undefined}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              type="button"
+              className={styles.pagArrow}
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((p) => p + 1)}
+              aria-label="Next page"
+            >
+              <Icon name="ChevronRight" size={16} strokeWidth={2.2} />
+            </button>
+          </nav>
         </div>
-      )}
-      {profiles?.length === 0 && (
-        <div className={styles.emptyState}>
-          <Icon name="Users" size={48} />
-          <h3>No unlocked profiles</h3>
-          <p>Unlocked profiles will appear here after purchase.</p>
-        </div>
-      )}
+      </div>
     </div>
   );
 };

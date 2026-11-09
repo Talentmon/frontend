@@ -51,6 +51,13 @@ const NOTICE = {
   '3m': { noticeNum: 3, noticeUnit: 'MONTH' },
 };
 
+// The country each fake city is in (candidates pick their country from a list).
+const CITY_COUNTRY = {
+  London: 'United Kingdom', Manchester: 'United Kingdom', Bristol: 'United Kingdom', Leeds: 'United Kingdom', Edinburgh: 'United Kingdom',
+  'New York': 'United States', Austin: 'United States', Chicago: 'United States', Seattle: 'United States', Boston: 'United States',
+  Toronto: 'Canada', Berlin: 'Germany', Amsterdam: 'Netherlands', Dublin: 'Ireland'
+};
+
 function candidate(spec) {
   const cid = `help-cand-${spec.key}`;
   return {
@@ -59,6 +66,7 @@ function candidate(spec) {
     roleTitle: spec.role,
     yearsExperience: spec.years,
     location: spec.city,
+    country: CITY_COUNTRY[spec.city] || null,
     status: spec.status,
     profileStrength: 90,
     experiences: spec.jobs.map((job, i) => ({
@@ -276,8 +284,20 @@ const purchase = (spec) => {
     id: `help-pur-${spec.key}`,
     candidateId: base.id,
     recruitmentStatus: spec.pipeline,
-    notes: spec.notes || null,
+    notes: spec.notes
+      ? [{
+          id: `help-note-${spec.key}`,
+          text: spec.notes,
+          createdAt: daysAgo(spec.unlocked - 1),
+          author: { id: 'help-member', name: 'You', removed: false, you: true },
+          editedAt: null,
+          editedBy: null,
+        }]
+      : [],
     updatedAt: daysAgo(spec.unlocked - 1),
+    // Days since the status last changed (defaults to the day after the unlock).
+    statusChangedAt: daysAgo(spec.statusDays ?? spec.unlocked - 1),
+    hiringFor: spec.hiringFor || null,
     unlockedAt: daysAgo(spec.unlocked),
     creditsSpent: 1,
     unlockedBy: null,
@@ -287,7 +307,7 @@ const purchase = (spec) => {
 
 const PURCHASES = [
   purchase({
-    key: 'b1', name: 'Emily Carter', initials: 'EC', color: '#3b6fb0', email: 'emily.carter@example.com', phone: '+44 7700 900123', linkedin: 'https://linkedin.com/in/example-emily',
+    key: 'b1', hiringFor: 'Frontend Developer', name: 'Emily Carter', initials: 'EC', color: '#3b6fb0', email: 'emily.carter@example.com', phone: '+44 7700 900123', linkedin: 'https://linkedin.com/in/example-emily',
     unlocked: 2, pipeline: 'NEW',
     role: 'Senior Frontend Developer', years: 6, city: 'London', status: 'ACTIVE', mode: 'HYBRID', salary: 3700, notice: '1m',
     skills: ['React', 'TypeScript', 'Redux', 'Next.js', 'Testing Library', 'Figma'],
@@ -299,7 +319,7 @@ const PURCHASES = [
     degree: 'BSc Software Engineering', school: 'University of Belgrade', gradYear: 2019,
   }),
   purchase({
-    key: 'b2', name: 'James Mitchell', initials: 'JM', color: '#2f9e69', email: 'james.mitchell@example.com', phone: '+44 7700 900456', linkedin: 'https://linkedin.com/in/example-james',
+    key: 'b2', hiringFor: 'DevOps Engineer', statusDays: 16, name: 'James Mitchell', initials: 'JM', color: '#2f9e69', email: 'james.mitchell@example.com', phone: '+44 7700 900456', linkedin: 'https://linkedin.com/in/example-james',
     unlocked: 6, pipeline: 'CONTACTED', notes: 'Called on Monday, sending the task on Wednesday.',
     role: 'DevOps Engineer', years: 5, city: 'Manchester', status: 'ACTIVE', mode: 'REMOTE', salary: 4000, notice: '2w',
     skills: ['AWS', 'Terraform', 'Kubernetes', 'GitHub Actions', 'Linux'],
@@ -311,7 +331,7 @@ const PURCHASES = [
     degree: 'BSc Computer Engineering', school: 'University of Novi Sad', gradYear: 2019,
   }),
   purchase({
-    key: 'b3', name: 'Sarah Thompson', initials: 'ST', color: '#C98A1F', email: 'sarah.thompson@example.com', phone: '+1 212 555 0147', linkedin: 'https://linkedin.com/in/example-sarah',
+    key: 'b3', hiringFor: 'Product Designer', name: 'Sarah Thompson', initials: 'ST', color: '#C98A1F', email: 'sarah.thompson@example.com', phone: '+1 212 555 0147', linkedin: 'https://linkedin.com/in/example-sarah',
     unlocked: 12, pipeline: 'INTERVIEWED', notes: 'Great second interview. Waiting for the reference check.',
     role: 'Product Designer', years: 6, city: 'New York', status: 'OPEN', mode: 'HYBRID', salary: 3100, notice: '1m',
     skills: ['Figma', 'UX Research', 'Prototyping', 'Design Systems', 'Usability testing'],
@@ -323,7 +343,7 @@ const PURCHASES = [
     degree: 'MA Interaction Design', school: 'University of Arts Belgrade', level: 'MASTERS', gradYear: 2018,
   }),
   purchase({
-    key: 'b4', name: 'Michael Brooks', initials: 'MB', color: '#7a4fb0', email: 'michael.brooks@example.com', phone: '+1 512 555 0183', linkedin: 'https://linkedin.com/in/example-michael',
+    key: 'b4', hiringFor: 'Backend Developer', name: 'Michael Brooks', initials: 'MB', color: '#7a4fb0', email: 'michael.brooks@example.com', phone: '+1 512 555 0183', linkedin: 'https://linkedin.com/in/example-michael',
     unlocked: 34, pipeline: 'HIRED',
     hire: { id: 'help-hire-1', purchaseId: 'help-pur-b4', hireDate: daysAgo(12), position: 'Backend Developer', salaryClauseRespected: true, ratingOverall: 5, comments: null, createdAt: daysAgo(12) },
     role: 'Backend Developer (Node.js)', years: 4, city: 'Austin', status: 'ACTIVE', mode: 'REMOTE', salary: 2900, notice: 'now',
@@ -336,7 +356,7 @@ const PURCHASES = [
     degree: 'BSc Computer Science', school: 'University of Niš', gradYear: 2020,
   }),
   purchase({
-    key: 'b5', name: 'Olivia Bennett', initials: 'OB', color: '#cf4b4b', email: 'olivia.bennett@example.com', phone: '+1 416 555 0129', linkedin: 'https://linkedin.com/in/example-olivia',
+    key: 'b5', hiringFor: 'Frontend Developer', name: 'Olivia Bennett', initials: 'OB', color: '#cf4b4b', email: 'olivia.bennett@example.com', phone: '+1 416 555 0129', linkedin: 'https://linkedin.com/in/example-olivia',
     unlocked: 41, pipeline: 'REJECTED', notes: 'Looking for a fully remote role only.',
     role: 'QA Engineer', years: 3, city: 'Toronto', status: 'OPEN', mode: 'REMOTE', salary: 2100, notice: '2w',
     skills: ['Cypress', 'Postman', 'Jira', 'SQL', 'Test planning'],
@@ -639,7 +659,8 @@ async function shotPurchased(page) {
   await page.evaluate(() => { document.querySelector('header').style.visibility = ''; });
 
   const other = page.locator('article').filter({ hasText: 'James Mitchell' }).first();
-  await other.locator('select').selectOption('hired');
+  await other.locator('button', { hasText: 'Hire tracking' }).click();
+  await other.locator('button[aria-pressed]', { hasText: 'Hired' }).click();
   const modal = page.locator('[role="dialog"][aria-label="Hiring feedback"]');
   await modal.waitFor();
   await settle(page, 600);

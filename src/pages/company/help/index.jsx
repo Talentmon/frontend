@@ -545,7 +545,7 @@ const CompanyHelp = () => {
                 <Points
                   columns={2}
                   items={[
-                    { icon: 'Filter', title: 'Filters', text: 'By industry, experience, languages, skills and salary, by who saved the candidate when you work as a team, or notes only.' },
+                    { icon: 'Filter', title: 'Filters', text: 'Who saved the candidate (when you work as a team), industry, experience, skills, salary and languages; More filters adds location, education, certifications and preferences. Lists offer only what your saved candidates have. With a CV open, the filters sit in a column beside the cards.' },
                     { icon: 'ArrowUpDown', title: 'Sort', text: 'Recently saved, oldest, experience, salary or your custom order.' },
                     { icon: 'GripVertical', title: 'Reorder', text: 'Drag cards into your own order, for example your favourites first.' },
                     { icon: 'CheckSquare', title: 'Select', text: 'Click the cards you want, then Unlock all at once or Remove selected.' },
@@ -583,7 +583,7 @@ const CompanyHelp = () => {
                   <div className={styles.subTitle}>After you unlock</div>
                   <ul className={styles.checks}>
                     <li><Icon name="Check" size={15} />The name, photo, contact details and employers are revealed.</li>
-                    <li><Icon name="Check" size={15} />The candidate moves to <b>Purchased</b>, where your whole team can see them.</li>
+                    <li><Icon name="Check" size={15} />The candidate moves to <b>Purchased</b>, where your whole team can see them. Their notes come along.</li>
                     <li><Icon name="Check" size={15} />The profile stays unlocked. You never pay for the same candidate twice.</li>
                   </ul>
                 </div>
@@ -615,7 +615,7 @@ const CompanyHelp = () => {
               <Figure
                 src="/help/purchased-overview.webp"
                 alt="Purchased profiles page"
-                caption="Unlocked candidates, with your hiring stats on the side."
+                caption="Your hiring numbers and the pipeline at the top, then the filters and your candidates."
                 onZoom={setZoomed}
               />
               <div className={`${styles.split} ${styles.splitCard}`}>
@@ -630,11 +630,12 @@ const CompanyHelp = () => {
                   <div className={styles.subTitle}>On each card</div>
                   <Points
                     items={[
-                      { icon: 'Mail', title: 'Contact', text: 'Email and phone with a copy button, and a link to their LinkedIn.' },
+                      { icon: 'Mail', title: 'Contact', text: 'Email and phone with a copy button (click to write or call), and a link to their LinkedIn.' },
                       { icon: 'FileText', title: 'Open CV', text: 'The full CV, with Send email and Print. Choose "Save as PDF" in the print dialog to keep a PDF.' },
                       { icon: 'Download', title: 'Download CV', text: 'Saves a copy of the CV to your computer.' },
-                      { icon: 'Pencil', title: 'Notes', text: 'Shared with your team.' },
-                      { icon: 'ChevronDown', title: 'Show more', text: 'Work experience, education and additional activities.' },
+                      { icon: 'Pencil', title: 'Notes', text: 'The same notes as on Saved. Each shows who wrote it and when; your whole team sees them and can edit them.' },
+                      { icon: 'Route', title: 'Hire tracking', text: 'The bar at the bottom shows the current status. Open it and click a pill to change it.' },
+                      { icon: 'Briefcase', title: 'Hiring for', text: 'The position you\'re considering them for: pick one you already use or type a new one. It fills in the hire form, and the pipeline can show one position at a time.' },
                       { icon: 'Unlock', title: 'Unlocked date', text: 'When the profile was unlocked, and by whom.' },
                     ]}
                   />
@@ -643,7 +644,7 @@ const CompanyHelp = () => {
 
               <div className={styles.subTitle}>Track your hiring</div>
               <div className={styles.prose}>
-                <p>Use the status on each card to follow every candidate through your process:</p>
+                <p>Open <b>Hire tracking</b> on each card and click a status to follow every candidate through your process:</p>
               </div>
               <div className={styles.pipeline}>
                 {PIPELINE.map((stage, index) => (
@@ -654,6 +655,19 @@ const CompanyHelp = () => {
                   </React.Fragment>
                 ))}
               </div>
+              <div className={styles.subTitle}>Find and follow candidates</div>
+              <Points
+                columns={2}
+                items={[
+                  { icon: 'Route', title: 'Pipeline', text: 'Each stage shows how many candidates are there, their share and how long they have been there on average. Click a stage to show only those.' },
+                  { icon: 'Briefcase', title: 'Hiring for', text: 'Pick a position above the pipeline to see only the candidates for it. The menu shows how many you unlocked and hired for each one.' },
+                  { icon: 'Clock', title: 'Needs attention', text: 'Candidates still in your process with no status change for 14 days or more get a badge on their stage. Review shows them, the longest waiting first.' },
+                  { icon: 'Search', title: 'Search', text: 'By name, email, phone, skills, notes or position.' },
+                  { icon: 'Filter', title: 'Filters', text: 'Who unlocked them (when you work as a team) and when, industry, experience, skills and salary; More filters adds languages, location, education, certifications and preferences. Lists offer only what your candidates have. With a CV open, the filters sit in a column beside the cards, with Status and Hiring for.' },
+                  { icon: 'ArrowUpDown', title: 'Sort', text: 'Recently unlocked, longest waiting, recently updated, name, experience, salary, or who can start soonest. Cards and Table keep the same order.' },
+                ]}
+              />
+
               <div className={styles.split}>
                 <div className={styles.prose}>
                   <p>
@@ -661,10 +675,10 @@ const CompanyHelp = () => {
                     the hire date, the position, whether you honored the salary clause, and optional comments. It keeps
                     the candidate pool high quality, and it's what lets the candidate rate you back.
                   </p>
-                  <Callout tone="info" icon="LayoutGrid" title="Cards, table and stats">
-                    Switch between <b>Cards</b> and <b>Table</b> view. The side panel shows your numbers: Credits spent,
-                    profiles unlocked, hire rate, monthly spending, candidates by status, average time to hire and
-                    Credits per hire.
+                  <Callout tone="info" icon="LayoutGrid" title="Cards, table and numbers">
+                    Switch between <b>Cards</b> and <b>Table</b> view. The numbers at the top cover all your unlocked
+                    candidates: hire rate, then time and Credits per hire once you've hired someone, and the Credits you
+                    have left. <b>Analytics</b> at the end of them opens the full report on the Credits page.
                   </Callout>
                 </div>
                 <Figure

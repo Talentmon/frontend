@@ -107,12 +107,17 @@ function highestEducation(education = []) {
   return best ? EDUCATION_BACKEND_TO_FILTER[best.level] : undefined;
 }
 
-function availabilityBucket(preferences) {
+// Notice period in days (a month counts as 30), or undefined when not given.
+function noticeDays(preferences) {
   if (!preferences?.noticeUnit) return undefined;
-  const days =
-    preferences.noticeUnit === 'DAY' ? preferences.noticeNum
+  return preferences.noticeUnit === 'DAY' ? preferences.noticeNum
     : preferences.noticeUnit === 'WEEK' ? preferences.noticeNum * 7
     : preferences.noticeNum * 30;
+}
+
+function availabilityBucket(preferences) {
+  const days = noticeDays(preferences);
+  if (days === undefined) return undefined;
   if (days <= 0) return 'immediately';
   if (days <= 14) return '2-weeks';
   if (days <= 30) return '1-month';
@@ -145,10 +150,14 @@ export function candidateToFrontend(raw) {
     skills: (raw.skills || []).map((s) => s.name),
     languages: (raw.languages || []).map((l) => ({ name: l.name, level: l.level, note: l.note })),
     education: highestEducation(raw.education),
+    // Every level they have, and the notice in days: Bookmarked and Purchased
+    // filter on these the way Search's backend does.
+    educationLevels: [...new Set((raw.education || []).map((e) => EDUCATION_BACKEND_TO_FILTER[e.level]).filter(Boolean))],
     certificates: raw.certifications || [],
     jobType: prefs?.type ? [JOB_TYPE_TO_FRONTEND[prefs.type]].filter(Boolean) : [],
     workArrangement: prefs?.mode ? WORK_MODE_TO_FRONTEND[prefs.mode] : undefined,
     availability: availabilityBucket(prefs),
+    noticeDays: noticeDays(prefs),
     relocationReady: !!prefs?.relocationReady,
     travelReady: !!prefs?.travelReady,
     expectedSalary: prefs

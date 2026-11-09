@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Header from 'components/ui/Header';
 import BookmarkedCandidatesHeader from './components/BookmarkedCandidatesHeader';
 import BookmarkedCandidatesFilters from './components/BookmarkedCandidatesFilters';
+import BookmarkedFilterSidebar from './components/BookmarkedFilterSidebar';
 import BookmarkedResultsBar from './components/BookmarkedResultsBar';
 import BulkActionsToolbar from './components/BulkActionsToolbar';
 import BookmarkedCandidatesGrid from './components/BookmarkedCandidatesGrid';
@@ -11,8 +12,10 @@ import Toast from './components/Toast';
 import UnlockConfirmModal from '../candidate-search-dashboard/components/UnlockConfirmModal';
 import CandidatePreviewDrawer from '../candidate-search-dashboard/components/CandidatePreviewDrawer';
 import Icon from 'components/AppIcon';
-import { buildBaseSalaryRange, filterByBaseSalary } from 'utils/salaryFilterService';
-import { getSkillNamesFor } from 'utils/skills';
+import { ListSearch } from '../candidate-filters/CandidateFilterBar';
+import { COMMON_EMPTY, applyCommonFilters, commonOptions } from '../candidate-filters/commonFilters';
+import { CV_PUSH_BREAKPOINT, useMinWidth } from '../candidate-filters/cvLayout';
+import cf from '../candidate-filters/candidateFilters.module.scss';
 import { setCreditBalance, useCreditBalance } from 'lib/creditBalance';
 import {
   listBookmarks,
@@ -28,21 +31,10 @@ import {
   revealedToFrontend,
   UNLOCK_COST,
 } from './bookmarksApi';
-import { inExperienceRange } from './filterUtils';
 import styles from './styles/bookmarked.module.scss';
 
-const EMPTY_FILTERS = {
-  search: '',
-  experience: '',
-  languages: [],
-  salary: { min: '', max: '', currency: 'EUR' },
-  industry: [],
-  subIndustry: [],
-  skillCategory: [],
-  skills: [],
-  skillsMatch: 'any',
-  hasNotes: false
-};
+// Search's filters (shared with Purchased) plus Saved by: the teammates picked, empty = everyone.
+const EMPTY_FILTERS = { ...COMMON_EMPTY, savedBy: [] };
 
 const BookmarkedCandidatesPage = () => {
   const navigate = useNavigate();
@@ -64,9 +56,8 @@ const BookmarkedCandidatesPage = () => {
   const [previewId, setPreviewId] = useState(null);
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef(null);
-  // Team members picked in the "Saved by" filter; empty = everyone.
-  const [savedBy, setSavedBy] = useState([]);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const isPushWide = useMinWidth(CV_PUSH_BREAKPOINT);
 
   useEffect(() => {
     listBookmarks()
@@ -92,16 +83,17 @@ const BookmarkedCandidatesPage = () => {
       entry.count += 1;
       byId.set(c.bookmarkedById, entry);
     });
-    return [...byId.values()]
-      .sort((a, b) => a.label.localeCompare(b.label))
-      .map(({ count, ...option }) => ({ ...option, description: String(count) }));
+    return [...byId.values()].sort((a, b) => a.label.localeCompare(b.label));
   }, [allBookmarkedCandidates]);
+
+  // What the filter lists offer: only what the bookmarked candidates have, with counts.
+  const filterOpts = useMemo(() => commonOptions(allBookmarkedCandidates), [allBookmarkedCandidates]);
 
   // Drop a pick whose last bookmark was removed, so it can't keep the list empty.
   useEffect(() => {
-    setSavedBy((prev) => {
-      const next = prev.filter((id) => recruiterOptions.some((o) => o.value === id));
-      return next.length === prev.length ? prev : next;
+    setFilters((prev) => {
+      const next = prev.savedBy.filter((id) => recruiterOptions.some((o) => o.value === id));
+      return next.length === prev.savedBy.length ? prev : { ...prev, savedBy: next };
     });
   }, [recruiterOptions]);
 
@@ -109,80 +101,24 @@ const BookmarkedCandidatesPage = () => {
   useEffect(() => {
     let filtered = [...allBookmarkedCandidates];
 
-    if (savedBy.length > 0) {
-      filtered = filtered.filter((candidate) => savedBy.includes(candidate?.bookmarkedById));
+    if (filters.savedBy.length > 0) {
+      filtered = filtered.filter((candidate) => filters.savedBy.includes(candidate?.bookmarkedById));
     }
 
-    // Apply search filter - position, skills and location. (Bookmarked
-    // candidates are never unlocked - those move to Purchased - so there's no
-    // name to search.)
+    // Search: position, skills and location. (Bookmarked candidates are never
+    // unlocked - those move to Purchased - so there's no name to search.)
     if (filters?.search) {
       const searchTerm = filters?.search?.toLowerCase();
       filtered = filtered?.filter(candidate =>
         candidate?.position?.toLowerCase()?.includes(searchTerm) ||
         candidate?.location?.toLowerCase()?.includes(searchTerm) ||
+        candidate?.country?.toLowerCase()?.includes(searchTerm) ||
         candidate?.skills?.some(skill => skill?.toLowerCase()?.includes(searchTerm))
       );
     }
 
-    // Apply experience filter (same buckets as Search)
-    if (filters?.experience) {
-      filtered = filtered?.filter(candidate => inExperienceRange(candidate?.experience, filters.experience));
-    }
-
-    // Apply languages filter - same as Search: any picked language, at one
-    // of its picked levels (no levels picked = any level).
-    if (filters?.languages?.length > 0) {
-      filtered = filtered?.filter(candidate =>
-        filters?.languages?.some(entry =>
-          candidate?.languages?.some(language =>
-            language?.name?.toLowerCase() === entry?.name?.toLowerCase() &&
-            (!entry?.levels?.length || entry?.levels?.includes(language?.level))
-          )
-        )
-      );
-    }
-
-    // Apply industry filter - matched against the industries of the
-    // candidate's experience, like Search. A picked industry covers all its
-    // subindustries; subindustries are picked only for industries that aren't.
-    if (filters?.industry?.length > 0 || filters?.subIndustry?.length > 0) {
-      filtered = filtered?.filter(candidate =>
-        candidate?.industries?.some(industry => filters?.industry?.includes(industry)) ||
-        candidate?.subIndustries?.some(sub => filters?.subIndustry?.includes(sub))
-      );
-    }
-
-    // Apply salary range filter - the filter range is converted to base
-    // currency once, then compared against each candidate's precomputed
-    // base salary (see salaryFilterService).
-    if (filters?.salary?.min || filters?.salary?.max) {
-      const baseRange = buildBaseSalaryRange({
-        min: filters?.salary?.min,
-        max: filters?.salary?.max,
-        currency: filters?.salary?.currency || 'EUR'
-      });
-      filtered = filterByBaseSalary(filtered, baseRange, (candidate) => candidate?.expectedSalary?.base);
-    }
-
-    // Apply skills filter - whole skill names, as in Search ("Java" doesn't
-    // match "JavaScript"). Picked skills match any or all of them (Match
-    // any / Match all); a category with no skill picked matches any skill in it.
-    if (filters?.skills?.length > 0) {
-      const names = filters.skills.map((name) => name?.toLowerCase());
-      filtered = filtered?.filter(candidate => {
-        const has = new Set(candidate?.skills?.map((skill) => skill?.toLowerCase()));
-        return filters?.skillsMatch === 'all' ? names.every((name) => has.has(name)) : names.some((name) => has.has(name));
-      });
-    } else if (filters?.skillCategory?.length > 0) {
-      const names = new Set(getSkillNamesFor({ categories: filters.skillCategory }).map((name) => name?.toLowerCase()));
-      filtered = filtered?.filter(candidate => candidate?.skills?.some(skill => names.has(skill?.toLowerCase())));
-    }
-
-    // Apply notes filter
-    if (filters?.hasNotes) {
-      filtered = filtered?.filter(candidate => candidate?.notes?.length > 0);
-    }
+    // Search's filters, matched as Search's backend does (candidate-filters/commonFilters.js).
+    filtered = applyCommonFilters(filtered, filters);
 
     // Apply sorting
     filtered?.sort((a, b) => {
@@ -209,7 +145,7 @@ const BookmarkedCandidatesPage = () => {
     });
 
     setFilteredCandidates(filtered);
-  }, [allBookmarkedCandidates, filters, sortBy, savedBy]);
+  }, [allBookmarkedCandidates, filters, sortBy]);
 
   const showToast = (message) => {
     setToastMsg(message);
@@ -460,9 +396,8 @@ const BookmarkedCandidatesPage = () => {
     setPreviewId(null);
   };
 
-  // Clears every filter (and Saved by); the salary currency stays as picked.
+  // Clears every filter (Saved by too); the salary currency stays as picked.
   const handleClearFilters = () => {
-    setSavedBy([]);
     setFilters((prev) => ({ ...EMPTY_FILTERS, salary: { ...EMPTY_FILTERS.salary, currency: prev?.salary?.currency || 'EUR' } }));
   };
 
@@ -474,109 +409,146 @@ const BookmarkedCandidatesPage = () => {
 
   const sharedCount = allBookmarkedCandidates?.filter((c) => c?.pocket !== 'PERSONAL')?.length;
 
-  return (
-    <div className={styles.page}>
-      <Header />
-      <main className="pt-16 max-w-[1420px] mx-auto px-[22px]">
-        {/* Title, the slots strip and Search candidates */}
-        <BookmarkedCandidatesHeader
-          slots={{
-            used: sharedCount,
-            limit: bookmarkLimit,
-            personalUsed: allBookmarkedCandidates?.filter((c) => c?.pocket === 'PERSONAL' && c?.canRemove)?.length,
-            personalLimit,
-            overflowDeadline
-          }}
-          onSearchCandidates={handleSearchCandidates}
-          onRemoveSome={handleRemoveSome}
+  // CV open beside the cards (as on Search and Purchased): the filters in a
+  // column on the left, the search, results bar and cards (448px) beside it.
+  const isCompact = previewId !== null && isPushWide;
+
+  const results = (
+    <>
+      <BookmarkedResultsBar
+        shown={filteredCandidates?.length}
+        total={allBookmarkedCandidates?.length}
+        sortBy={sortBy}
+        onSortChange={setSortBy}
+        reorderMode={reorderMode}
+        hasReordered={hasReordered}
+        onToggleReorderMode={handleToggleReorderMode}
+        onSaveOrder={handleSaveOrder}
+        selectionMode={selectionMode}
+        onToggleSelectionMode={handleToggleSelectionMode}
+        compact={isCompact}
+      />
+
+      {/* Bulk Actions Toolbar */}
+      {selectionMode && (
+        <BulkActionsToolbar
+          selectedCandidates={selectedCandidates}
+          allCandidates={filteredCandidates}
+          onSelectAll={handleSelectAll}
+          onClearSelection={handleClearSelection}
+          onBulkUnlock={handleBulkUnlock}
+          onBulkRemove={handleBulkRemove}
+          creditBalance={creditBalance}
         />
+      )}
+
+      {/* Candidates Grid */}
+      {filteredCandidates?.length > 0 ? (
+        <BookmarkedCandidatesGrid
+          candidates={filteredCandidates}
+          selectedCandidates={selectedCandidates}
+          onCandidateSelect={handleCandidateSelect}
+          onRemoveBookmark={handleRemoveBookmark}
+          onUnlockProfile={handleRequestUnlock}
+          onAddNote={handleAddNote}
+          onEditNote={handleEditNote}
+          onDeleteNote={handleDeleteNote}
+          onPreviewCandidate={handlePreviewCandidate}
+          activePreviewId={previewId}
+          creditBalance={creditBalance}
+          selectionMode={selectionMode}
+          reorderMode={reorderMode}
+          onReorderCandidates={handleReorderCandidates}
+        />
+      ) : (
+        <div className={styles.noResults}>
+          <Icon name="Search" size={48} />
+          <h3>No results</h3>
+          <p>Try different filters or search for new candidates.</p>
+          <button className={styles.btnGhost} onClick={handleClearFilters}>
+            <Icon name="RotateCcw" size={16} />Clear filters
+          </button>
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <div className={`${styles.page} ${previewId !== null ? styles.previewOpen : ''}`}>
+      <Header />
+      <main className={`pt-16 max-w-[1420px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
+        {/* Title, the slots strip and Search candidates (just the title beside an open CV) */}
+        {isCompact ? (
+          <header className={cf.cvTitle}>
+            <h1>Bookmarked candidates</h1>
+          </header>
+        ) : (
+          <BookmarkedCandidatesHeader
+            slots={{
+              used: sharedCount,
+              limit: bookmarkLimit,
+              personalUsed: allBookmarkedCandidates?.filter((c) => c?.pocket === 'PERSONAL' && c?.canRemove)?.length,
+              personalLimit,
+              overflowDeadline
+            }}
+            onSearchCandidates={handleSearchCandidates}
+            onRemoveSome={handleRemoveSome}
+          />
+        )}
 
         {!loading && allBookmarkedCandidates?.length === 0 ? (
           <EmptyBookmarksState onSearchCandidates={handleSearchCandidates} />
+        ) : isCompact ? (
+          <div className={cf.cvLayout}>
+            <div className={cf.cvSide}>
+              <BookmarkedFilterSidebar
+                filters={filters}
+                onFiltersChange={handleFiltersChange}
+                opts={filterOpts}
+                recruiterOptions={recruiterOptions}
+              />
+            </div>
+            <div className={cf.cvResults}>
+              <ListSearch
+                id="bm-search"
+                label="Search bookmarked candidates"
+                placeholder="Search by position, skills, location…"
+                className={cf.cvSearch}
+                value={filters.search}
+                onChange={(value) => setFilters((prev) => ({ ...prev, search: value }))}
+              />
+              {results}
+            </div>
+          </div>
         ) : (
           <>
             <BookmarkedCandidatesFilters
               filters={filters}
               onFiltersChange={handleFiltersChange}
               onClearFilters={handleClearFilters}
-              candidates={allBookmarkedCandidates}
+              opts={filterOpts}
               recruiterOptions={recruiterOptions}
-              savedBy={savedBy}
-              onSavedByChange={setSavedBy}
             />
-
-            <BookmarkedResultsBar
-              shown={filteredCandidates?.length}
-              total={allBookmarkedCandidates?.length}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-              reorderMode={reorderMode}
-              hasReordered={hasReordered}
-              onToggleReorderMode={handleToggleReorderMode}
-              onSaveOrder={handleSaveOrder}
-              selectionMode={selectionMode}
-              onToggleSelectionMode={handleToggleSelectionMode}
-            />
-
-            {/* Bulk Actions Toolbar */}
-            {selectionMode && (
-              <BulkActionsToolbar
-                selectedCandidates={selectedCandidates}
-                allCandidates={filteredCandidates}
-                onSelectAll={handleSelectAll}
-                onClearSelection={handleClearSelection}
-                onBulkUnlock={handleBulkUnlock}
-                onBulkRemove={handleBulkRemove}
-                creditBalance={creditBalance}
-              />
-            )}
-
-            {/* Candidates Grid */}
-            {filteredCandidates?.length > 0 ? (
-              <BookmarkedCandidatesGrid
-                candidates={filteredCandidates}
-                selectedCandidates={selectedCandidates}
-                onCandidateSelect={handleCandidateSelect}
-                onRemoveBookmark={handleRemoveBookmark}
-                onUnlockProfile={handleRequestUnlock}
-                onAddNote={handleAddNote}
-                onEditNote={handleEditNote}
-                onDeleteNote={handleDeleteNote}
-                onPreviewCandidate={handlePreviewCandidate}
-                activePreviewId={previewId}
-                creditBalance={creditBalance}
-                selectionMode={selectionMode}
-                reorderMode={reorderMode}
-                onReorderCandidates={handleReorderCandidates}
-              />
-            ) : (
-              <div className={styles.noResults}>
-                <Icon name="Search" size={48} />
-                <h3>No results</h3>
-                <p>Try different filters or search for new candidates.</p>
-                <button className={styles.btnGhost} onClick={handleClearFilters}>
-                  <Icon name="RotateCcw" size={16} />Clear filters
-                </button>
-              </div>
-            )}
+            {results}
           </>
         )}
       </main>
 
       <Toast message={toastMsg} />
 
-      {/* Anonymous CV preview drawer — always overlay+scrim (no filter
-          sidebar to make room for by pushing, and bookmark grids stay narrow
-          by design, so squeezing them further never makes sense). */}
+      {/* Anonymous CV preview drawer, on the right. From CV_PUSH_BREAKPOINT it
+          pushes the page aside (the filters and cards beside it, as on Search
+          and Purchased); below that it overlays. It gets every bookmark, not
+          just the filtered ones, so filtering beside an open CV keeps it open. */}
       <CandidatePreviewDrawer
-        candidates={filteredCandidates}
+        candidates={allBookmarkedCandidates}
         activeId={previewId}
         onClose={handleClosePreview}
-        bookmarkedCandidates={filteredCandidates?.map((c) => c?.id)}
+        bookmarkedCandidates={allBookmarkedCandidates?.map((c) => c?.id)}
         onBookmark={handleRemoveBookmark}
         onUnlock={handleRequestUnlock}
-        unlockCost={filteredCandidates?.find((c) => c?.id === previewId)?.unlockCost || UNLOCK_COST}
-        forceOverlay
+        unlockCost={allBookmarkedCandidates?.find((c) => c?.id === previewId)?.unlockCost || UNLOCK_COST}
+        pushBreakpoint={CV_PUSH_BREAKPOINT}
       />
 
       {/* Unlock confirmation modal */}

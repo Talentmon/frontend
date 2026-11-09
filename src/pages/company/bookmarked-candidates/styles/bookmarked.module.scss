@@ -23,12 +23,24 @@ $r-lg: 18px;
 $r-md: 13px;
 $r-sm: 9px;
 $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+// From here the CV drawer pushes the page aside instead of overlaying it
+// (CV_PUSH_BREAKPOINT in candidate-filters/cvLayout.js).
+$push-bp: 1400px;
 
 // ===== Page shell =====
 .page {
   background: $paper;
   min-height: 100vh;
   padding: 26px 0 70px;
+  transition: padding-right 0.34s $ease;
+
+  // Wide screens: the CV drawer (on the right, 45vw as in drawer.module.scss)
+  // pushes the content left, so the filters and cards stay beside it.
+  @media (min-width: $push-bp) {
+    &.previewOpen {
+      padding-right: 45vw;
+    }
+  }
 }
 
 .btnPrimary {

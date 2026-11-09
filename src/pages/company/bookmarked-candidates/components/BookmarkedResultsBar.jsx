@@ -14,7 +14,10 @@ const SORT_OPTIONS = [
   { value: 'custom', label: 'Custom order' }
 ];
 
-/** "Showing 4 of 10 candidates" with Sort, Reorder and Select multiple, right above the cards. */
+/**
+ * "Showing 4 of 10 candidates" with Sort, Reorder and Select multiple, right above the cards.
+ * `compact` (beside an open CV): Sort shows just its name, Reorder and Select multiple just their icons.
+ */
 const BookmarkedResultsBar = ({
   shown,
   total,
@@ -25,7 +28,8 @@ const BookmarkedResultsBar = ({
   onToggleReorderMode,
   onSaveOrder,
   selectionMode,
-  onToggleSelectionMode
+  onToggleSelectionMode,
+  compact = false
 }) => {
   const [sortOpen, setSortOpen] = useState(false);
   const closeSort = useCallback(() => setSortOpen(false), []);
@@ -53,7 +57,7 @@ const BookmarkedResultsBar = ({
           width={210}
           renderTrigger={(props) => (
             <button {...props} className={`${styles.toolBtn} ${sortOpen ? styles.toolBtnOpen : ''}`} disabled={reorderMode}>
-              <span className={styles.toolBtnMuted}>Sort:</span>
+              <span className={compact ? styles.srOnly : styles.toolBtnMuted}>Sort:</span>
               <span className={styles.toolBtnStrong}>{sortLabel}</span>
               <Icon name="ChevronDown" size={14} strokeWidth={2.2} className={styles.pillChevron} />
             </button>
@@ -82,9 +86,10 @@ const BookmarkedResultsBar = ({
             type="button"
             className={`${styles.toolBtn} ${reorderMode ? styles.toolBtnOn : ''}`}
             onClick={reorderMode && hasReordered ? onSaveOrder : onToggleReorderMode}
+            title={compact ? reorderLabel : undefined}
           >
             <Icon name={reorderIcon} size={16} />
-            {reorderLabel}
+            <span className={compact ? styles.srOnly : undefined}>{reorderLabel}</span>
           </button>
         )}
 
@@ -93,9 +98,10 @@ const BookmarkedResultsBar = ({
             type="button"
             className={`${styles.toolBtn} ${selectionMode ? styles.toolBtnOn : ''}`}
             onClick={onToggleSelectionMode}
+            title={compact ? (selectionMode ? 'Cancel selection' : 'Select multiple') : undefined}
           >
             <Icon name={selectionMode ? 'X' : 'CheckSquare'} size={16} />
-            {selectionMode ? 'Cancel selection' : 'Select multiple'}
+            <span className={compact ? styles.srOnly : undefined}>{selectionMode ? 'Cancel selection' : 'Select multiple'}</span>
           </button>
         )}
       </div>

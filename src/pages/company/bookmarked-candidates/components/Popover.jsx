@@ -21,6 +21,8 @@ const Popover = ({
   width,
   padded = false,
   role = 'dialog',
+  // Extra class on the root, e.g. to fill a grid cell (Purchased's compact filters).
+  className = '',
   children
 }) => {
   const rootRef = useRef(null);

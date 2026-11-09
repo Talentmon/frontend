@@ -4,7 +4,8 @@ import Select from 'components/ui/Select';
 import { LANGUAGE_NAMES, LEVELS } from 'utils/languages';
 import styles from '../styles/dashboard.module.scss';
 
-const languageOptions = LANGUAGE_NAMES.map((language) => ({ value: language, label: language }));
+const toOptions = (names) => names.map((language) => ({ value: language, label: language }));
+const languageOptions = toOptions(LANGUAGE_NAMES);
 
 // Proficiency sub-filter shown per selected language - picking one or more
 // levels matches candidates at exactly those levels; none picked ("Any
@@ -17,8 +18,10 @@ const languageLevelOptions = LEVELS.map((level) => ({ value: level, label: level
  * name Select adds/removes entries (keeping levels already chosen for names
  * that stay), each row narrows its language to levels, and its X removes it.
  * A candidate matches with any picked language at one of its picked levels.
+ * `names` limits the list (Purchased offers only the languages its candidates speak).
  */
-const LanguageLevelFilter = ({ id, value = [], onChange, placeholder = 'Select languages' }) => {
+const LanguageLevelFilter = ({ id, value = [], onChange, placeholder = 'Select languages', names = null }) => {
+  const options = names ? toOptions(names) : languageOptions;
   const handleNamesChange = (names) => {
     onChange(names?.map((name) => value?.find((entry) => entry?.name === name) || { name, levels: [] }));
   };
@@ -35,7 +38,7 @@ const LanguageLevelFilter = ({ id, value = [], onChange, placeholder = 'Select l
     <>
       <Select
         id={id}
-        options={languageOptions}
+        options={options}
         value={value?.map((entry) => entry?.name)}
         onChange={handleNamesChange}
         placeholder={placeholder}

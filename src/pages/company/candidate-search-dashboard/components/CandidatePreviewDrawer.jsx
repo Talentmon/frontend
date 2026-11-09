@@ -81,8 +81,16 @@ const CandidatePreviewDrawer = ({
 
   useEffect(() => {
     if (!isOpen) return undefined;
+    // Escape closes the innermost thing first: an Escape a menu or panel on the page already
+    // used (defaultPrevented) isn't for the drawer, and a dropdown list still open (focus
+    // left it) closes before the drawer does — Select and Combobox close on "ui-select-open".
     const handleKeyDown = (e) => {
-      if (e?.key === 'Escape') onClose();
+      if (e?.key !== 'Escape' || e.defaultPrevented) return;
+      if (document.querySelector('[data-floating-menu]')) {
+        window.dispatchEvent(new CustomEvent('ui-select-open', { detail: { id: null } }));
+        return;
+      }
+      onClose();
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);

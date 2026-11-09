@@ -7,7 +7,8 @@ import styles from '../styles/bookmarked.module.scss';
  * it and puts focus back on the trigger; so does a click outside, except in a
  * Select/Combobox list opened from inside the panel (those are portaled to
  * <body> and marked data-floating-menu). While such a list is open, Escape
- * closes only the list; the next one closes the panel.
+ * closes only the list; the next one closes the panel. The panel takes Escape
+ * first (capture) and marks it handled, so a CV drawer behind it stays open.
  */
 const Popover = ({
   id,
@@ -34,6 +35,7 @@ const Popover = ({
     };
     const handleKeyDown = (e) => {
       if (e.key !== 'Escape' || e.defaultPrevented) return;
+      e.preventDefault();
       // A list still open inside the panel (focus left it after a click) goes
       // first: Select and Combobox close on another one's "ui-select-open".
       if (document.querySelector('[data-floating-menu]')) {
@@ -44,15 +46,15 @@ const Popover = ({
       document.getElementById(triggerId)?.focus();
     };
     document.addEventListener('mousedown', handleMouseDown);
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keydown', handleKeyDown, true);
     return () => {
       document.removeEventListener('mousedown', handleMouseDown);
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keydown', handleKeyDown, true);
     };
   }, [open, onClose, triggerId]);
 
   return (
-    <div ref={rootRef} className={styles.popRoot}>
+    <div ref={rootRef} className={`${styles.popRoot} ${className}`}>
       {renderTrigger({
         id: triggerId,
         type: 'button',

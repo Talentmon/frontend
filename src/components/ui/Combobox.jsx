@@ -163,6 +163,9 @@ const Combobox = React.forwardRef(({
                 closeDropdown();
             }
         } else if (e?.key === "Escape") {
+            // Closing an open list uses up the Escape (as Select's does), so the
+            // panel or drawer around it stays open; with the list closed it passes on.
+            if (isOpen) e.preventDefault();
             closeDropdown();
         } else if (e?.key === "Backspace" && multiple && !draft && selectedValues?.length > 0) {
             removeChip(selectedValues?.[selectedValues.length - 1]);

@@ -1,7 +1,7 @@
 import apiClient from 'lib/apiClient';
 import { candidateToFrontend } from '../candidate-search-dashboard/candidateSearchApi';
 
-export { unlockCandidate, revealedToFrontend } from '../candidate-search-dashboard/candidateSearchApi';
+export { unlockCandidate, revealedToFrontend, updateNote, deleteNote } from '../candidate-search-dashboard/candidateSearchApi';
 
 /** Matches the backend's UnlocksService UNLOCK_COST (1 credit per profile). */
 export const UNLOCK_COST = 1;
@@ -45,14 +45,6 @@ export function removeBookmark(bookmarkId) {
 
 export function addBookmarkNote(bookmarkId, text) {
   return apiClient.post(`/companies/me/bookmarks/${bookmarkId}/notes`, { text }).then((r) => r.data);
-}
-
-export function updateNote(noteId, text) {
-  return apiClient.patch(`/companies/me/notes/${noteId}`, { text }).then((r) => r.data);
-}
-
-export function deleteNote(noteId) {
-  return apiClient.delete(`/companies/me/notes/${noteId}`).then((r) => r.data);
 }
 
 export function reorderBookmarks(items) {

@@ -188,6 +188,14 @@ export function removeBookmark(id) {
   return apiClient.delete(`/companies/me/bookmarks/${id}`).then((r) => r.data);
 }
 
+// ---- Notes (on a bookmark or a purchase; editing works the same for both) ----
+export function updateNote(noteId, text) {
+  return apiClient.patch(`/companies/me/notes/${noteId}`, { text }).then((r) => r.data);
+}
+export function deleteNote(noteId) {
+  return apiClient.delete(`/companies/me/notes/${noteId}`).then((r) => r.data);
+}
+
 // ---- Credits ----
 export function listCreditPackages() {
   return apiClient.get('/companies/me/credits/packages').then((r) =>

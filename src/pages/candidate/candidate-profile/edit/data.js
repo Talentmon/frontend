@@ -737,7 +737,8 @@ export function createInitialState() {
       photo: null,
       role: 'Product Designer',
       years: '5',
-      location: 'Belgrade, Serbia',
+      location: 'Belgrade',
+      country: 'Serbia',
       email: 'jovana.kovacevic@email.com',
       phoneCode: '+381',
       phone: '64 118 9920',
@@ -873,7 +874,7 @@ export function createInitialState() {
 
 // Seeds a fresh profile from signup form input — unlike createInitialState(),
 // section titles are pre-filled but content is blank for the user to complete.
-export function createEmptyState({ name = '', role = '', years = '', location = '', email = '', phoneCode = DEFAULT_PHONE_CODE, phone = '' } = {}) {
+export function createEmptyState({ name = '', role = '', years = '', location = '', country = '', email = '', phoneCode = DEFAULT_PHONE_CODE, phone = '' } = {}) {
   return {
     basics: {
       name,
@@ -881,6 +882,7 @@ export function createEmptyState({ name = '', role = '', years = '', location = 
       role,
       years,
       location,
+      country,
       email,
       phoneCode,
       phone,

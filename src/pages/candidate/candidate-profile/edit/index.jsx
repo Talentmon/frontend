@@ -31,7 +31,7 @@ import CvPreview from './CvPreview';
 import './styles.scss';
 
 const SUMMARY_MIN_LENGTH = 200;
-const REQUIRED_BASICS_FIELDS = ['name', 'role', 'location', 'phone'];
+const REQUIRED_BASICS_FIELDS = ['name', 'role', 'location', 'country', 'phone'];
 
 const CandidateProfileEdit = () => {
   const navigate = useNavigate();
@@ -440,6 +440,7 @@ const CandidateProfileEdit = () => {
         name: state.basics.name,
         roleTitle: state.basics.role,
         location: state.basics.location,
+        country: state.basics.country || '',
         phoneCode: state.basics.phoneCode,
         phone: state.basics.phone,
         linkedin: state.basics.linkedin,

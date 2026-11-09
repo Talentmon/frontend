@@ -159,7 +159,7 @@ const CandidatePreviewDrawer = ({
                 </div>
                 <div className={styles.loc}>
                   <Icon name="MapPin" size={14} />
-                  <span>{candidate?.location}</span>
+                  <span>{candidate?.locationFull || candidate?.location}</span>
                 </div>
                 <span className={styles.lockPill}>
                   <Icon name="Lock" size={13} />

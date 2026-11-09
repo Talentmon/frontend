@@ -42,7 +42,7 @@ const buildCvHtml = (profile) => {
 <body>
   <h1>${escapeHtml(profile?.name)}</h1>
   <div class="role">${escapeHtml(profile?.position)} · ${escapeHtml(profile?.company)}</div>
-  <div class="meta">${escapeHtml(profile?.location)} · ${escapeHtml(profile?.experience)} years of experience</div>
+  <div class="meta">${escapeHtml(profile?.locationFull || profile?.location)} · ${escapeHtml(profile?.experience)} years of experience</div>
   <div class="meta">${escapeHtml(profile?.email)} · ${escapeHtml(profile?.phone)}</div>
 
   <h2>Skills</h2>

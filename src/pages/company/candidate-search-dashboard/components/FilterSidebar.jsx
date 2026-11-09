@@ -8,6 +8,7 @@ import { INDUSTRY_NAMES, getSubIndustries } from 'utils/industries';
 import { ISSUER_NAMES, FAMILY_NAMES, getCertificationNamesFor } from 'utils/certifications';
 import { CATEGORY_NAMES as SKILL_CATEGORY_NAMES, getSkillNamesFor } from 'utils/skills';
 import { currencySymbol } from 'utils/currencyService';
+import { COUNTRY_OPTIONS } from 'utils/countries';
 import { BASE_CURRENCY } from 'utils/exchangeRateService';
 import {
   listSavedFilters,
@@ -84,7 +85,8 @@ const FILTER_GROUPS = [
     title: 'Basic Search',
     fields: [
       { key: 'position', type: 'text', label: 'Position', placeholder: 'e.g. Frontend Developer' },
-      { key: 'location', type: 'text', label: 'Location', placeholder: 'e.g. London, New York' }
+      { key: 'location', type: 'text', label: 'City', placeholder: 'e.g. London' },
+      { key: 'country', type: 'multiSelect', label: 'Country', placeholder: 'Select country', options: COUNTRY_OPTIONS, searchable: true }
     ]
   },
   {
@@ -251,7 +253,7 @@ const formatAmount = (value) => {
 const groupSummaryItems = (groupId, f) => {
   switch (groupId) {
     case 'basic':
-      return [f.position?.trim(), f.location?.trim()].filter(Boolean);
+      return [f.position?.trim(), f.location?.trim(), ...(f.country || [])].filter(Boolean);
     case 'experience':
       return [
         f.experience && optionLabel(experienceOptions, f.experience),

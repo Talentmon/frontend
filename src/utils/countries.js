@@ -31,3 +31,61 @@ export const COUNTRY_NAMES = [
 ];
 
 export const COUNTRY_OPTIONS = COUNTRY_NAMES.map((name) => ({ value: name, label: name }));
+
+// Other ways people write a country, for reading older "City, country" locations.
+// (The candidate_country migration used the same list to split stored profiles.)
+export const COUNTRY_ALIASES = {
+  uk: 'United Kingdom',
+  'u.k.': 'United Kingdom',
+  'great britain': 'United Kingdom',
+  britain: 'United Kingdom',
+  england: 'United Kingdom',
+  scotland: 'United Kingdom',
+  wales: 'United Kingdom',
+  'northern ireland': 'United Kingdom',
+  usa: 'United States',
+  'u.s.a.': 'United States',
+  us: 'United States',
+  'u.s.': 'United States',
+  'united states of america': 'United States',
+  'czech republic': 'Czechia',
+  holland: 'Netherlands',
+  'the netherlands': 'Netherlands',
+  uae: 'United Arab Emirates',
+  bosnia: 'Bosnia and Herzegovina',
+  'bosnia & herzegovina': 'Bosnia and Herzegovina',
+  bih: 'Bosnia and Herzegovina',
+  macedonia: 'North Macedonia',
+  'republic of korea': 'South Korea',
+  korea: 'South Korea',
+  "côte d'ivoire": 'Ivory Coast',
+  "cote d'ivoire": 'Ivory Coast',
+  srbija: 'Serbia',
+  hrvatska: 'Croatia',
+  'crna gora': 'Montenegro',
+  deutschland: 'Germany'
+};
+
+const COUNTRY_BY_KEY = new Map([
+  ...COUNTRY_NAMES.map((name) => [name.toLowerCase(), name]),
+  ...Object.entries(COUNTRY_ALIASES)
+]);
+
+/** The country on the list that `text` names (any case, or a common other name), or ''. */
+export const countryFromName = (text = '') => COUNTRY_BY_KEY.get(String(text).trim().toLowerCase()) || '';
+
+/**
+ * A candidate's city and country. The country is its own field now; older
+ * profiles and CV snapshots kept both in the location ("Belgrade, Serbia"), so
+ * a known country after the last comma is read off it.
+ */
+export function splitLocation(location = '', country = '') {
+  const text = String(location || '').trim();
+  if (country) return { city: text, country };
+  const comma = text.lastIndexOf(',');
+  const found = comma >= 0 ? countryFromName(text.slice(comma + 1)) : '';
+  return found ? { city: text.slice(0, comma).trim(), country: found } : { city: text, country: '' };
+}
+
+/** "City, Country", as the CV shows it. */
+export const formatLocation = (city, country) => [city, country].filter(Boolean).join(', ');

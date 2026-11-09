@@ -641,7 +641,8 @@
     &.invalid {
       input,
       textarea,
-      select {
+      select,
+      .dropdown-trigger {
         border-color: var(--cpe-red);
       }
     }
@@ -2456,6 +2457,37 @@
   box-shadow: 0 16px 36px -20px rgba(11, 26, 44, 0.35);
   padding: 4px;
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+}
+// Dropdown's search box (searchable lists), pinned at the top while the options scroll.
+.dropdown-search {
+  position: sticky;
+  top: -4px;
+  z-index: 1;
+  margin: -4px -4px 4px;
+  padding: 6px;
+  background: var(--cpe-white);
+  border-bottom: 1px solid var(--cpe-line);
+  input {
+    width: 100%;
+    box-sizing: border-box;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--cpe-line);
+    border-radius: 7px;
+    font: inherit;
+    font-size: 0.86rem;
+    color: var(--cpe-ink);
+    outline: none;
+    &:focus {
+      border-color: #e6a93c;
+      box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
+    }
+  }
+}
+.dropdown-empty {
+  padding: 0.6em 0.7em;
+  font-size: 0.84rem;
+  color: #8693a0;
 }
 .dropdown-opt {
   padding: 0.45em 0.7em;

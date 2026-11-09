@@ -1,4 +1,5 @@
 import apiClient from '../../../lib/apiClient';
+import { splitLocation } from 'utils/countries';
 import { ACCEPTED_IMAGE_TYPES, resizeImageToWebp } from '../../../utils/resizeImage';
 import { DEFAULT_PHONE_CODE } from './edit/data';
 import { endMonthYearToIso, isoToMonthYear, isoToYear, monthYearToIso } from './dateUtils';
@@ -13,6 +14,7 @@ export function statusToBackend(key) {
 
 /** Maps the backend Candidate (GET /candidates/me shape) onto the frontend `basics` object. Non-basics fields (sections) are left to the caller. */
 export function candidateToBasics(candidate, email) {
+  const { city, country } = splitLocation(candidate.location, candidate.country);
   return {
     name: candidate.name || '',
     photo: candidate.photoHidden ? null : candidate.photoUrl || null,
@@ -20,7 +22,9 @@ export function candidateToBasics(candidate, email) {
     photoHidden: !!candidate.photoHidden,
     role: candidate.roleTitle || '',
     years: String(candidate.yearsExperience ?? '0'),
-    location: candidate.location || '',
+    // City and country are two fields; older profiles kept both in the location.
+    location: city,
+    country,
     email: email || '',
     phoneCode: candidate.phoneCode || DEFAULT_PHONE_CODE,
     phone: candidate.phone || '',

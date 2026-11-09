@@ -1,4 +1,5 @@
 import apiClient from 'lib/apiClient';
+import { formatLocation, splitLocation } from 'utils/countries';
 
 // ---- Enum <-> dashboard filter-value maps ----
 // FilterSidebar.jsx keeps the same kebab-case values the page has always
@@ -40,6 +41,7 @@ export function filtersToBackend(filters = {}) {
   const out = {};
   if (filters.position) out.position = filters.position;
   if (filters.location) out.location = filters.location;
+  if (filters.country?.length) out.country = filters.country;
   if (filters.experience) out.experience = filters.experience;
   if (filters.education) out.education = EDUCATION_FILTER_TO_BACKEND[filters.education];
   if (filters.availability) out.availability = filters.availability;
@@ -124,13 +126,17 @@ function summaryFrom(customSections = []) {
 /** Anonymized search-result row -> the shape CandidateCard/CandidatePreviewDrawer expect. No name/photo/contact — those only exist post-unlock (see revealedToFrontend). */
 export function candidateToFrontend(raw) {
   const prefs = raw.preferences;
+  const { city, country } = splitLocation(raw.location, raw.country);
   return {
     id: raw.id,
     anonCode: raw.anonCode,
     name: null,
     avatar: '/assets/images/no_image.png',
     position: raw.roleTitle || '',
-    location: raw.location || '',
+    // Cards show just the city; the CV shows "City, Country".
+    location: city,
+    country,
+    locationFull: formatLocation(city, country),
     experience: raw.yearsExperience || 0,
     profileStrength: raw.profileStrength || 0,
     matchScore: mockMatchScore(raw.id),

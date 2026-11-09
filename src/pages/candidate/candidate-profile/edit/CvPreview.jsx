@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatLocation } from 'utils/countries';
 import Icon from 'components/AppIcon';
 import { I, SecIcon } from './icons';
 import { initials, fmtNum, srPlural, DEFAULT_PHONE_CODE } from './data';
@@ -89,7 +90,7 @@ const CvPreview = ({ state, mode = 'self' }) => {
               <div className="cv-role">{roleLine}</div>
               <div className="cv-loc">
                 <I name="pin" />
-                {b.location || ''}
+                {formatLocation(b.location, b.country)}
               </div>
             </div>
           </div>
@@ -143,7 +144,7 @@ const CvPreview = ({ state, mode = 'self' }) => {
             <div className="cv-role">{roleLine}</div>
             <div className="cv-loc">
               <I name="pin" />
-              {b.location || ''}
+              {formatLocation(b.location, b.country)}
             </div>
             <div className="cv-lockpill">
               <I name="lock" />

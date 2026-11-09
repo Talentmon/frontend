@@ -1,4 +1,5 @@
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { formatLocation } from 'utils/countries';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import CandidateHeader from 'components/ui/CandidateHeader';
@@ -204,7 +205,7 @@ const CandidateProfile = () => {
                 <div className="cv-id">
                   <div className="cv-name"><span className="real">{basics.name || 'No name'}</span><span className="anon">Candidate · TC-7741</span></div>
                   <div className="cv-role">{roleLine}</div>
-                  <div className="cv-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z" /><circle cx="12" cy="10" r="2.5" /></svg><span>{basics.location}</span></div>
+                  <div className="cv-loc"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z" /><circle cx="12" cy="10" r="2.5" /></svg><span>{formatLocation(basics.location, basics.country)}</span></div>
                   <span className="cv-lockpill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>Name &amp; contact unlock for 1 credit</span>
                 </div>
               </div>

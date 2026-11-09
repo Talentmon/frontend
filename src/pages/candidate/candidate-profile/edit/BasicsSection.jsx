@@ -3,6 +3,8 @@ import SectionShell from './SectionShell';
 import { I } from './icons';
 import { initials, PHONE_CODES, DEFAULT_PHONE_CODE } from './data';
 import FlagSelect from './FlagSelect';
+import Dropdown from './Dropdown';
+import { COUNTRY_NAMES } from 'utils/countries';
 import { ACCEPTED_IMAGE_TYPES } from 'utils/resizeImage';
 
 const BasicsSection = ({ basics, open, onToggleOpen, onChangeField, onPhotoUpload, onPhotoRemove, photoBusy, onChangeLink, onAddLink, onRemoveLink, photoHidden, onTogglePhotoHidden }) => {
@@ -79,8 +81,30 @@ const BasicsSection = ({ basics, open, onToggleOpen, onChangeField, onPhotoUploa
             <input type="text" value={b.years || '0'} disabled title="Computed automatically from your work experience entries" />
           </div>
         </div>
-        <div className="fgrid fgrid-contact">
-          {tf('location', 'Location', 'City, country', 1)}
+        <div className="fgrid">
+          {tf('location', 'City', 'e.g. Belgrade', 1)}
+          {(() => {
+            const countryInvalid = !String(b.country || '').trim();
+            // A saved country that isn't on the list stays selectable.
+            const countries = b.country && !COUNTRY_NAMES.includes(b.country) ? [b.country, ...COUNTRY_NAMES] : COUNTRY_NAMES;
+            return (
+              <div className={`field${countryInvalid ? ' invalid' : ''}`}>
+                <label>Country</label>
+                <Dropdown
+                  ariaLabel="Country"
+                  value={b.country || ''}
+                  onChange={(v) => onChangeField('country', v)}
+                  options={countries}
+                  placeholder="Select country"
+                  searchable
+                  searchPlaceholder="Search countries…"
+                />
+                {countryInvalid && <span className="field-hint error">This field is required.</span>}
+              </div>
+            );
+          })()}
+        </div>
+        <div className="fgrid">
           {(() => {
             const phoneInvalid = !String(b.phone || '').trim();
             return (

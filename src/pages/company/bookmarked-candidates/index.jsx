@@ -544,8 +544,7 @@ const BookmarkedCandidatesPage = () => {
         candidates={allBookmarkedCandidates}
         activeId={previewId}
         onClose={handleClosePreview}
-        bookmarkedCandidates={allBookmarkedCandidates?.map((c) => c?.id)}
-        onBookmark={handleRemoveBookmark}
+        showBookmark={false}
         onUnlock={handleRequestUnlock}
         unlockCost={allBookmarkedCandidates?.find((c) => c?.id === previewId)?.unlockCost || UNLOCK_COST}
         pushBreakpoint={CV_PUSH_BREAKPOINT}

@@ -15,6 +15,8 @@ $white: #ffffff;
 $green: #2f9e69;
 $green-bg: rgba(60, 200, 130, 0.13);
 $green-bd: rgba(60, 200, 130, 0.34);
+$red: #cf4b4b;
+$red-bg: rgba(207, 75, 75, 0.1);
 $r-lg: 18px;
 $r-md: 13px;
 $r-sm: 9px;
@@ -102,6 +104,8 @@ $header-h: 64px;
 
 // Floating close button — the drawer no longer has a separate header bar;
 // the CV renders as one paper sheet and this sits on top of it in the corner.
+// Hover is the red of the Bookmarked card's remove X (.bcRemove), laid over
+// white because the button floats on the CV.
 .closeBtn {
   position: absolute;
   top: 12px;
@@ -118,8 +122,8 @@ $header-h: 64px;
   transition: 0.2s;
 
   &:hover {
-    background: $mist;
-    color: $ink;
+    background: linear-gradient($red-bg, $red-bg), $white;
+    color: $red;
   }
 }
 
@@ -258,12 +262,6 @@ $header-h: 64px;
   background: $paper;
   padding: 28px 24px 28px;
   scroll-behavior: smooth;
-
-  // No floating corner close button in this variant (the footer has its own
-  // X instead), so the paper doesn't need extra top clearance for it.
-  &.noCornerClose {
-    padding-top: 28px;
-  }
 }
 
 // ----- The CV itself: a literal paper sheet, copied 1:1 from
@@ -645,8 +643,8 @@ $header-h: 64px;
   }
 }
 
-// ----- purchased-profiles footer: send-mail / print / close (no bookmark or
-// unlock actions here — every profile shown is already bought). -----
+// ----- purchased-profiles footer: send-mail / print (no bookmark or unlock
+// actions here — every profile shown is already bought). -----
 .mailBtn {
   flex: 1;
   display: flex;
@@ -697,23 +695,6 @@ $header-h: 64px;
   &:hover {
     border-color: $gold;
     background: $mist;
-  }
-}
-
-.footCloseBtn {
-  width: 44px;
-  height: 44px;
-  border-radius: $r-sm;
-  border: 1.5px solid $line;
-  display: grid;
-  place-items: center;
-  color: $slate;
-  flex: none;
-  transition: 0.2s;
-
-  &:hover {
-    border-color: $gold;
-    color: $gold-deep;
   }
 }
 

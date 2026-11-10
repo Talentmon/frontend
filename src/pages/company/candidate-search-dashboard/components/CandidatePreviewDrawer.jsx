@@ -33,6 +33,9 @@ const CandidatePreviewDrawer = ({
   // 'purchased' shows send-email/print actions instead, since every profile
   // shown here is already unlocked — there's nothing left to buy or save.
   variant = 'default',
+  // Bookmarked passes false: everything listed there is already saved, and the
+  // card's own X removes it, so the footer keeps only Unlock.
+  showBookmark = true,
   // Viewport width (px) above which the host page pushes its content aside
   // instead of overlaying it with the scrim — must match that page's own
   // push breakpoint so the scrim doesn't stay dimmed after the push kicks in.
@@ -137,13 +140,17 @@ const CandidatePreviewDrawer = ({
         aria-label="Candidate preview"
         aria-hidden={!isOpen}
       >
-        {variant !== 'purchased' && (
-          <button type="button" className={styles.closeBtn} onClick={onClose} aria-label="Close">
-            <Icon name="X" size={18} />
-          </button>
-        )}
+        <button
+          type="button"
+          className={styles.closeBtn}
+          onClick={onClose}
+          title="Close CV preview"
+          aria-label="Close CV preview"
+        >
+          <Icon name="X" size={18} />
+        </button>
 
-        <div className={`${styles.body} ${variant === 'purchased' ? styles.noCornerClose : ''}`} ref={bodyRef}>
+        <div className={styles.body} ref={bodyRef}>
           <div className={styles.paper}>
             <div className={styles.banner}>
               <Icon name="Lock" size={15} />
@@ -310,20 +317,19 @@ const CandidatePreviewDrawer = ({
               Print
               <Icon name="Printer" size={18} />
             </button>
-            <button type="button" className={styles.footCloseBtn} onClick={onClose} aria-label="Close">
-              <Icon name="X" size={18} />
-            </button>
           </div>
         ) : (
           <div className={styles.foot}>
-            <button
-              type="button"
-              className={`${styles.bookmarkBtn} ${isBookmarked ? styles.on : ''}`}
-              onClick={() => onBookmark(candidate?.id)}
-              aria-label={isBookmarked ? 'Remove from bookmarks' : 'Bookmark candidate'}
-            >
-              <Icon name="Bookmark" size={18} style={isBookmarked ? { fill: 'currentColor' } : undefined} />
-            </button>
+            {showBookmark && (
+              <button
+                type="button"
+                className={`${styles.bookmarkBtn} ${isBookmarked ? styles.on : ''}`}
+                onClick={() => onBookmark(candidate?.id)}
+                aria-label={isBookmarked ? 'Remove from bookmarks' : 'Bookmark candidate'}
+              >
+                <Icon name="Bookmark" size={18} style={isBookmarked ? { fill: 'currentColor' } : undefined} />
+              </button>
+            )}
             {isRevealed ? (
               <button type="button" className={`${styles.unlockBtn} ${styles.unlockBtnDone}`} disabled>
                 <Icon name="Unlock" size={18} />

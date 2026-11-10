@@ -26,6 +26,7 @@ import CandidateSearchDashboard from './pages/company/candidate-search-dashboard
 import PurchasedProfiles from './pages/company/purchased-profiles';
 import CompanyProfileSettings from './pages/company/company-profile-settings';
 import CompanyHelp from './pages/company/help';
+import Suggestions from './pages/company/suggestions';
 
 // Candidate-facing
 import CandidateProfile from './pages/candidate/candidate-profile';
@@ -65,6 +66,7 @@ const Routes = () => {
         <Route path="/company-profile-settings" element={<RequireAuth roles={['COMPANY']}><CompanyProfileSettings /></RequireAuth>} />
         {/* No requireCompleteProfile: the guide is most useful while the profile is still being filled in */}
         <Route path="/help" element={<RequireAuth roles={['COMPANY']}><CompanyHelp /></RequireAuth>} />
+        <Route path="/suggestions" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><Suggestions /></RequireAuth>} />
 
         {/* Candidate-facing */}
         <Route path="/candidate-profile" element={<RequireAuth roles={['CANDIDATE']}><CandidateProfile /></RequireAuth>} />

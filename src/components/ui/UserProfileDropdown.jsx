@@ -25,6 +25,12 @@ const UserProfileDropdown = () => {
       path: '/help',
       icon: 'HelpCircle',
       description: 'Get assistance'
+    },
+    {
+      name: 'Your suggestions',
+      path: '/suggestions',
+      icon: 'Lightbulb',
+      description: 'Bring Talentmon closer to your needs'
     }
   ];
 

@@ -3,7 +3,16 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import apiClient from '../../lib/apiClient';
 
-const TYPE_ICON = { unlock: 'Unlock', 'bookmark-bonus': 'Bookmark', team: 'Users', 'low-credits': 'AlertTriangle', 'out-of-credits': 'AlertTriangle', 'first-credits': 'Sparkles' };
+const TYPE_ICON = {
+  unlock: 'Unlock',
+  'bookmark-bonus': 'Bookmark',
+  team: 'Users',
+  'low-credits': 'AlertTriangle',
+  'out-of-credits': 'AlertTriangle',
+  'first-credits': 'Sparkles',
+  suggestion: 'Lightbulb',
+  'suggestion-status': 'MessageSquareReply',
+};
 
 const relativeTime = (iso) => {
   const minutes = Math.round((Date.now() - new Date(iso).getTime()) / 60000);

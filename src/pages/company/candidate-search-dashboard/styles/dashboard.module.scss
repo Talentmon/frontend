@@ -1129,8 +1129,12 @@ $hint: #5b6573;
     }
   }
 
+  // minmax(0, …), never a bare 1fr: a bare 1fr track grows to the card's
+  // min-content, and the skill tags (nowrap) then push the card past its
+  // column — SkillsRow sees the wider row and shows every tag, which keeps it
+  // that wide.
   &.list {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   // Wide screens with the CV drawer open: collapse to a single column so the
@@ -1138,7 +1142,7 @@ $hint: #5b6573;
   // cap itself comes from .main so the toolbar shrinks along with the grid.
   &.previewOpen {
     @media (min-width: $push-bp) {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 16px;
     }
   }

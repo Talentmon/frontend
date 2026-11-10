@@ -1,0 +1,94 @@
+// Admin → Suggestions. Builds on ../styles.scss and ../companies/companies.scss
+// (tabs with counts, flash, match-actions buttons).
+.admin-panel {
+  .sg-card { margin-bottom: 14px; }
+  .sg-hidden { opacity: .78; border-style: dashed; }
+
+  .sg-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .sg-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    font-size: .8rem;
+  }
+
+  .sg-area {
+    font-size: .72rem;
+    font-weight: 700;
+    padding: .3em .7em;
+    border-radius: 99px;
+    background: var(--adp-amber-bg);
+    color: var(--adp-gold-deep);
+  }
+
+  .sg-votes {
+    display: inline-flex;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    .up { color: var(--adp-green); }
+    .down { color: var(--adp-red); }
+  }
+
+  .sg-text {
+    margin: 14px 0 16px;
+    font-size: .93rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .sg-form {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 1fr);
+    gap: 14px;
+
+    @media (max-width: 680px) { grid-template-columns: 1fr; }
+  }
+
+  .sg-field {
+    display: grid;
+    gap: 6px;
+    align-content: start;
+
+    > span {
+      font-size: .76rem;
+      font-weight: 700;
+      color: var(--adp-slate);
+      em { font-style: normal; font-weight: 500; color: var(--adp-slate-2); }
+    }
+
+    .pselect { width: 100%; }
+
+    textarea {
+      width: 100%;
+      padding: .6em .8em;
+      border: 1.5px solid var(--adp-line);
+      border-radius: var(--adp-r-sm);
+      font: inherit;
+      font-size: .87rem;
+      line-height: 1.5;
+      resize: vertical;
+      &:focus { outline: none; border-color: var(--adp-gold); box-shadow: 0 0 0 3px rgba(230, 169, 60, .16); }
+    }
+  }
+
+  .btn-del {
+    padding: .62em 1.05em;
+    border-radius: 9px;
+    font-size: .86rem;
+    font-weight: 700;
+    color: var(--adp-red);
+    transition: background-color .15s, opacity .15s;
+    &:hover:not(:disabled) { background: var(--adp-red-bg); }
+    &:disabled { opacity: .55; cursor: default; }
+  }
+}

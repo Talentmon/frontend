@@ -136,3 +136,18 @@ export const STRONG_MATCH_SIGNALS = new Set(['EMAIL', 'EMAIL_DOMAIN', 'WEBSITE',
 
 export const shortDate = (value) =>
   value ? new Date(value).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '—';
+
+// ---- Suggestions (companies' "Your suggestions" page) ----
+export function getSuggestions() {
+  return apiClient.get('/admin/suggestions').then((r) => r.data);
+}
+export function getNewSuggestionCount() {
+  return apiClient.get('/admin/suggestions/new-count').then((r) => r.data?.new ?? 0);
+}
+/** dto: { status?, teamReply? (''/null clears), hidden? }. The author's company is notified of a new status or reply. */
+export function updateSuggestionAdmin(id, dto) {
+  return apiClient.patch(`/admin/suggestions/${id}`, dto).then((r) => r.data);
+}
+export function deleteSuggestionAdmin(id) {
+  return apiClient.delete(`/admin/suggestions/${id}`).then((r) => r.data);
+}

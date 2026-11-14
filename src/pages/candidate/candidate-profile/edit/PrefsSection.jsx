@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import SectionShell from './SectionShell';
-import { MODE_OPTS, TYPE_OPTS, SALARY_PERIODS, NOTICE_UNITS } from './data';
+import { MODE_OPTS, TYPE_OPTS, SALARY_PERIODS, SALARIES_PER_YEAR, NOTICE_UNITS, fmtNum, salaryCheck, salaryOtherPeriod } from './data';
 import { MOST_USED_CURRENCIES, OTHER_CURRENCIES } from 'utils/currencies';
 import { validateSalaryAmount } from 'utils/salaryNormalizationService';
 import FlagSelect from './FlagSelect';
@@ -21,11 +21,15 @@ const PrefsSection = ({ sec, open, renaming, onToggleOpen, onStartRename, onRena
     []
   );
 
-  const salaryValidation = useMemo(
-    () => validateSalaryAmount({ amount: d.salaryAmount, currency: d.salaryCurrency }),
-    [d.salaryAmount, d.salaryCurrency]
+  // Net and gross for the period picked; the other period is worked out below.
+  const currencyValidation = useMemo(
+    () => validateSalaryAmount({ amount: d.salaryNet, currency: d.salaryCurrency }),
+    [d.salaryNet, d.salaryCurrency]
   );
-  const salaryInvalid = !!d.salaryAmount && !salaryValidation.valid;
+  const { error: pairError, warning: pairWarning } = salaryCheck(d);
+  const salaryError = (currencyValidation.valid ? '' : currencyValidation.errors[0]) || pairError;
+  const other = salaryOtherPeriod(d);
+  const currency = d.salaryCurrency || '';
 
   return (
     <SectionShell
@@ -55,24 +59,66 @@ const PrefsSection = ({ sec, open, renaming, onToggleOpen, onStartRename, onRena
           </div>
         </div>
 
-        <div className={`field full${salaryInvalid ? ' invalid' : ''}`}>
-          <label>Minimum salary (net)</label>
-          <div className="trio">
-            <FlagSelect ariaLabel="Currency" value={d.salaryCurrency} onChange={(v) => onChangeData('salaryCurrency', v)} groups={currencyGroups} />
-            <input
-              type="number"
-              min="0"
-              inputMode="numeric"
-              placeholder="Amount"
-              value={d.salaryAmount || ''}
-              onChange={set('salaryAmount')}
-              aria-invalid={salaryInvalid}
-            />
-            <Dropdown ariaLabel="Period" value={d.salaryPeriod} onChange={setValue('salaryPeriod')} options={SALARY_PERIODS} />
+        <div className={`field full${salaryError ? ' invalid' : ''}`}>
+          <label>Salary minimum</label>
+          <div className="salary-grid">
+            <div>
+              <span className="sub-label">Currency</span>
+              <FlagSelect ariaLabel="Currency" value={d.salaryCurrency} onChange={(v) => onChangeData('salaryCurrency', v)} groups={currencyGroups} />
+            </div>
+            <div>
+              <span className="sub-label">Per</span>
+              <Dropdown ariaLabel="Per month or per year" value={d.salaryPeriod} onChange={setValue('salaryPeriod')} options={SALARY_PERIODS} />
+            </div>
+            <div>
+              <span className="sub-label" aria-hidden="true">Net</span>
+              <input
+                type="number"
+                min="0"
+                inputMode="numeric"
+                aria-label="Net salary minimum"
+                placeholder="Take-home pay"
+                value={d.salaryNet || ''}
+                onChange={set('salaryNet')}
+                aria-invalid={!!salaryError}
+              />
+            </div>
+            <div>
+              <span className="sub-label" aria-hidden="true">Gross</span>
+              <input
+                type="number"
+                min="0"
+                inputMode="numeric"
+                aria-label="Gross salary minimum"
+                placeholder="Before tax"
+                value={d.salaryGross || ''}
+                onChange={set('salaryGross')}
+                aria-invalid={!!pairError}
+              />
+            </div>
           </div>
-          {salaryInvalid
-            ? <span className="field-hint error">{salaryValidation.errors[0]}</span>
-            : <span className="field-hint">Companies that unlock your profile agree to offer at least this.</span>}
+          <div className="salary-calc">
+            {other && (
+              <>
+                = {fmtNum(other.net)} {currency} net · {fmtNum(other.gross)} {currency} gross per {other.period},{' '}
+              </>
+            )}
+            {other ? 'paid in' : 'Paid in'}
+            <Dropdown
+              className="salary-count"
+              ariaLabel="Salaries a year"
+              value={d.salariesPerYear || '12'}
+              onChange={setValue('salariesPerYear')}
+              options={SALARIES_PER_YEAR}
+            />
+            salaries a year
+          </div>
+          {salaryError && <span className="field-hint error">{salaryError}</span>}
+          {!salaryError && pairWarning && <span className="field-hint warn">{pairWarning}</span>}
+          <span className="field-hint">
+            Companies that unlock your profile agree to offer at least this. Some countries pay 13 or 14 salaries a
+            year — pick that and the yearly amount counts them.
+          </span>
         </div>
 
         <div className="field full">

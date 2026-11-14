@@ -633,6 +633,12 @@ $hint: #5b6573;
   margin-top: -6px;
 }
 
+// Salary view: Net / Gross over Per month / Per year (SalaryRangeFilter).
+.salaryView {
+  display: grid;
+  gap: 6px;
+}
+
 .matchToggle {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1864,7 +1870,7 @@ $sc-gold: #f0ae2e;
   white-space: nowrap;
 }
 
-// "/ mo" after the minimum salary.
+// "/ mo" after the salary minimum.
 .scStatPer {
   font-size: 0.8rem;
   font-weight: 500;
@@ -2405,6 +2411,17 @@ $sc-gold: #f0ae2e;
   b {
     color: $gold-2;
     font-weight: 700;
+  }
+}
+
+// Bulk unlock: each candidate's salary under the clause.
+.unlockClauseList {
+  margin: 6px 0 0;
+  padding-left: 16px;
+  list-style: disc;
+
+  li + li {
+    margin-top: 2px;
   }
 }
 

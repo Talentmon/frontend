@@ -10,12 +10,14 @@ import { CATEGORY_NAMES as SKILL_CATEGORY_NAMES, getSkillNamesFor } from 'utils/
 import { currencySymbol } from 'utils/currencyService';
 import { COUNTRY_OPTIONS } from 'utils/countries';
 import { BASE_CURRENCY } from 'utils/exchangeRateService';
+import { basisWord, periodWord, useSalaryView } from 'lib/salaryView';
 import {
   listSavedFilters,
   createSavedFilter,
   updateSavedFilter,
   deleteSavedFilter,
   filtersToFrontend,
+  savedFilterView,
 } from '../candidateSearchApi';
 import LanguageLevelFilter from './LanguageLevelFilter';
 import SalaryRangeFilter from './SalaryRangeFilter';
@@ -53,6 +55,12 @@ const jobTypeOptions = [
   { value: 'part-time', label: 'Part-time' },
   { value: 'contract', label: 'Contract' },
   { value: 'freelance', label: 'Freelance' }
+];
+
+const workModeOptions = [
+  { value: 'remote', label: 'Remote' },
+  { value: 'hybrid', label: 'Hybrid' },
+  { value: 'on-site', label: 'On-site' }
 ];
 
 // Mirrors the STATUS enum from candidate-profile/edit/data.js (active / open).
@@ -173,6 +181,7 @@ const FILTER_GROUPS = [
     fields: [
       { key: 'status', type: 'select', label: 'Candidate Status', placeholder: 'Any status', options: statusOptions },
       { key: 'jobType', type: 'multiSelect', label: 'Job Type', placeholder: 'Select job type', options: jobTypeOptions },
+      { key: 'workMode', type: 'multiSelect', label: 'Work Mode', placeholder: 'Select work mode', options: workModeOptions },
       { key: 'availability', type: 'select', label: 'Availability', placeholder: 'Select availability', options: availabilityOptions },
       { key: 'relocationReady', type: 'checkbox', label: 'Open to Relocation' },
       { key: 'travelReady', type: 'checkbox', label: 'Open to Business Travel' }
@@ -250,7 +259,8 @@ const formatAmount = (value) => {
 };
 
 // What a collapsed group lists under its title, e.g. "React, TypeScript +1".
-const groupSummaryItems = (groupId, f) => {
+// `view`: the salary view the salary range is typed in.
+const groupSummaryItems = (groupId, f, view) => {
   switch (groupId) {
     case 'basic':
       return [f.position?.trim(), f.location?.trim(), ...(f.country || [])].filter(Boolean);
@@ -266,8 +276,9 @@ const groupSummaryItems = (groupId, f) => {
       const prefix = symbol.length > 1 ? `${symbol} ` : symbol;
       const from = min ? `${prefix}${formatAmount(min)}` : '';
       const to = max ? `${prefix}${formatAmount(max)}` : '';
-      if (from && to) return [`${from} – ${to}`];
-      return [from ? `From ${from}` : `Up to ${to}`];
+      const per = `${basisWord(view?.basis)} / ${periodWord(view?.period || 'MONTH')}`;
+      if (from && to) return [`${from} – ${to} ${per}`];
+      return [`${from ? `From ${from}` : `Up to ${to}`} ${per}`];
     }
     case 'skills':
       return [...(f.skills || []), ...(f.skillCategory || [])];
@@ -289,6 +300,7 @@ const groupSummaryItems = (groupId, f) => {
       return [
         f.status && optionLabel(statusOptions, f.status),
         ...(f.jobType || []).map((type) => optionLabel(jobTypeOptions, type)),
+        ...(f.workMode || []).map((mode) => optionLabel(workModeOptions, mode)),
         f.availability && optionLabel(availabilityOptions, f.availability),
         f.relocationReady && 'Open to relocation',
         f.travelReady && 'Open to business travel'
@@ -298,8 +310,8 @@ const groupSummaryItems = (groupId, f) => {
   }
 };
 
-const groupSummary = (groupId, f) => {
-  const items = groupSummaryItems(groupId, f);
+const groupSummary = (groupId, f, view) => {
+  const items = groupSummaryItems(groupId, f, view);
   return items.length > 2 ? `${items.slice(0, 2).join(', ')} +${items.length - 2}` : items.join(', ');
 };
 
@@ -327,10 +339,14 @@ const FilterSidebar = ({
   const [isNamingFilter, setIsNamingFilter] = useState(false);
   const [filterNameDraft, setFilterNameDraft] = useState('');
   const [openGroups, setOpenGroups] = useState(DEFAULT_OPEN_GROUPS);
+  const [salaryView, setSalaryView] = useSalaryView();
+
+  // A saved filter keeps the salary view its range was typed in (`view`).
+  const toEntry = (row) => ({ id: row.id, name: row.name, filters: filtersToFrontend(row.filters), view: savedFilterView(row.filters) });
 
   useEffect(() => {
     listSavedFilters()
-      .then((rows) => setSavedFilters(rows.map((row) => ({ id: row.id, name: row.name, filters: filtersToFrontend(row.filters) }))))
+      .then((rows) => setSavedFilters(rows.map(toEntry)))
       .catch(() => {});
   }, []);
 
@@ -400,8 +416,10 @@ const FilterSidebar = ({
     return ALL_FIELDS?.filter((field) => isFieldActive(field, localFilters))?.length;
   };
 
+  const sameView = (entry) =>
+    !entry?.view || (entry.view.basis === salaryView.basis && entry.view.period === salaryView.period);
   const isSavedFilterCurrent = (entry) =>
-    entry?.id === activeSavedFilterId && sameFilters(entry?.filters, localFilters);
+    entry?.id === activeSavedFilterId && sameFilters(entry?.filters, localFilters) && sameView(entry);
 
   const handleToggleGroup = (id) => {
     setOpenGroups((prev) => ({ ...prev, [id]: !prev?.[id] }));
@@ -411,6 +429,8 @@ const FilterSidebar = ({
   // so what's switched on is visible right away; open groups stay open.
   const handleApplySavedFilter = (entry) => {
     const nextFilters = { ...DEFAULT_FILTERS, ...entry?.filters };
+    // Its salary range only means something in the view it was typed in.
+    if (entry?.view) setSalaryView(entry.view);
     setLocalFilters(nextFilters);
     setActiveSavedFilterId(entry?.id);
     setIsNamingFilter(false);
@@ -439,9 +459,9 @@ const FilterSidebar = ({
   const persistSavedFilter = async (name) => {
     try {
       const row = activeSavedFilterId
-        ? await updateSavedFilter(activeSavedFilterId, { filters: localFilters })
-        : await createSavedFilter(name, localFilters);
-      const entry = { id: row.id, name: row.name, filters: filtersToFrontend(row.filters) };
+        ? await updateSavedFilter(activeSavedFilterId, { filters: localFilters, view: salaryView })
+        : await createSavedFilter(name, localFilters, salaryView);
+      const entry = toEntry(row);
       setSavedFilters((prev) => {
         const exists = prev?.some((item) => item?.id === entry?.id);
         return exists ? prev.map((item) => (item?.id === entry?.id ? entry : item)) : [...prev, entry];
@@ -721,7 +741,7 @@ const FilterSidebar = ({
                     <Icon name="ChevronDown" size={16} strokeWidth={2.2} className={styles.fgroupChevron} />
                   </span>
                   {!isOpen && activeCount > 0 && (
-                    <span className={styles.fgroupSummary}>{groupSummary(group?.id, localFilters)}</span>
+                    <span className={styles.fgroupSummary}>{groupSummary(group?.id, localFilters, salaryView)}</span>
                   )}
                 </button>
                 {showClear && (

@@ -5,10 +5,9 @@ import {
   educationLabels,
   availabilityLabels,
   jobTypeLabels,
-  candidateCode,
-  formatSalary,
-  salaryPeriod
+  candidateCode
 } from '../utils/cvHelpers';
+import { basisWord, formatSalaryAmount, periodWord, salaryForView, useSalaryView } from 'lib/salaryView';
 import styles from '../styles/drawer.module.scss';
 
 const CandidatePreviewDrawer = ({
@@ -43,6 +42,8 @@ const CandidatePreviewDrawer = ({
 }) => {
   const bodyRef = useRef(null);
   const [displayCandidate, setDisplayCandidate] = useState(null);
+  // Net or gross, per month or per year: the view picked in the Salary filter.
+  const [salaryView] = useSalaryView();
   const [isWidePush, setIsWidePush] = useState(
     () => typeof window !== 'undefined' && window.innerWidth >= pushBreakpoint
   );
@@ -125,7 +126,7 @@ const CandidatePreviewDrawer = ({
   const availabilityLabel = candidate?.availability
     ? (availabilityLabels?.[candidate?.availability] || candidate?.availability)
     : candidate?.notice;
-  const salaryPer = salaryPeriod(candidate?.expectedSalary, 'long');
+  const salary = salaryForView(candidate?.expectedSalary, salaryView);
   const isEducationObject = candidate?.education && typeof candidate?.education === 'object';
 
   return (
@@ -209,10 +210,9 @@ const CandidatePreviewDrawer = ({
                   <span className={styles.pv}>{workType}</span>
                 </div>
                 <div className={styles.pref}>
-                  <span className={styles.pl}>Minimum Salary (net)</span>
+                  <span className={styles.pl}>Salary minimum ({basisWord(salary?.basis || salaryView.basis)})</span>
                   <span className={styles.pv}>
-                    {formatSalary(candidate?.expectedSalary)}
-                    {salaryPer && ` / ${salaryPer}`}
+                    {salary ? `${formatSalaryAmount(salary)} / ${periodWord(salary.period, 'long')}` : '—'}
                   </span>
                 </div>
                 {availabilityLabel && (

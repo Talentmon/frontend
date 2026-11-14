@@ -5,6 +5,7 @@ import {
   commonOptions,
   uniqueNames
 } from '../candidate-filters/commonFilters';
+import { salaryBase } from 'lib/salaryView';
 import { OPEN_STATUSES, daysInStage, needsAttention } from './purchasesApi';
 
 // Search's filters (shared with Bookmarked) plus Purchased's own.
@@ -86,7 +87,8 @@ const matchesSearch = (profile, term) => {
   return needleDigits.length >= 3 && digits(profile?.phone).includes(needleDigits);
 };
 
-export function applyFilters(profiles, filters) {
+/** `view`: the salary view (net/gross, month/year) the salary filter is typed in. */
+export function applyFilters(profiles, filters, view) {
   const now = Date.now();
   let list = profiles.filter((p) => matchesSearch(p, filters.search));
 
@@ -95,7 +97,7 @@ export function applyFilters(profiles, filters) {
   if (filters.hiringFor.length) list = list.filter((p) => filters.hiringFor.includes(p?.hiringFor));
   if (filters.unlocked) list = list.filter((p) => inUnlockedRange(p?.unlockedDate, filters.unlocked, now));
   if (filters.unlockedBy.length) list = list.filter((p) => filters.unlockedBy.includes(p?.unlockedById));
-  return applyCommonFilters(list, filters);
+  return applyCommonFilters(list, filters, view);
 }
 
 // ===== Sorting (the cards' Sort menu and the table headers share it) =====
@@ -108,8 +110,8 @@ const SORT_VALUES = {
   waiting: (p) => (OPEN_STATUSES.includes(p?.recruitmentStatus) ? daysInStage(p) : -1),
   name: (p) => (p?.name || '').toLowerCase(),
   experience: (p) => p?.experience || 0,
-  // A {amount, currency, base, ...} object — always compare its base-EUR value.
-  salary: (p) => p?.expectedSalary?.base ?? 0,
+  // Compared in EUR, for the salary view in effect.
+  salary: (p, view) => salaryBase(p?.expectedSalary, view) ?? 0,
   available: (p) => AVAILABILITY_ORDER[p?.availability] ?? 9
 };
 
@@ -142,12 +144,12 @@ export const parseSort = (sortBy) => {
   return { key, dir };
 };
 
-export function sortProfiles(profiles, sortBy) {
+export function sortProfiles(profiles, sortBy, view) {
   const { key, dir } = parseSort(sortBy);
   const valueOf = SORT_VALUES[key] || SORT_VALUES.unlocked;
   return [...profiles].sort((a, b) => {
-    const x = valueOf(a);
-    const y = valueOf(b);
+    const x = valueOf(a, view);
+    const y = valueOf(b, view);
     const cmp = typeof x === 'string' ? x.localeCompare(y) : x - y;
     // Ties keep the most recently unlocked first.
     return (dir === 'desc' ? -cmp : cmp) || SORT_VALUES.unlocked(b) - SORT_VALUES.unlocked(a);

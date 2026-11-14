@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import { creditWord, formatCredits } from 'utils/formatCredits';
+import { salaryClauseAmounts, useSalaryView } from 'lib/salaryView';
 import dashboardStyles from '../../candidate-search-dashboard/styles/dashboard.module.scss';
 import styles from '../styles/bookmarked.module.scss';
 
@@ -20,6 +21,8 @@ const BulkActionsToolbar = ({
   const [actionType, setActionType] = useState(null);
   const [unlockedCandidates, setUnlockedCandidates] = useState(null);
   const [bulkBusy, setBulkBusy] = useState(false);
+  // The clause lists each candidate's amounts, the viewed basis first.
+  const [salaryView] = useSalaryView();
 
   const selectedCount = selectedCandidates?.length;
   const allSelected = selectedCount === allCandidates?.length && allCandidates?.length > 0;
@@ -238,10 +241,24 @@ const BulkActionsToolbar = ({
               <span className={dashboardStyles.unlockNoteIcon}>
                 <Icon name="Info" size={14} />
               </span>
-              <p className={dashboardStyles.unlockNoteText}>
-                By unlocking, I accept the salary clause:{' '}
-                <b>the salary stated by the candidate is the minimum salary that will be offered to them.</b>
-              </p>
+              <div className={dashboardStyles.unlockNoteText}>
+                <p>
+                  By unlocking, I accept the salary clause:{' '}
+                  <b>the salary stated by each candidate is the salary minimum that will be offered to them.</b>
+                </p>
+                <ul className={dashboardStyles.unlockClauseList}>
+                  {selectedCandidates?.map((candidateId) => {
+                    const candidate = allCandidates?.find((c) => c?.id === candidateId);
+                    const amounts = salaryClauseAmounts(candidate?.expectedSalary, salaryView);
+                    return (
+                      <li key={candidateId}>
+                        {candidate?.position}
+                        {amounts && <> — <b>{amounts}</b></>}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             </div>
 
             <div className={dashboardStyles.unlockActions}>

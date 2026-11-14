@@ -14,11 +14,11 @@
 import { isSupportedCurrency } from './currencyService';
 import { getExchangeRate, BASE_CURRENCY } from './exchangeRateService';
 
-export const SALARY_PERIODS = ['week', 'month', 'year'];
+export const SALARY_PERIODS = ['month', 'year'];
 const BASE_PERIOD = 'month';
 
 // Multiply an amount in `period` by this to get a monthly amount.
-const MONTHLY_FACTOR = { week: 52 / 12, month: 1, year: 1 / 12 };
+const MONTHLY_FACTOR = { month: 1, year: 1 / 12 };
 
 const round2 = (n) => Math.round(n * 100) / 100;
 

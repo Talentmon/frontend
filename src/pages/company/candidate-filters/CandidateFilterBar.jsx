@@ -4,6 +4,7 @@ import Popover, { CheckBox } from '../bookmarked-candidates/components/Popover';
 import bm from '../bookmarked-candidates/styles/bookmarked.module.scss';
 import cf from './candidateFilters.module.scss';
 import { commonFields } from './commonFields';
+import { useSalaryView } from 'lib/salaryView';
 
 /** The text search over the list. */
 export const ListSearch = ({ id, label, placeholder, value, onChange, className = '' }) => {
@@ -88,9 +89,10 @@ const CandidateFilterBar = ({
     document.getElementById(`${pillId(key)}-trigger`)?.focus();
   };
 
+  const [salaryView] = useSalaryView();
   const fields = [
     ...leadFields({ onRadioPicked }),
-    ...commonFields({ filters, onFiltersChange, opts, idPrefix, onRadioPicked })
+    ...commonFields({ filters, onFiltersChange, opts, idPrefix, onRadioPicked, salaryView })
   ].filter((field) => field.pill);
   const shown = fields.slice(0, visibleCount);
   const more = fields.slice(visibleCount);

@@ -3,6 +3,7 @@ import { useAuth, useClerk } from '@clerk/clerk-react';
 import apiClient from './apiClient';
 import { setTokenGetter } from './authToken';
 import { clearRememberLogin, isExpiredSessionOnlyLogin } from './rememberMe';
+import { clearSalaryView } from './salaryView';
 
 const CurrentUserContext = createContext(null);
 
@@ -49,6 +50,8 @@ export function CurrentUserProvider({ children }) {
   // company's name in the header after a profile save.
   const refetch = useCallback(async ({ silent = false } = {}) => {
     if (!isSignedIn) {
+      // Signed out: a salary view switched during the visit doesn't carry over to the next one.
+      clearSalaryView();
       setState({ loading: false, user: null, candidate: null, company: null, membership: null, adminProfile: null });
       return;
     }

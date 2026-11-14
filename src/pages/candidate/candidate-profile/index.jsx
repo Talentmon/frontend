@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import CandidateHeader from 'components/ui/CandidateHeader';
 import Icon from 'components/AppIcon';
 import { loadProfile } from './profileStore';
-import { createInitialState, initials, fmtNum, srPlural, DEFAULT_PHONE_CODE } from './edit/data';
+import { createInitialState, initials, srPlural, salaryRow, DEFAULT_PHONE_CODE } from './edit/data';
 import {
   candidateToBasics,
   DEDICATED_LIST_RESOURCES,
@@ -27,14 +27,14 @@ const STATUS_OPTIONS = [
 const hasText = (html) => /\S/.test((html || '').replace(/<[^>]*>/g, ''));
 
 const prefsRows = (d) => {
-  const salary = d.salaryAmount ? `${fmtNum(d.salaryAmount)} ${d.salaryCurrency || ''} / ${d.salaryPeriod || ''}` : '';
+  const salary = salaryRow(d);
   const notice = d.noticeNum ? `${d.noticeNum} ${srPlural(d.noticeNum, d.noticeUnit || '')}` : '';
   return [
     ['Work mode', d.mode],
     ['Type', d.type],
-    ['Minimum salary (net)', salary],
+    salary ? [salary.label, salary.lines.map((line, i) => <React.Fragment key={line}>{i > 0 && <br />}{line}</React.Fragment>)] : null,
     ['Availability', notice],
-  ].filter((r) => r[1]);
+  ].filter((r) => r && (Array.isArray(r[1]) ? r[1].length : r[1]));
 };
 
 // Sizes every chip to the width of the widest one (measured, not fixed), so short

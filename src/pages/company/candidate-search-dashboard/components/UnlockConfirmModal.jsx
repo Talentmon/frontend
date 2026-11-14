@@ -3,14 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import { formatCredits } from 'utils/formatCredits';
+import { salaryClauseAmounts, useSalaryView } from 'lib/salaryView';
 import styles from '../styles/dashboard.module.scss';
 
 const UnlockConfirmModal = ({ candidate, creditCost, balance, onConfirm, onClose }) => {
   const navigate = useNavigate();
   const [unlocked, setUnlocked] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  // The clause names both of the candidate's amounts, the viewed one first.
+  const [salaryView] = useSalaryView();
 
   if (!candidate) return null;
+  const clauseSalary = salaryClauseAmounts(candidate?.expectedSalary, salaryView);
 
   const handleConfirm = async () => {
     setConfirming(true);
@@ -77,7 +81,11 @@ const UnlockConfirmModal = ({ candidate, creditCost, balance, onConfirm, onClose
               </span>
               <p className={styles.unlockNoteText}>
                 By unlocking, I accept the salary clause:{' '}
-                <b>the salary stated by the candidate is the minimum salary that will be offered to them.</b>
+                <b>
+                  {clauseSalary
+                    ? `the salary stated by the candidate, ${clauseSalary}, is the salary minimum that will be offered to them.`
+                    : 'the salary stated by the candidate is the salary minimum that will be offered to them.'}
+                </b>
               </p>
             </div>
 

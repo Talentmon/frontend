@@ -268,7 +268,7 @@ const ForCandidates = () => {
                   <div className="prefs">
                     <div className="pref"><span className="pl">Work mode</span><span className="pv">On-site</span></div>
                     <div className="pref"><span className="pl">Type</span><span className="pv">Full-time</span></div>
-                    <div className="pref"><span className="pl">Minimum salary (net)</span><span className="pv">2.000 EUR / week</span></div>
+                    <div className="pref"><span className="pl">Salary minimum / month</span><span className="pv">3.200 EUR net<br />4.600 EUR gross</span></div>
                     <div className="pref"><span className="pl">Availability</span><span className="pv">2 weeks</span></div>
                   </div>
                 </div>
@@ -419,7 +419,7 @@ const ForCandidates = () => {
               </div>
               <div className="clm-clause">
                 <span className="ci"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg></span>
-                <p>By unlocking, I accept the salary clause: <b>the salary stated by the candidate is the minimum salary that will be offered to them.</b></p>
+                <p>By unlocking, I accept the salary clause: <b>the salary stated by the candidate, €3,200 net / month (€4,600 gross / month), is the salary minimum that will be offered to them.</b></p>
               </div>
               <div className="clm-btns">
                 <button className="clm-confirm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0" /></svg>Confirm unlock</button>
@@ -462,7 +462,7 @@ const ForCandidates = () => {
                 <p>After they reach out, score their hiring process, communication, culture and benefits. Then the question that carries real weight:</p>
                 <div className="after-pt">
                   <span className="ap-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg></span>
-                  <div><b>The salary rule has teeth</b><span>Was the minimum from your profile honored? If not, the overall rating is capped at 3 — no matter how perfect everything else was.</span></div>
+                  <div><b>The salary rule has teeth</b><span>Was the salary minimum from your profile honored? If not, the overall rating is capped at 3 — no matter how perfect everything else was.</span></div>
                 </div>
                 <div className="after-pt">
                   <span className="ap-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg></span>
@@ -498,7 +498,7 @@ const ForCandidates = () => {
               ))}
 
               <div className="rm-salary">
-                <div className="rs-q"><b>Was the minimum salary from your profile honored?</b><span>If not, the overall rating cannot exceed 3.</span></div>
+                <div className="rs-q"><b>Was the salary minimum from your profile honored?</b><span>If not, the overall rating cannot exceed 3.</span></div>
                 <div className="rm-ynwrap">
                   <button type="button" className={`rm-ynb${honored === 'yes' ? ' sel-yes' : ''}`} onClick={() => setHonored('yes')}>Yes</button>
                   <button type="button" className={`rm-ynb${honored === 'no' ? ' sel-no' : ''}`} onClick={() => setHonored('no')}>No</button>
@@ -556,7 +556,7 @@ const ForCandidates = () => {
               </div>
               <div className="sal-point">
                 <span className="sk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /><path d="m9 12 2 2 4-4" /></svg></span>
-                <div><b>Minimum-wage accountability</b><span>Reviews flag whether a company respected the salary they agreed to — so your floor stays a promise, not just words.</span></div>
+                <div><b>Salary minimum accountability</b><span>Reviews flag whether a company respected the salary they agreed to — so your floor stays a promise, not just words.</span></div>
               </div>
               <div className="sal-point">
                 <span className="sk"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9.88 4.24A9.4 9.4 0 0 1 12 4c7 0 10 8 10 8a13.3 13.3 0 0 1-1.9 2.94M6.5 6.5A13.4 13.4 0 0 0 2 12s3 8 10 8a9.5 9.5 0 0 0 5-1.4" /><path d="M2 2l20 20" /></svg></span>
@@ -644,7 +644,7 @@ const ForCandidates = () => {
                   <div className="rev-cat"><div className="rev-cat-l">Benefits</div><div className="ms"><span className="on">★★★</span><span className="off">★★</span></div></div>
                 </div>
                 <div className="rev-text">Fast learning and work on diverse projects, but occasionally an intense pace.</div>
-                <div className="rev-wage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Minimum salary from profile: honored</div>
+                <div className="rev-wage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Salary minimum from profile: honored</div>
                 <div className="rev-bottom">
                   <div className="rev-date">03.07.2025</div>
                   <span className="rev-rec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10v11M2 13v6a2 2 0 0 0 2 2h13.5a2 2 0 0 0 2-1.7l1.1-7A2 2 0 0 0 19.6 10H14V5a2 2 0 0 0-2-2l-3 7" /></svg>Recommend</span>
@@ -665,7 +665,7 @@ const ForCandidates = () => {
                   <div className="rev-cat"><div className="rev-cat-l">Benefits</div><div className="ms"><span className="on">★★★★</span><span className="off">★</span></div></div>
                 </div>
                 <div className="rev-text">Great mentorship relationship with senior colleagues, I felt real progress within a few months.</div>
-                <div className="rev-wage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Minimum salary from profile: honored</div>
+                <div className="rev-wage"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>Salary minimum from profile: honored</div>
                 <div className="rev-bottom">
                   <div className="rev-date">19.05.2025</div>
                   <span className="rev-rec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 10v11M2 13v6a2 2 0 0 0 2 2h13.5a2 2 0 0 0 2-1.7l1.1-7A2 2 0 0 0 19.6 10H14V5a2 2 0 0 0-2-2l-3 7" /></svg>Recommend</span>

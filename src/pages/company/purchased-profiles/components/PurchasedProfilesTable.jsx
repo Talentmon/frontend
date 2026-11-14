@@ -4,7 +4,7 @@ import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
 import CandidateNotes, { NotesButton } from '../../candidate-search-dashboard/components/CandidateNotes';
-import { formatSalary, salaryPeriod } from '../../candidate-search-dashboard/utils/cvHelpers';
+import { formatSalaryAmount, salaryForView, salarySuffix, useSalaryView } from 'lib/salaryView';
 import { shortDate } from 'utils/formatDate';
 import HiringForField from './HiringForField';
 import { COLUMN_FIRST_DIR, parseSort } from '../purchasedFilters';
@@ -174,6 +174,8 @@ const PurchasedProfilesTable = ({
 }) => {
   const sort = parseSort(sortBy);
   const [pageSize, setPageSize] = useState(10);
+  // Net or gross, per month or per year: the view picked in the Salary filter.
+  const [salaryView] = useSalaryView();
   const [currentPage, setCurrentPage] = useState(1);
   const [notesOpenId, setNotesOpenId] = useState(null);
   const [copied, setCopied] = useState(null);
@@ -255,7 +257,7 @@ const PurchasedProfilesTable = ({
             const notes = profile?.notes || [];
             const isNotesOpen = notesOpenId === id;
             const isPreviewed = activePreviewId === id;
-            const period = salaryPeriod(profile?.expectedSalary);
+            const salary = salaryForView(profile?.expectedSalary, salaryView);
             const experience = profile?.experience || 0;
             const notesId = `table-notes-${id}`;
 
@@ -273,10 +275,10 @@ const PurchasedProfilesTable = ({
                   </div>
                   <div role="cell" className={styles.tCell}>{experience} {experience === 1 ? 'year' : 'years'}</div>
                   <div role="cell" className={`${styles.tCell} ${styles.tEnd} ${styles.tNowrap}`}>
-                    {profile?.expectedSalary ? (
+                    {salary ? (
                       <>
-                        <span className={styles.tSalary}>{formatSalary(profile.expectedSalary)}</span>
-                        {period && <> <span className={styles.tPer}>/ {period}</span></>}
+                        <span className={styles.tSalary}>{formatSalaryAmount(salary)}</span>
+                        {' '}<span className={styles.tPer}>{salarySuffix(salary)}</span>
                       </>
                     ) : '—'}
                   </div>

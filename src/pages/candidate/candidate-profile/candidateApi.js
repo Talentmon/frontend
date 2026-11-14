@@ -579,14 +579,23 @@ const WORK_MODE_TO_FRONTEND = Object.fromEntries(Object.entries(WORK_MODE_TO_BAC
 const EMPLOYMENT_TYPE_TO_BACKEND = { 'Full-time': 'FULL_TIME', 'Part-time': 'PART_TIME', Contract: 'CONTRACT', Freelance: 'FREELANCE' };
 const EMPLOYMENT_TYPE_TO_FRONTEND = Object.fromEntries(Object.entries(EMPLOYMENT_TYPE_TO_BACKEND).map(([k, v]) => [v, k]));
 
+// The salary minimum is edited as net + gross for one period (month or year)
+// and how many salaries a year; the backend works out and stores the other period.
 export function preferencesToFrontend(pref) {
   if (!pref) return null;
+  const perYear = pref.salaryPeriod === 'YEAR';
+  const amount = (month, year) => {
+    const value = perYear ? year : month;
+    return value != null ? String(value) : '';
+  };
   return {
     mode: WORK_MODE_TO_FRONTEND[pref.mode] || '',
     type: EMPLOYMENT_TYPE_TO_FRONTEND[pref.type] || '',
     salaryCurrency: pref.salaryCurrency || 'EUR',
-    salaryAmount: pref.salaryAmount != null ? String(pref.salaryAmount) : '',
-    salaryPeriod: (pref.salaryPeriod || 'MONTH').toLowerCase(),
+    salaryPeriod: perYear ? 'year' : 'month',
+    salaryNet: amount(pref.salaryNetMonth, pref.salaryNetYear),
+    salaryGross: amount(pref.salaryGrossMonth, pref.salaryGrossYear),
+    salariesPerYear: String(pref.salariesPerYear || 12),
     noticeNum: pref.noticeNum != null ? String(pref.noticeNum) : '',
     noticeUnit: (pref.noticeUnit || 'WEEK').toLowerCase(),
     travelReady: !!pref.travelReady,
@@ -599,8 +608,10 @@ function preferencesToPayload(data) {
     mode: WORK_MODE_TO_BACKEND[data.mode],
     type: EMPLOYMENT_TYPE_TO_BACKEND[data.type],
     salaryCurrency: data.salaryCurrency,
-    salaryAmount: parseInt(data.salaryAmount, 10) || 0,
-    salaryPeriod: String(data.salaryPeriod || 'month').toUpperCase(),
+    salaryPeriod: data.salaryPeriod === 'year' ? 'YEAR' : 'MONTH',
+    salaryNet: parseInt(data.salaryNet, 10) || 0,
+    salaryGross: parseInt(data.salaryGross, 10) || 0,
+    salariesPerYear: Number(data.salariesPerYear) || 12,
     noticeNum: parseInt(data.noticeNum, 10) || 0,
     noticeUnit: String(data.noticeUnit || 'week').toUpperCase(),
     travelReady: !!data.travelReady,
@@ -613,7 +624,10 @@ export function preferencesIsComplete(data) {
     WORK_MODE_TO_BACKEND[data.mode] &&
     EMPLOYMENT_TYPE_TO_BACKEND[data.type] &&
     data.salaryCurrency &&
-    String(data.salaryAmount || '').trim() &&
+    String(data.salaryNet || '').trim() &&
+    String(data.salaryGross || '').trim() &&
+    // The backend refuses a net above gross; the field shows why.
+    (parseInt(data.salaryNet, 10) || 0) <= (parseInt(data.salaryGross, 10) || 0) &&
     String(data.noticeNum || '').trim() &&
     data.noticeUnit
   );

@@ -3,6 +3,7 @@ import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
 import { COMPANY_SIZE_OPTIONS, INDUSTRY_OPTIONS, WORK_MODE_OPTIONS, uploadCompanyLogo } from '../companyApi';
+import { SALARY_BASIS_OPTIONS, SALARY_PERIOD_OPTIONS } from 'lib/salaryView';
 import SectionHead from './SectionHead';
 import styles from '../styles/company.module.scss';
 import { ACCEPTED_IMAGE_TYPES } from 'utils/resizeImage';
@@ -424,6 +425,45 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
             multipleLabel={(count) => `${count} benefits selected`}
           />
         </div>
+      </div>
+
+      {/* Salary view — for the team only; candidates never see it */}
+      <div className={styles.card}>
+        <SectionHead
+          icon="Banknote"
+          title="Salary view"
+          subtitle="How candidates' salaries are shown to your team in Search, Bookmarked and Purchased"
+        />
+
+        <div className={styles.form2}>
+          {[
+            { field: 'salaryViewBasis', label: 'Net or gross', options: SALARY_BASIS_OPTIONS },
+            { field: 'salaryViewPeriod', label: 'Per month or per year', options: SALARY_PERIOD_OPTIONS }
+          ].map(({ field, label, options }) => (
+            <div key={field} {...fieldProps(field)}>
+              <span className={styles.flabel}>{label} {requiredMark}</span>
+              <div className={styles.modeGroup} role="radiogroup" aria-label={label}>
+                {options.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    role="radio"
+                    aria-checked={companyData?.[field] === option.value}
+                    className={`${styles.modeBtn} ${companyData?.[field] === option.value ? styles.modeBtnOn : ''}`}
+                    onClick={() => handleInputChange(field, option.value)}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+              {fieldError(field)}
+            </div>
+          ))}
+        </div>
+        <span className={styles.fhint}>
+          Candidates give both net and gross, so every profile can be shown either way. Anyone on your team can switch
+          the view in the Salary filter; it goes back to this when they close the tab or sign out.
+        </span>
       </div>
 
       {/* Phones/tablets only — on desktop the page header's Save is always in view */}

@@ -1,4 +1,5 @@
 import apiClient from 'lib/apiClient';
+import { DEFAULT_SALARY_VIEW, expectedSalaryFrom } from 'lib/salaryView';
 import { formatLocation, splitLocation } from 'utils/countries';
 
 // ---- Enum <-> dashboard filter-value maps ----
@@ -31,13 +32,19 @@ const STATUS_TO_BACKEND = { active: 'ACTIVE', open: 'OPEN' };
 const STATUS_TO_FRONTEND = { ACTIVE: 'active', OPEN: 'open', OFF: 'off' };
 
 const WORK_MODE_TO_FRONTEND = { REMOTE: 'Remote', HYBRID: 'Hybrid', ONSITE: 'On-site' };
+// The filters' work mode values.
+const WORK_MODE_FILTER_TO_BACKEND = { remote: 'REMOTE', hybrid: 'HYBRID', 'on-site': 'ONSITE' };
+const WORK_MODE_BACKEND_TO_FILTER = Object.fromEntries(
+  Object.entries(WORK_MODE_FILTER_TO_BACKEND).map(([k, v]) => [v, k])
+);
 
 // ---- Search ----
 // Converts FilterSidebar's dashboard-shape filters object into the
 // backend's SearchFiltersDto shape, dropping empty/default values entirely
 // (an empty string would fail validators like @IsIn/@IsEnum that only
 // @IsOptional bypasses for null/undefined, not '').
-export function filtersToBackend(filters = {}) {
+// `view` is the salary view the range is typed in (net/gross, month/year).
+export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
   const out = {};
   if (filters.position) out.position = filters.position;
   if (filters.location) out.location = filters.location;
@@ -55,6 +62,7 @@ export function filtersToBackend(filters = {}) {
   if (filters.industry?.length) out.industry = filters.industry;
   if (filters.subIndustry?.length) out.subIndustry = filters.subIndustry;
   if (filters.jobType?.length) out.jobType = filters.jobType.map((t) => JOB_TYPE_TO_BACKEND[t]).filter(Boolean);
+  if (filters.workMode?.length) out.workMode = filters.workMode.map((m) => WORK_MODE_FILTER_TO_BACKEND[m]).filter(Boolean);
   if (filters.hasCertifications) out.hasCertifications = true;
   if (filters.certIssuer?.length) out.certIssuer = filters.certIssuer;
   if (filters.certFamily?.length) out.certFamily = filters.certFamily;
@@ -66,6 +74,8 @@ export function filtersToBackend(filters = {}) {
       ...(filters.salary.min ? { min: String(filters.salary.min) } : {}),
       ...(filters.salary.max ? { max: String(filters.salary.max) } : {}),
       currency: filters.salary.currency || 'EUR',
+      basis: view.basis,
+      period: view.period,
     };
   }
   return out;
@@ -77,13 +87,24 @@ export function filtersToFrontend(filters = {}) {
   const out = { ...filters };
   if (out.education) out.education = EDUCATION_BACKEND_TO_FILTER[out.education] || '';
   if (out.jobType?.length) out.jobType = out.jobType.map((t) => JOB_TYPE_TO_FRONTEND[t]).filter(Boolean);
+  if (out.workMode?.length) out.workMode = out.workMode.map((m) => WORK_MODE_BACKEND_TO_FILTER[m]).filter(Boolean);
   if (out.status) out.status = STATUS_TO_FRONTEND[out.status] || '';
+  if (out.salary) {
+    const { basis, period, ...range } = out.salary;
+    out.salary = range;
+  }
   return out;
 }
 
-export function searchCandidates({ q, filters, sort, page = 1, limit = 20 } = {}) {
-  const backendFilters = filtersToBackend(filters);
-  const params = { page, limit };
+/** The salary view a saved filter's range was typed in; filters saved before views existed were net per month. */
+export function savedFilterView(filters = {}) {
+  if (!filters.salary) return null;
+  return { basis: filters.salary.basis || 'NET', period: filters.salary.period || 'MONTH' };
+}
+
+export function searchCandidates({ q, filters, sort, page = 1, limit = 20, view = DEFAULT_SALARY_VIEW } = {}) {
+  const backendFilters = filtersToBackend(filters, view);
+  const params = { page, limit, salaryBasis: view.basis, salaryPeriod: view.period };
   if (q) params.q = q;
   if (sort) params.sort = sort;
   if (Object.keys(backendFilters).length) params.filters = JSON.stringify(backendFilters);
@@ -156,13 +177,13 @@ export function candidateToFrontend(raw) {
     certificates: raw.certifications || [],
     jobType: prefs?.type ? [JOB_TYPE_TO_FRONTEND[prefs.type]].filter(Boolean) : [],
     workArrangement: prefs?.mode ? WORK_MODE_TO_FRONTEND[prefs.mode] : undefined,
+    workMode: prefs?.mode ? WORK_MODE_BACKEND_TO_FILTER[prefs.mode] : '',
     availability: availabilityBucket(prefs),
     noticeDays: noticeDays(prefs),
     relocationReady: !!prefs?.relocationReady,
     travelReady: !!prefs?.travelReady,
-    expectedSalary: prefs
-      ? { amount: prefs.salaryAmount, currency: prefs.salaryCurrency, period: prefs.salaryPeriod?.toLowerCase(), base: prefs.salaryAmountBaseEur }
-      : null,
+    // All four amounts (net/gross, month/year) and each in EUR; see lib/salaryView.
+    expectedSalary: expectedSalaryFrom(prefs),
   };
 }
 
@@ -180,9 +201,15 @@ export function revealedToFrontend(snapshot = {}) {
 }
 
 // ---- Unlock ----
-export function unlockCandidate(candidateId, positionContext) {
+/** `view`: the salary view the company accepted the salary clause in (kept with the unlock). */
+export function unlockCandidate(candidateId, positionContext, view) {
   return apiClient
-    .post('/companies/me/unlocks', { candidateId, positionContext: positionContext || undefined })
+    .post('/companies/me/unlocks', {
+      candidateId,
+      positionContext: positionContext || undefined,
+      salaryBasis: view?.basis,
+      salaryPeriod: view?.period,
+    })
     .then((r) => r.data);
 }
 
@@ -223,13 +250,13 @@ export function listCreditPackages() {
 export function listSavedFilters() {
   return apiClient.get('/companies/me/saved-search-filters').then((r) => r.data);
 }
-export function createSavedFilter(name, filters) {
-  return apiClient.post('/companies/me/saved-search-filters', { name, filters: filtersToBackend(filters) }).then((r) => r.data);
+export function createSavedFilter(name, filters, view) {
+  return apiClient.post('/companies/me/saved-search-filters', { name, filters: filtersToBackend(filters, view) }).then((r) => r.data);
 }
-export function updateSavedFilter(id, { name, filters } = {}) {
+export function updateSavedFilter(id, { name, filters, view } = {}) {
   const body = {};
   if (name) body.name = name;
-  if (filters) body.filters = filtersToBackend(filters);
+  if (filters) body.filters = filtersToBackend(filters, view);
   return apiClient.patch(`/companies/me/saved-search-filters/${id}`, body).then((r) => r.data);
 }
 export function deleteSavedFilter(id) {

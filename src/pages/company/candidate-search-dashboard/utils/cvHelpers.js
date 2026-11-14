@@ -1,5 +1,4 @@
 // Helpers for the CV preview drawer.
-import { formatMoney } from 'utils/currencyService';
 
 export const educationLabels = {
   'high-school': 'High School',
@@ -16,21 +15,7 @@ export const availabilityLabels = {
   '3-months': '3 months notice period'
 };
 
-// Displays a candidate's expected salary exactly as they entered it - the
-// original amount and currency, never a converted value (see
-// CurrencyService.formatMoney / salaryNormalizationService).
-export const formatSalary = (expectedSalary) =>
-  formatMoney(expectedSalary?.amount, expectedSalary?.currency);
-
-const SALARY_PERIODS = {
-  month: { short: 'mo', long: 'month' },
-  week: { short: 'wk', long: 'week' },
-  year: { short: 'yr', long: 'year' }
-};
-
-// The period the candidate's minimum is per — "mo" on the cards, "month" in the CV preview.
-export const salaryPeriod = (expectedSalary, form = 'short') =>
-  SALARY_PERIODS?.[expectedSalary?.period]?.[form] || '';
+// A candidate's salary is shown through lib/salaryView (net/gross, month/year).
 
 export const jobTypeLabels = {
   'full-time': 'Full-time',

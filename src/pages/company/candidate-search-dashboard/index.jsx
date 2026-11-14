@@ -12,6 +12,7 @@ import styles from './styles/dashboard.module.scss';
 import { addNotification } from 'utils/notificationStore';
 import { formatCredits } from 'utils/formatCredits';
 import { setCreditBalance, useCreditBalance } from 'lib/creditBalance';
+import { useSalaryView } from 'lib/salaryView';
 import {
   searchCandidates,
   candidateToFrontend,
@@ -40,6 +41,9 @@ const CandidateSearchDashboard = () => {
   const [sortBy, setSortBy] = useState('relevance');
   const [viewMode, setViewMode] = useState('grid');
   const [filters, setFilters] = useState({});
+  // Net or gross, per month or per year: what the cards show, the salary
+  // filter's range is typed in, and sorting by salary orders by.
+  const [salaryView] = useSalaryView();
   const [isFilterCollapsed, setIsFilterCollapsed] = useState(
     () => typeof window !== 'undefined' && window.innerWidth < 1024
   );
@@ -87,7 +91,7 @@ const CandidateSearchDashboard = () => {
     const isLatest = () => generation === searchGeneration.current;
 
     append ? setLoadingMore(true) : setLoading(true);
-    return searchCandidates({ q: debouncedQuery || undefined, filters, sort: sortBy, page: pageNum, limit: PAGE_SIZE })
+    return searchCandidates({ q: debouncedQuery || undefined, filters, sort: sortBy, page: pageNum, limit: PAGE_SIZE, view: salaryView })
       .then((data) => {
         if (!isLatest()) return;
         const mapped = (data.items || []).map(candidateToFrontend);
@@ -112,7 +116,7 @@ const CandidateSearchDashboard = () => {
   useEffect(() => {
     fetchPage(1, { append: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery, filters, sortBy]);
+  }, [debouncedQuery, filters, sortBy, salaryView]);
 
   const handleLoadMore = () => {
     if (loadingMore || page >= totalPages) return;
@@ -187,7 +191,7 @@ const CandidateSearchDashboard = () => {
   const handleConfirmUnlock = async () => {
     if (!unlockTarget) return;
     try {
-      const unlock = await unlockCandidate(unlockTarget.id, unlockTarget.position);
+      const unlock = await unlockCandidate(unlockTarget.id, unlockTarget.position, salaryView);
       const revealed = revealedToFrontend(unlock.cvSnapshot);
       setUnlockTarget((prev) => (prev ? { ...prev, ...revealed } : prev));
       setCreditBalance((c) => Math.max(0, c - UNLOCK_COST));

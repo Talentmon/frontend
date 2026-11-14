@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
-import { formatSalary, salaryPeriod } from '../utils/cvHelpers';
+import { formatSalaryAmount, salaryForView, salarySuffix, useSalaryView } from 'lib/salaryView';
 import styles from '../styles/dashboard.module.scss';
 
 // Pieces of the candidate card shared by Search (CandidateCard) and
@@ -162,12 +162,14 @@ export const StatusBadge = ({ searchStatus }) => {
 };
 
 /**
- * Experience · Minimum salary · Notice period strip. Grid cards pass
+ * Experience · Salary minimum · Notice period strip. Grid cards pass
  * `salaryFirst` to lead with the salary; the list row keeps experience first.
  */
 export const CardStats = ({ candidate, salaryFirst = false }) => {
   const experience = candidate?.experience;
-  const period = salaryPeriod(candidate?.expectedSalary);
+  // Net or gross, per month or per year: the view picked in the Salary filter.
+  const [salaryView] = useSalaryView();
+  const salary = salaryForView(candidate?.expectedSalary, salaryView);
 
   const experienceStat = (
     <div className={styles.scStat}>
@@ -177,11 +179,11 @@ export const CardStats = ({ candidate, salaryFirst = false }) => {
   );
   const salaryStat = (
     <div className={styles.scStat}>
-      <span className={styles.scStatK}>Minimum salary</span>
+      <span className={styles.scStatK}>Salary minimum</span>
       <span className={styles.scStatV}>
-        {/* The amount never breaks ("RSD 230,000"); only "/ mo" may drop to the next line. */}
-        <span className={styles.scStatAmount}>{formatSalary(candidate?.expectedSalary)}</span>
-        {period && <> <span className={styles.scStatPer}>/ {period}</span></>}
+        {/* The amount never breaks ("RSD 230,000"); only "net / mo" may drop to the next line. */}
+        <span className={styles.scStatAmount}>{salary ? formatSalaryAmount(salary) : '—'}</span>
+        {salary && <> <span className={styles.scStatPer}>{salarySuffix(salary)}</span></>}
       </span>
     </div>
   );

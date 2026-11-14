@@ -2,7 +2,7 @@ import React from 'react';
 import { formatLocation } from 'utils/countries';
 import Icon from 'components/AppIcon';
 import { I, SecIcon } from './icons';
-import { initials, fmtNum, srPlural, DEFAULT_PHONE_CODE } from './data';
+import { initials, srPlural, salaryRow, DEFAULT_PHONE_CODE } from './data';
 
 // Rich-text fields (sec.text / entry.desc) hold HTML produced by the contentEditable
 // editor. TODO: sanitize this HTML on the backend (e.g. DOMPurify) before rendering it to anyone else.
@@ -11,14 +11,14 @@ const Rich = ({ html, className }) => <div className={className} dangerouslySetI
 const hasText = (html) => /\S/.test((html || '').replace(/<[^>]*>/g, ''));
 
 const prefsRows = (d) => {
-  const salary = d.salaryAmount ? `${fmtNum(d.salaryAmount)} ${d.salaryCurrency || ''} / ${d.salaryPeriod || ''}` : '';
+  const salary = salaryRow(d);
   const notice = d.noticeNum ? `${d.noticeNum} ${srPlural(d.noticeNum, d.noticeUnit || '')}` : '';
   return [
     ['Work mode', d.mode],
     ['Type', d.type],
-    ['Minimum salary (net)', salary],
+    salary ? [salary.label, salary.lines.map((line, i) => <React.Fragment key={line}>{i > 0 && <br />}{line}</React.Fragment>)] : null,
     ['Notice period', notice],
-  ].filter((p) => p[1]);
+  ].filter((p) => p && (Array.isArray(p[1]) ? p[1].length : p[1]));
 };
 
 // Sizes every chip to the width of the widest one (measured, not fixed), so short

@@ -4,6 +4,7 @@ import { Checkbox } from 'components/ui/Checkbox';
 import ds from '../candidate-search-dashboard/styles/dashboard.module.scss';
 import cf from './candidateFilters.module.scss';
 import { commonFields } from './commonFields';
+import { useSalaryView } from 'lib/salaryView';
 
 // Search's groups (FilterSidebar.jsx), with the fields Bookmarked and Purchased share.
 const SIDE_GROUPS = [
@@ -38,8 +39,9 @@ const CandidateFilterSidebar = ({
   notesLabel = 'With notes'
 }) => {
   const [openGroups, setOpenGroups] = useState(defaultOpen);
+  const [salaryView] = useSalaryView();
   const fieldsByKey = Object.fromEntries(
-    commonFields({ filters, onFiltersChange, opts, idPrefix: `${idPrefix}-f` }).map((field) => [field.key, field])
+    commonFields({ filters, onFiltersChange, opts, idPrefix: `${idPrefix}-f`, salaryView }).map((field) => [field.key, field])
   );
 
   const commonGroups = SIDE_GROUPS.map((group) => {

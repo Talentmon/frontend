@@ -15,6 +15,7 @@ import {
   EDUCATION_OPTIONS,
   EXPERIENCE_OPTIONS,
   JOB_TYPE_OPTIONS,
+  WORK_MODE_OPTIONS,
   optionLabel,
   salaryChipLabel,
   skillsInCategories,
@@ -85,9 +86,10 @@ const namesWithPicked = (names, picked) => [...names, ...picked.filter((name) =>
  * or a small form, as Bookmarked has always had) and a sidebar body (Search's
  * fields), plus its chips, count, summary and what clearing it sets. A filter
  * no candidate has data for is left out (`available`).
- * `onRadioPicked(key)` closes the pill after a one-pick list.
+ * `onRadioPicked(key)` closes the pill after a one-pick list. `salaryView` is
+ * the net/gross, month/year view the salary range is typed in.
  */
-export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRadioPicked = () => {} }) {
+export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRadioPicked = () => {}, salaryView }) {
   const set = (key, value) => onFiltersChange({ ...f, [key]: value });
   const fid = (name) => `${idPrefix}-${name}`;
   const chip = (key, label, onRemove) => ({ key, label, onRemove });
@@ -284,16 +286,16 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
     label: 'Salary',
     available: true,
     count: salaryActive ? 1 : 0,
-    summary: salaryActive ? [salaryChipLabel(f.salary)] : [],
+    summary: salaryActive ? [salaryChipLabel(f.salary, salaryView)] : [],
     // The currency stays as picked.
     clear: { salary: { ...f.salary, min: '', max: '' } },
-    chips: salaryActive ? [chip('salary', salaryChipLabel(f.salary), () => set('salary', { ...f.salary, min: '', max: '' }))] : [],
+    chips: salaryActive ? [chip('salary', salaryChipLabel(f.salary, salaryView), () => set('salary', { ...f.salary, min: '', max: '' }))] : [],
     pill: {
       width: 320,
       padded: true,
-      body: <SalaryRangeFilter value={f.salary} onChange={(next) => set('salary', next)} rangeLabel="Minimum salary" />
+      body: <SalaryRangeFilter value={f.salary} onChange={(next) => set('salary', next)} rangeLabel="Salary minimum" />
     },
-    side: () => <SalaryRangeFilter value={f.salary} onChange={(next) => set('salary', next)} rangeLabel="Minimum salary" />
+    side: () => <SalaryRangeFilter value={f.salary} onChange={(next) => set('salary', next)} rangeLabel="Salary minimum" />
   };
 
   const languageLabel = (entry) => (entry.levels?.length ? `${entry.name} (${entry.levels.join(', ')})` : entry.name);
@@ -491,6 +493,7 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
   const statusOptions = present(CANDIDATE_STATUS_OPTIONS, opts.candidateStatusCounts, f.candidateStatus);
   const availabilityOptions = present(AVAILABILITY_OPTIONS, opts.availabilityCounts, f.availability);
   const jobTypeOptions = present(JOB_TYPE_OPTIONS, opts.jobTypeCounts, f.jobType);
+  const workModeOptions = present(WORK_MODE_OPTIONS, opts.workModeCounts, f.workMode);
   const openTo = [
     { key: 'relocationReady', label: 'Open to relocation', count: opts.relocationCount },
     { key: 'travelReady', label: 'Open to business travel', count: opts.travelCount }
@@ -498,20 +501,23 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
   const preferences = {
     key: 'preferences',
     label: 'Preferences',
-    available: statusOptions.length + availabilityOptions.length + jobTypeOptions.length + openTo.length > 0,
-    count: (f.candidateStatus ? 1 : 0) + (f.availability ? 1 : 0) + f.jobType.length + (f.relocationReady ? 1 : 0) + (f.travelReady ? 1 : 0),
+    available: statusOptions.length + availabilityOptions.length + jobTypeOptions.length + workModeOptions.length + openTo.length > 0,
+    count:
+      (f.candidateStatus ? 1 : 0) + (f.availability ? 1 : 0) + f.jobType.length + f.workMode.length + (f.relocationReady ? 1 : 0) + (f.travelReady ? 1 : 0),
     summary: [
       f.candidateStatus && optionLabel(CANDIDATE_STATUS_OPTIONS, f.candidateStatus),
       f.availability && optionLabel(AVAILABILITY_OPTIONS, f.availability),
       ...f.jobType.map((type) => optionLabel(JOB_TYPE_OPTIONS, type)),
+      ...f.workMode.map((mode) => optionLabel(WORK_MODE_OPTIONS, mode)),
       f.relocationReady && 'Open to relocation',
       f.travelReady && 'Open to business travel'
     ].filter(Boolean),
-    clear: { candidateStatus: '', availability: '', jobType: [], relocationReady: false, travelReady: false },
+    clear: { candidateStatus: '', availability: '', jobType: [], workMode: [], relocationReady: false, travelReady: false },
     chips: [
       ...(f.candidateStatus ? [chip('cstatus', optionLabel(CANDIDATE_STATUS_OPTIONS, f.candidateStatus), () => set('candidateStatus', ''))] : []),
       ...(f.availability ? [chip('avail', `Available: ${optionLabel(AVAILABILITY_OPTIONS, f.availability).toLowerCase()}`, () => set('availability', ''))] : []),
       ...f.jobType.map((type) => chip(`job-${type}`, optionLabel(JOB_TYPE_OPTIONS, type), () => set('jobType', toggleIn(f.jobType, type)))),
+      ...f.workMode.map((mode) => chip(`mode-${mode}`, optionLabel(WORK_MODE_OPTIONS, mode), () => set('workMode', toggleIn(f.workMode, mode)))),
       ...(f.relocationReady ? [chip('reloc', 'Open to relocation', () => set('relocationReady', false))] : []),
       ...(f.travelReady ? [chip('travel', 'Open to business travel', () => set('travelReady', false))] : [])
     ],
@@ -541,6 +547,18 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
                 items={jobTypeOptions.map((option) => ({ ...option, count: opts.jobTypeCounts[option.value] }))}
                 picked={f.jobType}
                 onToggle={(type) => set('jobType', toggleIn(f.jobType, type))}
+              />
+            </>
+          )}
+          {workModeOptions.length > 0 && (
+            <>
+              <p className={cf.menuHeading}>Work mode</p>
+              <CheckList
+                className=""
+                label="Work mode"
+                items={workModeOptions.map((option) => ({ ...option, count: opts.workModeCounts[option.value] }))}
+                picked={f.workMode}
+                onToggle={(mode) => set('workMode', toggleIn(f.workMode, mode))}
               />
             </>
           )}
@@ -578,6 +596,18 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
               value={f.jobType}
               onChange={(value) => set('jobType', value)}
               placeholder="Select job type"
+              multiple
+            />
+          </SideField>
+        )}
+        {workModeOptions.length > 0 && (
+          <SideField id={fid('work-mode')} label="Work mode">
+            <Select
+              id={fid('work-mode')}
+              options={workModeOptions}
+              value={f.workMode}
+              onChange={(value) => set('workMode', value)}
+              placeholder="Select work mode"
               multiple
             />
           </SideField>

@@ -11,7 +11,11 @@ export function createId() {
 
 export const MODE_OPTS = ['Hybrid', 'On-site', 'Remote'];
 export const TYPE_OPTS = ['Full-time', 'Part-time', 'Contract', 'Freelance'];
-export const SALARY_PERIODS = ['month', 'week', 'year'];
+// The salary minimum: net and gross for one period; the other is worked out
+// from how many salaries a year are paid (12, or 13/14 with a 13th/14th
+// month salary). The backend stores all four (common/utils/salary-normalization.ts).
+export const SALARY_PERIODS = ['month', 'year'];
+export const SALARIES_PER_YEAR = ['12', '13', '14'];
 export const NOTICE_UNITS = ['month', 'week', 'day'];
 export const EDUCATION_LEVELS = ['High School', 'Associate Degree', "Bachelor's Degree", "Master's Degree", 'PhD'];
 export const AWARD_LEVELS = ['International', 'National', 'Regional', 'Company'];
@@ -366,6 +370,52 @@ export function initials(name) {
       .join('')
       .toUpperCase() || '?'
   );
+}
+
+const toNumber = (v) => {
+  const n = parseInt(String(v ?? '').replace(/[^\d]/g, ''), 10);
+  return Number.isNaN(n) ? null : n;
+};
+
+/**
+ * The salary minimum in the other period: { period, net, gross } (null until
+ * both amounts are in). A year is a month times the salaries a year; a month
+ * is a year divided by them.
+ */
+export function salaryOtherPeriod(d) {
+  const net = toNumber(d?.salaryNet);
+  const gross = toNumber(d?.salaryGross);
+  if (net === null || gross === null) return null;
+  const count = Number(d?.salariesPerYear) || 12;
+  return d?.salaryPeriod === 'year'
+    ? { period: 'month', net: Math.round(net / count), gross: Math.round(gross / count) }
+    : { period: 'year', net: net * count, gross: gross * count };
+}
+
+// Below this share of gross, a net amount is most likely a typo.
+const LOW_NET_SHARE = 0.35;
+
+/** { error, warning } for the two amounts: net can't be above gross; a very low net gets a nudge. */
+export function salaryCheck(d) {
+  const net = toNumber(d?.salaryNet);
+  const gross = toNumber(d?.salaryGross);
+  if (net === null || gross === null) return { error: '', warning: '' };
+  if (net > gross) return { error: 'Net can’t be higher than gross.', warning: '' };
+  if (gross > 0 && net < gross * LOW_NET_SHARE) {
+    return { error: '', warning: 'Net is less than a third of gross — please check both amounts.' };
+  }
+  return { error: '', warning: '' };
+}
+
+/** The CV's salary row: "Salary minimum / month" and its net and gross lines. */
+export function salaryRow(d) {
+  if (!d?.salaryNet && !d?.salaryGross) return null;
+  const currency = d.salaryCurrency || '';
+  const line = (amount, basis) => (amount ? `${fmtNum(amount)} ${currency} ${basis}` : '');
+  return {
+    label: `Salary minimum / ${d.salaryPeriod === 'year' ? 'year' : 'month'}`,
+    lines: [line(d.salaryNet, 'net'), line(d.salaryGross, 'gross')].filter(Boolean),
+  };
 }
 
 export function fmtNum(v) {
@@ -754,7 +804,7 @@ export function createInitialState() {
         kind: 'prefs',
         icon: 'prefs',
         title: 'Work preferences',
-        data: { mode: 'Remote', type: 'Full-time', salaryCurrency: 'EUR', salaryAmount: '2000', salaryPeriod: 'month', noticeNum: '2', noticeUnit: 'week', travelReady: false, relocationReady: false },
+        data: { mode: 'Remote', type: 'Full-time', salaryCurrency: 'EUR', salaryNet: '2000', salaryGross: '2850', salaryPeriod: 'month', salariesPerYear: '12', noticeNum: '2', noticeUnit: 'week', travelReady: false, relocationReady: false },
       },
       {
         id: sumId,
@@ -898,7 +948,7 @@ export function createEmptyState({ name = '', role = '', years = '', location = 
         kind: 'prefs',
         icon: 'prefs',
         title: 'Work preferences',
-        data: { mode: '', type: '', salaryCurrency: 'EUR', salaryAmount: '', salaryPeriod: 'month', noticeNum: '', noticeUnit: 'week', travelReady: false, relocationReady: false },
+        data: { mode: '', type: '', salaryCurrency: 'EUR', salaryNet: '', salaryGross: '', salaryPeriod: 'month', salariesPerYear: '12', noticeNum: '', noticeUnit: 'week', travelReady: false, relocationReady: false },
       },
       { id: createId(), type: 'summary', kind: 'text', icon: 'summary', title: 'Summary', text: '' },
       { id: createId(), type: 'experience', kind: 'list', schema: 'experience', icon: 'experience', title: 'Experience', entries: [] },

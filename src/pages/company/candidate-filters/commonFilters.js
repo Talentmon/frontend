@@ -6,6 +6,7 @@ import { buildBaseSalaryRange, filterByBaseSalary } from 'utils/salaryFilterServ
 import { CATEGORY_NAMES as SKILL_CATEGORY_NAMES, getSkillNamesFor } from 'utils/skills';
 import { getSubIndustries } from 'utils/industries';
 import { currencySymbol } from 'utils/currencyService';
+import { DEFAULT_SALARY_VIEW, basisWord, periodWord, salaryBase } from 'lib/salaryView';
 import { EXPERIENCE_OPTIONS, inExperienceRange } from '../bookmarked-candidates/filterUtils';
 
 export { EXPERIENCE_OPTIONS };
@@ -27,6 +28,7 @@ export const COMMON_EMPTY = {
   candidateStatus: '',
   availability: '',
   jobType: [],
+  workMode: [],
   relocationReady: false,
   travelReady: false,
   hasNotes: false
@@ -58,6 +60,12 @@ export const JOB_TYPE_OPTIONS = [
   { value: 'freelance', label: 'Freelance' }
 ];
 
+export const WORK_MODE_OPTIONS = [
+  { value: 'remote', label: 'Remote' },
+  { value: 'hybrid', label: 'Hybrid' },
+  { value: 'on-site', label: 'On-site' }
+];
+
 // As the cards' status badge says it.
 export const CANDIDATE_STATUS_OPTIONS = [
   { value: 'active', label: 'Actively searching' },
@@ -70,13 +78,14 @@ export const toggleIn = (list = [], value) => (list.includes(value) ? list.filte
 
 export const optionLabel = (options, value) => options.find((option) => option.value === value)?.label || value;
 
-export const salaryChipLabel = ({ min, max, currency }) => {
+/** "From €2,000 net / mo" — the range in the salary view it's typed in. */
+export const salaryChipLabel = ({ min, max, currency }, view = DEFAULT_SALARY_VIEW) => {
   const symbol = currencySymbol(currency || 'EUR');
   const prefix = symbol.length > 1 ? `${symbol} ` : symbol;
   const from = min ? `${prefix}${Number(min).toLocaleString('en-US')}` : '';
   const to = max ? `${prefix}${Number(max).toLocaleString('en-US')}` : '';
   const range = from && to ? `${from} – ${to}` : from ? `From ${from}` : `Up to ${to}`;
-  return `${range} net / mo`;
+  return `${range} ${basisWord(view.basis)} / ${periodWord(view.period)}`;
 };
 
 const countBy = (candidates, valuesOf) => {
@@ -106,17 +115,22 @@ const countNames = (candidates, namesOf) => {
 };
 
 // ===== Matching (one candidate against one filter) =====
+// Filters picked as a list (the rest are one value).
+const LIST_FILTERS = new Set(['jobType', 'workMode']);
+
 const matchers = {
   country: (c, countries) => countries.some((name) => lower(name) === lower(c?.country)),
   location: (c, places) => places.some((place) => lower(place) === lower(c?.location)),
   education: (c, level) => !!c?.educationLevels?.includes(level),
   availability: (c, bucket) => typeof c?.noticeDays === 'number' && c.noticeDays <= AVAILABILITY_DAYS[bucket],
   jobType: (c, types) => !!c?.jobType?.some((type) => types.includes(type)),
+  workMode: (c, modes) => modes.includes(c?.workMode),
   certificates: (c, names) => !!c?.certificates?.some((cert) => names.some((name) => lower(name) === lower(cert?.name))),
   candidateStatus: (c, status) => c?.searchStatus === status
 };
 
-export function applyCommonFilters(list, f) {
+/** `view`: the salary view (net/gross, month/year) the salary range is typed in. */
+export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
   let out = list;
   const keep = (test) => {
     out = out.filter(test);
@@ -142,7 +156,7 @@ export function applyCommonFilters(list, f) {
 
   if (f.salary.min || f.salary.max) {
     const range = buildBaseSalaryRange({ min: f.salary.min, max: f.salary.max, currency: f.salary.currency || 'EUR' });
-    out = filterByBaseSalary(out, range, (c) => c?.expectedSalary?.base);
+    out = filterByBaseSalary(out, range, (c) => salaryBase(c?.expectedSalary, view));
   }
 
   // Any picked language, at one of its picked levels (none picked = any level).
@@ -161,6 +175,7 @@ export function applyCommonFilters(list, f) {
   if (f.candidateStatus) keep((c) => matchers.candidateStatus(c, f.candidateStatus));
   if (f.availability) keep((c) => matchers.availability(c, f.availability));
   if (f.jobType.length) keep((c) => matchers.jobType(c, f.jobType));
+  if (f.workMode.length) keep((c) => matchers.workMode(c, f.workMode));
   if (f.relocationReady) keep((c) => c?.relocationReady);
   if (f.travelReady) keep((c) => c?.travelReady);
   if (f.hasNotes) keep((c) => c?.notes?.length > 0);
@@ -182,6 +197,7 @@ export const commonActiveCount = (f) =>
     f.candidateStatus ? 1 : 0,
     f.availability ? 1 : 0,
     f.jobType.length,
+    f.workMode.length,
     f.relocationReady ? 1 : 0,
     f.travelReady ? 1 : 0,
     f.hasNotes ? 1 : 0
@@ -194,7 +210,7 @@ export function commonOptions(candidates) {
   const skills = uniqueNames(candidates.flatMap((c) => c?.skills || []));
   const skillKeys = new Set(skills.map(lower));
   const countMatching = (options, key) =>
-    Object.fromEntries(options.map(({ value }) => [value, candidates.filter((c) => matchers[key](c, key === 'jobType' ? [value] : value)).length]));
+    Object.fromEntries(options.map(({ value }) => [value, candidates.filter((c) => matchers[key](c, LIST_FILTERS.has(key) ? [value] : value)).length]));
   const countriesOf = (c) => (c?.country ? [c.country] : []);
   const locationsOf = (c) => (c?.location?.trim() ? [c.location] : []);
   const certsOf = (c) => (c?.certificates || []).map((cert) => cert?.name).filter(Boolean);
@@ -226,6 +242,7 @@ export function commonOptions(candidates) {
     educationCounts: countMatching(EDUCATION_OPTIONS, 'education'),
     availabilityCounts: countMatching(AVAILABILITY_OPTIONS, 'availability'),
     jobTypeCounts: countMatching(JOB_TYPE_OPTIONS, 'jobType'),
+    workModeCounts: countMatching(WORK_MODE_OPTIONS, 'workMode'),
     candidateStatusCounts: countMatching(CANDIDATE_STATUS_OPTIONS, 'candidateStatus'),
     relocationCount: candidates.filter((c) => c?.relocationReady).length,
     travelCount: candidates.filter((c) => c?.travelReady).length

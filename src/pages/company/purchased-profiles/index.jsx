@@ -30,6 +30,7 @@ import {
   STATUS_KEYS,
 } from './purchasesApi';
 import { DEFAULT_SORT, EMPTY_FILTERS, activeFilterCount, applyFilters, sortProfiles } from './purchasedFilters';
+import { useSalaryView } from 'lib/salaryView';
 import cf from '../candidate-filters/candidateFilters.module.scss';
 import styles from './styles/purchased.module.scss';
 
@@ -63,15 +64,17 @@ const PurchasedProfiles = () => {
       .finally(() => setLoading(false));
   }, []);
 
+  // Net or gross, per month or per year (shared with Search and Bookmarked).
+  const [salaryView] = useSalaryView();
   const analytics = useMemo(() => buildAnalytics(purchasedProfiles), [purchasedProfiles]);
   const visibleProfiles = useMemo(
-    () => sortProfiles(applyFilters(purchasedProfiles, filters), sortBy),
-    [purchasedProfiles, filters, sortBy]
+    () => sortProfiles(applyFilters(purchasedProfiles, filters, salaryView), sortBy, salaryView),
+    [purchasedProfiles, filters, sortBy, salaryView]
   );
   // The pipeline follows every filter but its own stage; "Needs attention" only the position.
   const pipeline = useMemo(
-    () => buildPipeline(applyFilters(purchasedProfiles, { ...filters, statuses: [], attention: false })),
-    [purchasedProfiles, filters]
+    () => buildPipeline(applyFilters(purchasedProfiles, { ...filters, statuses: [], attention: false }, salaryView)),
+    [purchasedProfiles, filters, salaryView]
   );
   const attention = useMemo(
     () => attentionList(filters.hiringFor.length ? purchasedProfiles.filter((p) => filters.hiringFor.includes(p?.hiringFor)) : purchasedProfiles),

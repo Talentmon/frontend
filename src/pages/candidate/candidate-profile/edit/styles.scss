@@ -1528,6 +1528,52 @@
     }
   }
 
+  /* Salary minimum: currency + period, then net + gross, then the other period */
+  .salary-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    input {
+      width: 100%;
+      border: 1.5px solid var(--cpe-line);
+      border-radius: var(--cpe-r-sm);
+      padding: 0.62em 0.7em;
+      font-size: 0.9rem;
+      background: var(--cpe-white);
+      color: var(--cpe-ink);
+      &:focus {
+        outline: none;
+        border-color: var(--cpe-gold);
+        box-shadow: 0 0 0 3px rgba(230, 169, 60, 0.16);
+      }
+      &[aria-invalid='true'] {
+        border-color: var(--cpe-red);
+      }
+    }
+    .sub-label {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--cpe-slate);
+      margin-bottom: 4px;
+    }
+  }
+  .salary-calc {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    margin-top: 8px;
+    font-size: 0.82rem;
+    color: var(--cpe-ink-2);
+    .salary-count {
+      width: 68px;
+    }
+  }
+  .field .field-hint.warn {
+    color: #b7791f;
+  }
+
   /* prefs trio / duo */
   .trio {
     display: grid;

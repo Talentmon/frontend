@@ -52,6 +52,9 @@ export function reorderBookmarks(items) {
 }
 
 /** Best-effort on the backend — some candidates can fail (e.g. balance runs out mid-batch) while others succeed. Returns { unlocked: { candidateId, cvSnapshot }[], failed: { candidateId, reason }[] }. */
-export function bulkUnlockBookmarks(candidateIds) {
-  return apiClient.post('/companies/me/bookmarks/bulk-unlock', { candidateIds }).then((r) => r.data);
+/** `view`: the salary view the company accepted the salary clause in. */
+export function bulkUnlockBookmarks(candidateIds, view) {
+  return apiClient
+    .post('/companies/me/bookmarks/bulk-unlock', { candidateIds, salaryBasis: view?.basis, salaryPeriod: view?.period })
+    .then((r) => r.data);
 }

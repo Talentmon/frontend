@@ -4,6 +4,7 @@ import { useClerk } from '@clerk/clerk-react';
 import Header from 'components/ui/Header';
 import Icon from 'components/AppIcon';
 import { useCurrentUser } from 'lib/CurrentUserContext';
+import { clearSalaryView } from 'lib/salaryView';
 import CompanyInformationTab from './components/CompanyInformationTab';
 import TeamManagementTab from './components/TeamManagementTab';
 import ReputationManagementTab from './components/ReputationManagementTab';
@@ -32,7 +33,7 @@ import styles from './styles/company.module.scss';
 const CompanyProfileSettings = () => {
   const navigate = useNavigate();
   const clerk = useClerk();
-  const { refetch: refetchCurrentUser, isCompanyOwner } = useCurrentUser();
+  const { refetch: refetchCurrentUser, isCompanyOwner, company: currentCompany } = useCurrentUser();
   const [activeTab, setActiveTab] = useState('company');
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(true);
@@ -129,6 +130,10 @@ const CompanyProfileSettings = () => {
     try {
       const saved = await updateCompany(companyToPayload(companyData));
       setCompanyData((prev) => ({ ...prev, ...companyToFrontend(saved) }));
+      // A new default salary view applies right away, over any switch made in the Salary filter.
+      if (saved.salaryViewBasis !== currentCompany?.salaryViewBasis || saved.salaryViewPeriod !== currentCompany?.salaryViewPeriod) {
+        clearSalaryView();
+      }
       // Silent: refreshes the header's company name and the nav/route gate
       // without RequireAuth unmounting this page mid-save.
       await refetchCurrentUser({ silent: true }).catch(() => {});

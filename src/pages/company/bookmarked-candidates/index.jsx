@@ -17,6 +17,7 @@ import { COMMON_EMPTY, applyCommonFilters, commonOptions } from '../candidate-fi
 import { CV_PUSH_BREAKPOINT, useMinWidth } from '../candidate-filters/cvLayout';
 import cf from '../candidate-filters/candidateFilters.module.scss';
 import { setCreditBalance, useCreditBalance } from 'lib/creditBalance';
+import { salaryBase, useSalaryView } from 'lib/salaryView';
 import {
   listBookmarks,
   getBookmarkLimit,
@@ -57,6 +58,8 @@ const BookmarkedCandidatesPage = () => {
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef(null);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
+  // Net or gross, per month or per year (shared with Search and Purchased).
+  const [salaryView] = useSalaryView();
   const isPushWide = useMinWidth(CV_PUSH_BREAKPOINT);
 
   useEffect(() => {
@@ -118,7 +121,7 @@ const BookmarkedCandidatesPage = () => {
     }
 
     // Search's filters, matched as Search's backend does (candidate-filters/commonFilters.js).
-    filtered = applyCommonFilters(filtered, filters);
+    filtered = applyCommonFilters(filtered, filters, salaryView);
 
     // Apply sorting
     filtered?.sort((a, b) => {
@@ -132,9 +135,9 @@ const BookmarkedCandidatesPage = () => {
         case 'experience-asc':
           return a?.experience - b?.experience;
         case 'salary-desc':
-          return (b?.expectedSalary?.base || 0) - (a?.expectedSalary?.base || 0);
+          return (salaryBase(b?.expectedSalary, salaryView) || 0) - (salaryBase(a?.expectedSalary, salaryView) || 0);
         case 'salary-asc':
-          return (a?.expectedSalary?.base || 0) - (b?.expectedSalary?.base || 0);
+          return (salaryBase(a?.expectedSalary, salaryView) || 0) - (salaryBase(b?.expectedSalary, salaryView) || 0);
         case 'match-score-desc':
           return (b?.matchScore || 0) - (a?.matchScore || 0);
         case 'custom':
@@ -145,7 +148,7 @@ const BookmarkedCandidatesPage = () => {
     });
 
     setFilteredCandidates(filtered);
-  }, [allBookmarkedCandidates, filters, sortBy]);
+  }, [allBookmarkedCandidates, filters, sortBy, salaryView]);
 
   const showToast = (message) => {
     setToastMsg(message);
@@ -188,7 +191,7 @@ const BookmarkedCandidatesPage = () => {
   const handleConfirmUnlock = async () => {
     if (!unlockTarget) return;
     try {
-      const unlock = await unlockCandidate(unlockTarget.id, unlockTarget.position);
+      const unlock = await unlockCandidate(unlockTarget.id, unlockTarget.position, salaryView);
       const revealed = revealedToFrontend(unlock.cvSnapshot);
       setUnlockTarget((prev) => (prev ? { ...prev, ...revealed } : prev));
       setCreditBalance((c) => Math.max(0, c - unlockTarget.unlockCost));
@@ -272,7 +275,7 @@ const BookmarkedCandidatesPage = () => {
     }
 
     try {
-      const result = await bulkUnlockBookmarks(candidateIds);
+      const result = await bulkUnlockBookmarks(candidateIds, salaryView);
       const unlockedIds = (result?.unlocked || []).map((u) => u.candidateId);
       const unlockedCount = unlockedIds.length;
 

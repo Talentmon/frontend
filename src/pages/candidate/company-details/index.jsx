@@ -258,7 +258,7 @@ const CompanyDetails = () => {
 
                         <p className="rev-text">{review.text}</p>
                         <div className={`rev-wage ${review.minWageRespected ? 'ok' : 'bad'}`}>
-                          {review.minWageRespected ? '✓ Minimum salary from profile: honored' : '✗ Minimum salary from profile: not honored'}
+                          {review.minWageRespected ? '✓ Salary minimum from profile: honored' : '✗ Salary minimum from profile: not honored'}
                         </div>
 
                         <div className="rev-foot">

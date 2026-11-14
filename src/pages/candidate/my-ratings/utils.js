@@ -9,7 +9,7 @@ export const calcOverall = (cats, minPay) => {
   const vals = CATS.map(c => cats[c.key] ?? 0).filter(v => v > 0);
   if (!vals.length) return 0;
   const avg = vals.reduce((a, b) => a + b, 0) / vals.length;
-  // RULE: if the minimum salary wasn't honored, the 5-star average is rescaled
+  // RULE: if the salary minimum wasn't honored, the 5-star average is rescaled
   // so that a perfect score (5) maps to 3, not just clamped to a max of 3.
   const scaled = minPay === false ? avg * (3 / 5) : avg;
   return Math.round(scaled * 10) / 10;

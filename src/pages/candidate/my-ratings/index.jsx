@@ -81,7 +81,7 @@ const RatedCard = ({ rating, onEdit, onDelete }) => {
         ))}
       </div>
 
-      {/* Minimum salary */}
+      {/* Salary minimum */}
       {rating.minPay !== null && (
         <div className={styles.minPayRow}>
           <span
@@ -91,7 +91,7 @@ const RatedCard = ({ rating, onEdit, onDelete }) => {
             <Icon name={rating.minPay ? 'Check' : 'X'} size={10} />
           </span>
           <span>
-            Minimum salary from profile:{' '}
+            Salary minimum from profile:{' '}
             <strong>{rating.minPay ? 'honored' : 'not honored'}</strong>
           </span>
           {isRescaled && (

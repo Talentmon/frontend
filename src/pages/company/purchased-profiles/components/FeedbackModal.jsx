@@ -125,7 +125,7 @@ const FeedbackModal = ({
 
             <div className={`${styles.field} ${styles.fieldFull}`}>
               <label className={styles.flabel} htmlFor="fm-clause">
-                Did you honor the minimum salary clause you agreed to when unlocking the candidate? <span className={styles.req}>*</span>
+                Did you honor the salary minimum clause you agreed to when unlocking the candidate? <span className={styles.req}>*</span>
               </label>
               <Select
                 id="fm-clause"

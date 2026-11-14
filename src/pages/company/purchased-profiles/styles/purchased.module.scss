@@ -155,7 +155,7 @@ $push-bp: 1400px;
 // ===== Candidate cards =====
 .cgrid {
   display: grid;
-  // Same width as the Bookmarked cards: 444px keeps "Minimum salary" on one line.
+  // Same width as the Bookmarked cards: 444px keeps "Salary minimum" on one line.
   grid-template-columns: repeat(auto-fill, minmax(min(444px, 100%), 1fr));
   // Each card keeps its own height, so opening notes or Hire tracking on one
   // doesn't stretch the others in its row.

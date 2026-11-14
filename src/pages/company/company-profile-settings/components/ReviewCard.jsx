@@ -40,7 +40,7 @@ const ReviewCard = ({ review }) => (
 
     <p className={styles.dRevText}>{review?.comment}</p>
     <div className={`${styles.dRevWage} ${review?.minWageRespected ? styles.ok : styles.bad}`}>
-      {review?.minWageRespected ? '✓ Minimum salary from profile: honored' : '✗ Minimum salary from profile: not honored'}
+      {review?.minWageRespected ? '✓ Salary minimum from profile: honored' : '✗ Salary minimum from profile: not honored'}
     </div>
 
     <div className={styles.dRevFoot}>

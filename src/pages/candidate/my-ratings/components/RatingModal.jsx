@@ -89,15 +89,15 @@ const RatingModal = ({ company, mode, initialData, onSave, onClose, saving = fal
           ))}
         </div>
 
-        {/* Minimum salary question */}
+        {/* Salary minimum question */}
         <div className={styles.minPayQ}>
           <div className={styles.minPayQLabel}>
-            Was the minimum salary from your profile honored?
+            Was the salary minimum from your profile honored?
             <span>If not, the overall rating cannot exceed 3.</span>
           </div>
           <div className={styles.minPayToggle}>
             <button
-              aria-label="Yes, the minimum salary was honored"
+              aria-label="Yes, the salary minimum was honored"
               aria-pressed={minPay === true}
               className={`${styles.minPayBtn} ${minPay === true ? styles.minPayBtnYesOn : ''}`}
               onClick={() => toggleMinPay(true)}
@@ -105,7 +105,7 @@ const RatingModal = ({ company, mode, initialData, onSave, onClose, saving = fal
               Yes
             </button>
             <button
-              aria-label="No, the minimum salary was not honored"
+              aria-label="No, the salary minimum was not honored"
               aria-pressed={minPay === false}
               className={`${styles.minPayBtn} ${minPay === false ? styles.minPayBtnNoOn : ''}`}
               onClick={() => toggleMinPay(false)}
@@ -187,7 +187,7 @@ const RatingModal = ({ company, mode, initialData, onSave, onClose, saving = fal
               onClick={handleSave}
               disabled={!isComplete || saving}
               aria-label="Save rating"
-              title={!isComplete ? 'Rate all categories and answer the minimum salary question' : undefined}
+              title={!isComplete ? 'Rate all categories and answer the salary minimum question' : undefined}
             >
               <Icon name="Check" size={16} />
               {saving ? 'Saving…' : 'Save rating'}

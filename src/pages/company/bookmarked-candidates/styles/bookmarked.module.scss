@@ -1103,7 +1103,7 @@ $push-bp: 1400px;
 // ===== Candidate cards grid =====
 .cgrid {
   display: grid;
-  // 444px keeps "Minimum salary" on one line; three of them fit the 1420px page.
+  // 444px keeps "Salary minimum" on one line; three of them fit the 1420px page.
   grid-template-columns: repeat(auto-fill, minmax(min(444px, 100%), 1fr));
   gap: 16px;
   align-items: stretch;

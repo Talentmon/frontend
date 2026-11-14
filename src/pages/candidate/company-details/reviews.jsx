@@ -31,8 +31,8 @@ const RATING_OPTIONS = [
 
 const WAGE_OPTIONS = [
   { value: '', label: 'Any review' },
-  { value: 'yes', label: 'Minimum salary honored' },
-  { value: 'no', label: 'Minimum salary not honored' },
+  { value: 'yes', label: 'Salary minimum honored' },
+  { value: 'no', label: 'Salary minimum not honored' },
 ];
 
 const CompanyDetailsReviews = () => {
@@ -225,7 +225,7 @@ const CompanyDetailsReviews = () => {
 
                     <p className="rev-text">{review.text}</p>
                     <div className={`rev-wage ${review.minWageRespected ? 'ok' : 'bad'}`}>
-                      {review.minWageRespected ? '✓ Minimum salary from profile: honored' : '✗ Minimum salary from profile: not honored'}
+                      {review.minWageRespected ? '✓ Salary minimum from profile: honored' : '✗ Salary minimum from profile: not honored'}
                     </div>
 
                     <div className="rev-foot">

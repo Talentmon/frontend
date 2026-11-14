@@ -1,16 +1,10 @@
 // utils/salaryNormalizationService.js - SalaryNormalizationService
 //
-// Turns a user-entered salary (amount + currency + pay period) into the
-// normalized, base-currency snapshot used for search/filter/sort/analytics,
-// while always preserving the original values untouched.
-//
-// IMPORTANT: in production this snapshot (baseAmount, exchangeRate,
-// exchangeRateDate) must be computed once - when the salary is created or
-// edited - and persisted as-is. It must never be recomputed on read, or the
-// "exchange rate never changes after the fact" guarantee breaks. This
-// frontend-only version recomputes on the fly (there is no persistence layer
-// yet); once a backend exists, callers should store what this returns and
-// stop calling normalizeSalary() again for the same record.
+// Turns a user-entered salary (amount + currency + pay period) into its
+// base-currency (EUR) value at today's rate, while always preserving the
+// original values untouched. The backend keeps candidates' EUR salaries the
+// same way: worked out on save and again after each daily rates refresh.
+// Here it converts a company's salary filter range (Bookmarked, Purchased).
 import { isSupportedCurrency } from './currencyService';
 import { getExchangeRate, BASE_CURRENCY } from './exchangeRateService';
 

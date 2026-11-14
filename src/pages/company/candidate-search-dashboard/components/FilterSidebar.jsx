@@ -9,7 +9,6 @@ import { ISSUER_NAMES, FAMILY_NAMES, getCertificationNamesFor } from 'utils/cert
 import { CATEGORY_NAMES as SKILL_CATEGORY_NAMES, getSkillNamesFor } from 'utils/skills';
 import { currencySymbol } from 'utils/currencyService';
 import { COUNTRY_OPTIONS } from 'utils/countries';
-import { BASE_CURRENCY } from 'utils/exchangeRateService';
 import { basisWord, periodWord, useSalaryView } from 'lib/salaryView';
 import {
   listSavedFilters,
@@ -193,8 +192,9 @@ const ALL_FIELDS = FILTER_GROUPS.flatMap((group) => group?.fields);
 
 const emptyValueForType = (type) => {
   switch (type) {
+    // Its currency is part of the salary view (lib/salaryView.js).
     case 'salaryRange':
-      return { min: '', max: '', currency: BASE_CURRENCY };
+      return { min: '', max: '' };
     case 'multiSelect':
     case 'comboMulti':
     case 'languageLevel':
@@ -259,7 +259,7 @@ const formatAmount = (value) => {
 };
 
 // What a collapsed group lists under its title, e.g. "React, TypeScript +1".
-// `view`: the salary view the salary range is typed in.
+// `view`: the salary view (and currency) the salary range is typed in.
 const groupSummaryItems = (groupId, f, view) => {
   switch (groupId) {
     case 'basic':
@@ -270,9 +270,9 @@ const groupSummaryItems = (groupId, f, view) => {
         f.education && optionLabel(educationOptions, f.education)
       ].filter(Boolean);
     case 'salary': {
-      const { min, max, currency } = f.salary || {};
+      const { min, max } = f.salary || {};
       if (!min && !max) return [];
-      const symbol = currencySymbol(currency || BASE_CURRENCY);
+      const symbol = currencySymbol(view?.currency || 'EUR');
       const prefix = symbol.length > 1 ? `${symbol} ` : symbol;
       const from = min ? `${prefix}${formatAmount(min)}` : '';
       const to = max ? `${prefix}${formatAmount(max)}` : '';
@@ -399,7 +399,8 @@ const FilterSidebar = ({
   };
 
   // "Clear" in an open group's header empties just that group (the salary
-  // currency stays as picked) and hands focus back to the group title.
+  // currency is part of the salary view, so it stays as picked) and hands
+  // focus back to the group title.
   const handleClearGroup = (group) => {
     const cleared = { ...localFilters };
     group?.fields?.forEach((field) => {
@@ -417,7 +418,10 @@ const FilterSidebar = ({
   };
 
   const sameView = (entry) =>
-    !entry?.view || (entry.view.basis === salaryView.basis && entry.view.period === salaryView.period);
+    !entry?.view ||
+    (entry.view.basis === salaryView.basis &&
+      entry.view.period === salaryView.period &&
+      entry.view.currency === salaryView.currency);
   const isSavedFilterCurrent = (entry) =>
     entry?.id === activeSavedFilterId && sameFilters(entry?.filters, localFilters) && sameView(entry);
 

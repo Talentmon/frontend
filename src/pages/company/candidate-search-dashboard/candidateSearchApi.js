@@ -43,7 +43,7 @@ const WORK_MODE_BACKEND_TO_FILTER = Object.fromEntries(
 // backend's SearchFiltersDto shape, dropping empty/default values entirely
 // (an empty string would fail validators like @IsIn/@IsEnum that only
 // @IsOptional bypasses for null/undefined, not '').
-// `view` is the salary view the range is typed in (net/gross, month/year).
+// `view` is the salary view the range is typed in (net/gross, month/year, currency).
 export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
   const out = {};
   if (filters.position) out.position = filters.position;
@@ -73,7 +73,7 @@ export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
     out.salary = {
       ...(filters.salary.min ? { min: String(filters.salary.min) } : {}),
       ...(filters.salary.max ? { max: String(filters.salary.max) } : {}),
-      currency: filters.salary.currency || 'EUR',
+      currency: view.currency || 'EUR',
       basis: view.basis,
       period: view.period,
     };
@@ -90,7 +90,7 @@ export function filtersToFrontend(filters = {}) {
   if (out.workMode?.length) out.workMode = out.workMode.map((m) => WORK_MODE_BACKEND_TO_FILTER[m]).filter(Boolean);
   if (out.status) out.status = STATUS_TO_FRONTEND[out.status] || '';
   if (out.salary) {
-    const { basis, period, ...range } = out.salary;
+    const { basis, period, currency, ...range } = out.salary;
     out.salary = range;
   }
   return out;
@@ -99,7 +99,11 @@ export function filtersToFrontend(filters = {}) {
 /** The salary view a saved filter's range was typed in; filters saved before views existed were net per month. */
 export function savedFilterView(filters = {}) {
   if (!filters.salary) return null;
-  return { basis: filters.salary.basis || 'NET', period: filters.salary.period || 'MONTH' };
+  return {
+    basis: filters.salary.basis || 'NET',
+    period: filters.salary.period || 'MONTH',
+    currency: filters.salary.currency || 'EUR'
+  };
 }
 
 export function searchCandidates({ q, filters, sort, page = 1, limit = 20, view = DEFAULT_SALARY_VIEW } = {}) {

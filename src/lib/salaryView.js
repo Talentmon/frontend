@@ -3,8 +3,10 @@ import { formatMoney } from 'utils/currencyService';
 import { useCurrentUser } from './CurrentUserContext';
 
 // How a company sees candidates' salaries: net or gross, per month or per
-// year. Candidates give net AND gross for the period they pick, and the other
-// period is worked out, so every profile has all four.
+// year, plus the currency its salary filter range is typed in. Candidates give
+// net AND gross for the period they pick, and the other period is worked out,
+// so every profile has all four. Cards and CVs always show a salary in the
+// candidate's own currency; the currency only applies to the filter range.
 //
 // The company picks its default in Company profile settings (required). Anyone
 // on the team can switch it in the Salary filter; that holds across Search,
@@ -21,7 +23,7 @@ export const SALARY_PERIOD_OPTIONS = [
   { value: 'YEAR', label: 'Per year' }
 ];
 
-export const DEFAULT_SALARY_VIEW = { basis: 'NET', period: 'MONTH' };
+export const DEFAULT_SALARY_VIEW = { basis: 'NET', period: 'MONTH', currency: 'EUR' };
 
 const STORAGE_KEY = 'talentmon.salaryView';
 const CHANGE_EVENT = 'salary-view:change';
@@ -54,9 +56,9 @@ const subscribe = (onChange) => {
 const publish = () => window.dispatchEvent(new CustomEvent(CHANGE_EVENT));
 
 /** The view picked for the rest of this visit (kept per company, so another account in the same tab starts fresh). */
-export function setSalaryView(companyId, { basis, period }) {
+export function setSalaryView(companyId, { basis, period, currency }) {
   try {
-    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ companyId, basis, period }));
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ companyId, basis, period, currency }));
   } catch {
     // Storage blocked: the switch just doesn't outlive this page.
   }
@@ -73,13 +75,15 @@ export function clearSalaryView() {
   publish();
 }
 
-/** The company's default view from its settings (net per month until it has picked one). */
-export const companySalaryView = (company) =>
-  company?.salaryViewBasis && company?.salaryViewPeriod
+/** The company's default view from its settings (net per month in EUR until it has picked one). */
+export const companySalaryView = (company) => ({
+  ...(company?.salaryViewBasis && company?.salaryViewPeriod
     ? { basis: company.salaryViewBasis, period: company.salaryViewPeriod }
-    : DEFAULT_SALARY_VIEW;
+    : { basis: DEFAULT_SALARY_VIEW.basis, period: DEFAULT_SALARY_VIEW.period }),
+  currency: company?.salaryViewCurrency || DEFAULT_SALARY_VIEW.currency
+});
 
-/** [view, setView] — the salary view in effect for the signed-in company. */
+/** [view, setView] — the salary view in effect for the signed-in company: { basis, period, currency }. */
 export function useSalaryView() {
   const { company } = useCurrentUser();
   const stored = useSyncExternalStore(subscribe, readStored);
@@ -87,7 +91,9 @@ export function useSalaryView() {
   const own = stored && stored.companyId === company?.id;
   const basis = own ? stored.basis : fallback.basis;
   const period = own ? stored.period : fallback.period;
-  const view = useMemo(() => ({ basis, period }), [basis, period]);
+  // A view kept from before the currency was part of it starts in the default currency.
+  const currency = (own && stored.currency) || fallback.currency;
+  const view = useMemo(() => ({ basis, period, currency }), [basis, period, currency]);
   const companyId = company?.id;
   return [view, (next) => setSalaryView(companyId, next)];
 }

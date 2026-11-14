@@ -42,7 +42,8 @@ const CandidateSearchDashboard = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [filters, setFilters] = useState({});
   // Net or gross, per month or per year: what the cards show, the salary
-  // filter's range is typed in, and sorting by salary orders by.
+  // filter's range is typed in, and sorting by salary orders by. Its
+  // currency is the one the range is typed in.
   const [salaryView] = useSalaryView();
   const [isFilterCollapsed, setIsFilterCollapsed] = useState(
     () => typeof window !== 'undefined' && window.innerWidth < 1024
@@ -113,10 +114,12 @@ const CandidateSearchDashboard = () => {
       });
   };
 
+  // Another currency only changes the results when a salary range is typed in it.
+  const rangeCurrency = filters?.salary?.min || filters?.salary?.max ? salaryView.currency : '';
   useEffect(() => {
     fetchPage(1, { append: false });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery, filters, sortBy, salaryView]);
+  }, [debouncedQuery, filters, sortBy, salaryView.basis, salaryView.period, rangeCurrency]);
 
   const handleLoadMore = () => {
     if (loadingMore || page >= totalPages) return;

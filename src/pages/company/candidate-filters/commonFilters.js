@@ -19,7 +19,8 @@ export const COMMON_EMPTY = {
   skillCategory: [],
   skills: [],
   skillsMatch: 'any',
-  salary: { min: '', max: '', currency: 'EUR' },
+  // The currency it's typed in is part of the salary view (lib/salaryView.js).
+  salary: { min: '', max: '' },
   languages: [],
   country: [],
   location: [], // cities
@@ -78,9 +79,9 @@ export const toggleIn = (list = [], value) => (list.includes(value) ? list.filte
 
 export const optionLabel = (options, value) => options.find((option) => option.value === value)?.label || value;
 
-/** "From €2,000 net / mo" — the range in the salary view it's typed in. */
-export const salaryChipLabel = ({ min, max, currency }, view = DEFAULT_SALARY_VIEW) => {
-  const symbol = currencySymbol(currency || 'EUR');
+/** "From €2,000 net / mo" — the range in the salary view (and currency) it's typed in. */
+export const salaryChipLabel = ({ min, max }, view = DEFAULT_SALARY_VIEW) => {
+  const symbol = currencySymbol(view.currency || 'EUR');
   const prefix = symbol.length > 1 ? `${symbol} ` : symbol;
   const from = min ? `${prefix}${Number(min).toLocaleString('en-US')}` : '';
   const to = max ? `${prefix}${Number(max).toLocaleString('en-US')}` : '';
@@ -129,7 +130,7 @@ const matchers = {
   candidateStatus: (c, status) => c?.searchStatus === status
 };
 
-/** `view`: the salary view (net/gross, month/year) the salary range is typed in. */
+/** `view`: the salary view (net/gross, month/year, currency) the salary range is typed in. */
 export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
   let out = list;
   const keep = (test) => {
@@ -155,7 +156,8 @@ export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
   }
 
   if (f.salary.min || f.salary.max) {
-    const range = buildBaseSalaryRange({ min: f.salary.min, max: f.salary.max, currency: f.salary.currency || 'EUR' });
+    // Today's rate, the same one the candidates' EUR salaries are at (utils/exchangeRateService).
+    const range = buildBaseSalaryRange({ min: f.salary.min, max: f.salary.max, currency: view.currency || 'EUR' });
     out = filterByBaseSalary(out, range, (c) => salaryBase(c?.expectedSalary, view));
   }
 

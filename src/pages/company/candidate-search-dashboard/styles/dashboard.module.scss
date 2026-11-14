@@ -564,6 +564,14 @@ $hint: #5b6573;
   color: $hint;
 }
 
+// Under the salary range when its currency has no exchange rate (SalaryRangeFilter).
+.salaryWarn {
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  color: $gold-deep;
+}
+
 .srOnly {
   position: absolute;
   width: 1px;

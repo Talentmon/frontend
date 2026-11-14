@@ -18,6 +18,7 @@ import { CV_PUSH_BREAKPOINT, useMinWidth } from '../candidate-filters/cvLayout';
 import cf from '../candidate-filters/candidateFilters.module.scss';
 import { setCreditBalance, useCreditBalance } from 'lib/creditBalance';
 import { salaryBase, useSalaryView } from 'lib/salaryView';
+import { useExchangeRates } from 'utils/exchangeRateService';
 import {
   listBookmarks,
   getBookmarkLimit,
@@ -58,8 +59,10 @@ const BookmarkedCandidatesPage = () => {
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef(null);
   const [filters, setFilters] = useState(EMPTY_FILTERS);
-  // Net or gross, per month or per year (shared with Search and Purchased).
+  // Net or gross, per month or per year, and the salary filter's currency (shared with Search and Purchased).
   const [salaryView] = useSalaryView();
+  // Today's rates for the salary filter; the list is filtered again when they arrive.
+  const exchangeRates = useExchangeRates();
   const isPushWide = useMinWidth(CV_PUSH_BREAKPOINT);
 
   useEffect(() => {
@@ -148,7 +151,7 @@ const BookmarkedCandidatesPage = () => {
     });
 
     setFilteredCandidates(filtered);
-  }, [allBookmarkedCandidates, filters, sortBy, salaryView]);
+  }, [allBookmarkedCandidates, filters, sortBy, salaryView, exchangeRates]);
 
   const showToast = (message) => {
     setToastMsg(message);
@@ -399,9 +402,9 @@ const BookmarkedCandidatesPage = () => {
     setPreviewId(null);
   };
 
-  // Clears every filter (Saved by too); the salary currency stays as picked.
+  // Clears every filter (Saved by too); the salary currency is part of the salary view and stays as picked.
   const handleClearFilters = () => {
-    setFilters((prev) => ({ ...EMPTY_FILTERS, salary: { ...EMPTY_FILTERS.salary, currency: prev?.salary?.currency || 'EUR' } }));
+    setFilters(EMPTY_FILTERS);
   };
 
   // "Remove some" on a full list: straight into select mode.

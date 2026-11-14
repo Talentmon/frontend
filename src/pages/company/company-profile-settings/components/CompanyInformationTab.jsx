@@ -4,6 +4,7 @@ import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
 import { COMPANY_SIZE_OPTIONS, INDUSTRY_OPTIONS, WORK_MODE_OPTIONS, uploadCompanyLogo } from '../companyApi';
 import { SALARY_BASIS_OPTIONS, SALARY_PERIOD_OPTIONS } from 'lib/salaryView';
+import { currencySelectOptions } from 'utils/currencyService';
 import SectionHead from './SectionHead';
 import styles from '../styles/company.module.scss';
 import { ACCEPTED_IMAGE_TYPES } from 'utils/resizeImage';
@@ -22,6 +23,7 @@ const BENEFITS_LIST = [
   'Extra days off',
 ];
 const BENEFIT_OPTIONS = BENEFITS_LIST.map((benefit) => ({ value: benefit, label: benefit }));
+const CURRENCY_OPTIONS = currencySelectOptions();
 
 // `readOnly`: recruiters see the company profile but only the owner edits it (the backend enforces the same).
 const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fireToast, errors = {}, readOnly = false }) => {
@@ -432,7 +434,7 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
         <SectionHead
           icon="Banknote"
           title="Salary view"
-          subtitle="How candidates' salaries are shown to your team in Search, Bookmarked and Purchased"
+          subtitle="How candidates' salaries are shown to your team in Search, Bookmarked and Purchased, and the currency the salary filter starts in"
         />
 
         <div className={styles.form2}>
@@ -459,10 +461,26 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
               {fieldError(field)}
             </div>
           ))}
+
+          <div {...fieldProps('salaryViewCurrency')}>
+            <label className={styles.flabel}>Salary filter currency {requiredMark}</label>
+            <div className={errors.salaryViewCurrency ? styles.selectInvalid : undefined}>
+              <Select
+                value={companyData?.salaryViewCurrency || ''}
+                onChange={(v) => handleInputChange('salaryViewCurrency', v)}
+                options={CURRENCY_OPTIONS}
+                placeholder="Select currency…"
+                searchable
+              />
+            </div>
+            {fieldError('salaryViewCurrency')}
+          </div>
         </div>
         <span className={styles.fhint}>
-          Candidates give both net and gross, so every profile can be shown either way. Anyone on your team can switch
-          the view in the Salary filter; it goes back to this when they close the tab or sign out.
+          Candidates give both net and gross, so every profile can be shown either way, always in the candidate's own
+          currency. The salary filter's range is typed in the currency above and compared at today's exchange rate.
+          Anyone on your team can switch any of these in the Salary filter; they go back to these when they close the
+          tab or sign out.
         </span>
       </div>
 

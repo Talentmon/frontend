@@ -131,7 +131,11 @@ const CompanyProfileSettings = () => {
       const saved = await updateCompany(companyToPayload(companyData));
       setCompanyData((prev) => ({ ...prev, ...companyToFrontend(saved) }));
       // A new default salary view applies right away, over any switch made in the Salary filter.
-      if (saved.salaryViewBasis !== currentCompany?.salaryViewBasis || saved.salaryViewPeriod !== currentCompany?.salaryViewPeriod) {
+      if (
+        saved.salaryViewBasis !== currentCompany?.salaryViewBasis ||
+        saved.salaryViewPeriod !== currentCompany?.salaryViewPeriod ||
+        saved.salaryViewCurrency !== currentCompany?.salaryViewCurrency
+      ) {
         clearSalaryView();
       }
       // Silent: refreshes the header's company name and the nav/route gate

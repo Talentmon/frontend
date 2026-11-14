@@ -23,6 +23,7 @@ export const REQUIRED_COMPANY_FIELD_LABELS = {
   shortDescription: 'Short description',
   salaryViewBasis: 'Salary view: net or gross',
   salaryViewPeriod: 'Salary view: per month or per year',
+  salaryViewCurrency: 'Salary view: currency',
 };
 
 const MIN_FOUNDED_YEAR = 1800;
@@ -90,6 +91,7 @@ export function companyToFrontend(c) {
     flexibleHours: !!c.flexibleHours,
     salaryViewBasis: c.salaryViewBasis || '',
     salaryViewPeriod: c.salaryViewPeriod || '',
+    salaryViewCurrency: c.salaryViewCurrency || '',
     benefits: c.benefits || [],
     registrationNumber: c.registrationNumber || '',
     profileComplete: !!c.profileComplete,
@@ -120,6 +122,7 @@ export function companyToPayload(companyData) {
     flexibleHours: !!companyData.flexibleHours,
     salaryViewBasis: emptyToUndefined(companyData.salaryViewBasis),
     salaryViewPeriod: emptyToUndefined(companyData.salaryViewPeriod),
+    salaryViewCurrency: emptyToUndefined(companyData.salaryViewCurrency),
     registrationNumber: emptyToUndefined(companyData.registrationNumber),
     benefits: companyData.benefits || [],
   };

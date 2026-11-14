@@ -31,6 +31,7 @@ import {
 } from './purchasesApi';
 import { DEFAULT_SORT, EMPTY_FILTERS, activeFilterCount, applyFilters, sortProfiles } from './purchasedFilters';
 import { useSalaryView } from 'lib/salaryView';
+import { useExchangeRates } from 'utils/exchangeRateService';
 import cf from '../candidate-filters/candidateFilters.module.scss';
 import styles from './styles/purchased.module.scss';
 
@@ -64,17 +65,21 @@ const PurchasedProfiles = () => {
       .finally(() => setLoading(false));
   }, []);
 
-  // Net or gross, per month or per year (shared with Search and Bookmarked).
+  // Net or gross, per month or per year, and the salary filter's currency (shared with Search and Bookmarked).
   const [salaryView] = useSalaryView();
+  // Today's rates for the salary filter; the list is filtered again when they arrive.
+  const exchangeRates = useExchangeRates();
   const analytics = useMemo(() => buildAnalytics(purchasedProfiles), [purchasedProfiles]);
   const visibleProfiles = useMemo(
     () => sortProfiles(applyFilters(purchasedProfiles, filters, salaryView), sortBy, salaryView),
-    [purchasedProfiles, filters, sortBy, salaryView]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [purchasedProfiles, filters, sortBy, salaryView, exchangeRates]
   );
   // The pipeline follows every filter but its own stage; "Needs attention" only the position.
   const pipeline = useMemo(
     () => buildPipeline(applyFilters(purchasedProfiles, { ...filters, statuses: [], attention: false }, salaryView)),
-    [purchasedProfiles, filters, salaryView]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [purchasedProfiles, filters, salaryView, exchangeRates]
   );
   const attention = useMemo(
     () => attentionList(filters.hiringFor.length ? purchasedProfiles.filter((p) => filters.hiringFor.includes(p?.hiringFor)) : purchasedProfiles),

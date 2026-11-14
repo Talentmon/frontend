@@ -10,6 +10,13 @@ export function listPackages() {
 export const formatPrice = (amount, currency, { cents = false } = {}) =>
   formatMoney(amount, currency || 'EUR', cents ? { minimumFractionDigits: 2, maximumFractionDigits: 2 } : {});
 
+/**
+ * Under the packages when the company pays in another currency than the EUR
+ * prices (Company.paymentCurrency): Paddle converts at checkout. Null for EUR.
+ */
+export const checkoutCurrencyNote = (paymentCurrency) =>
+  paymentCurrency && paymentCurrency !== 'EUR' ? `At checkout you'll pay in ${paymentCurrency} at today's exchange rate.` : null;
+
 /** priceCents/currency are the only real backend fields — pricePerCredit is derived, nothing else is invented (the Purchase tab's "Save N%" is measured against the 1-Credit package). */
 export function packageToFrontend(p) {
   return {

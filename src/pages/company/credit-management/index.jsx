@@ -10,8 +10,9 @@ import PaymentMethods from './components/PaymentMethods';
 import Icon from 'components/AppIcon';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
 import { useCreditBalance } from 'lib/creditBalance';
+import { useCurrentUser } from 'lib/CurrentUserContext';
 import { creditWord, formatCredits } from 'utils/formatCredits';
-import { formatPrice, getUsageAnalytics } from './creditsApi';
+import { checkoutCurrencyNote, formatPrice, getUsageAnalytics } from './creditsApi';
 import styles from './styles/credits.module.scss';
 
 // Overview panel header icons (bar chart on a baseline, sparkles) — not in lucide in this shape.
@@ -32,6 +33,9 @@ const CreditManagement = () => {
   // Shared with the top bar, so a purchase from either one shows on both.
   // hasCreditHistory is null until the balance loads, false for a company that has never had Credits.
   const { balance: currentBalance, lowBalanceThreshold: lowThreshold, hasCreditHistory } = useCreditBalance();
+  // Prices are EUR; a company paying in another currency is told how checkout charges it.
+  const { company } = useCurrentUser();
+  const currencyNote = checkoutCurrencyNote(company?.paymentCurrency);
   const [quickStats, setQuickStats] = useState(null);
   // ?tab=analytics — Purchased's "View analytics" link opens straight on that tab.
   const [searchParams] = useSearchParams();
@@ -348,6 +352,7 @@ const CreditManagement = () => {
                   </div>
                 </div>
 
+                {currencyNote && <p className={styles.modalFine}>{currencyNote}</p>}
                 <p className={styles.modalFine}>
                   All purchases are final and non-refundable.{' '}
                   <a href="/refund-policy" target="_blank" rel="noopener noreferrer">Refund Policy</a>

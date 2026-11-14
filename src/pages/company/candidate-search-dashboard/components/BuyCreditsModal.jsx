@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
 import { formatCredits } from 'utils/formatCredits';
-import { formatPrice } from 'pages/company/credit-management/creditsApi';
+import { useCurrentUser } from 'lib/CurrentUserContext';
+import { checkoutCurrencyNote, formatPrice } from 'pages/company/credit-management/creditsApi';
 import styles from '../styles/dashboard.module.scss';
 
 // Quick top-up from the header's Buy button and the search page: pick a package, then Paddle's
@@ -10,6 +11,9 @@ import styles from '../styles/dashboard.module.scss';
 const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => {} }) => {
   const [pickedId, setPickedId] = useState(null);
   const [result, setResult] = useState(null);
+  // Prices are EUR; a company paying in another currency is told how checkout charges it.
+  const { company } = useCurrentUser();
+  const currencyNote = checkoutCurrencyNote(company?.paymentCurrency);
 
   const { buy, busy, error } = usePaddleCheckout({
     onSuccess: (res) => {
@@ -118,6 +122,7 @@ const BuyCreditsModal = ({ balance, packages = [], onClose, onPurchased = () => 
           <span><Icon name="Shield" size={13} />Secure checkout by Paddle</span>
           <span><Icon name="Infinity" size={13} />Credits never expire</span>
         </div>
+        {currencyNote && <p className={styles.qbFinal}>{currencyNote}</p>}
         <p className={styles.qbFinal}>
           All purchases are final and non-refundable. <a href="/refund-policy" target="_blank" rel="noreferrer">Refund Policy</a>
         </p>

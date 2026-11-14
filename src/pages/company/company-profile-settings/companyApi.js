@@ -1,6 +1,7 @@
 import apiClient from 'lib/apiClient';
 import { ACCEPTED_IMAGE_TYPES, resizeImageToWebp } from 'utils/resizeImage';
 import { INDUSTRY_NAMES } from 'utils/industries';
+import { CURRENCY_MAP } from 'utils/currencies';
 import { shortDate } from 'utils/formatDate';
 
 export const INDUSTRY_OPTIONS = INDUSTRY_NAMES.map((name) => ({ value: name, label: name }));
@@ -24,7 +25,20 @@ export const REQUIRED_COMPANY_FIELD_LABELS = {
   salaryViewBasis: 'Salary view: net or gross',
   salaryViewPeriod: 'Salary view: per month or per year',
   salaryViewCurrency: 'Salary view: currency',
+  paymentCurrency: 'Payment currency',
 };
+
+// What a company can be charged in at checkout — the currencies Paddle accepts.
+// Mirrors PAYMENT_CURRENCIES on the backend (billing-currencies.ts).
+export const PAYMENT_CURRENCY_CODES = [
+  'EUR', 'USD', 'GBP', 'ARS', 'AUD', 'BRL', 'CAD', 'CHF', 'CLP', 'CNY', 'COP',
+  'CZK', 'DKK', 'HKD', 'HUF', 'ILS', 'INR', 'JPY', 'KRW', 'MXN', 'NOK', 'NZD',
+  'PEN', 'PLN', 'RUB', 'SEK', 'SGD', 'THB', 'TRY', 'TWD', 'UAH', 'VND', 'ZAR',
+];
+export const PAYMENT_CURRENCY_OPTIONS = PAYMENT_CURRENCY_CODES.map((code) => ({
+  value: code,
+  label: `${code} — ${CURRENCY_MAP[code]?.name || code}`,
+}));
 
 const MIN_FOUNDED_YEAR = 1800;
 
@@ -92,6 +106,7 @@ export function companyToFrontend(c) {
     salaryViewBasis: c.salaryViewBasis || '',
     salaryViewPeriod: c.salaryViewPeriod || '',
     salaryViewCurrency: c.salaryViewCurrency || '',
+    paymentCurrency: c.paymentCurrency || '',
     benefits: c.benefits || [],
     registrationNumber: c.registrationNumber || '',
     profileComplete: !!c.profileComplete,
@@ -123,6 +138,7 @@ export function companyToPayload(companyData) {
     salaryViewBasis: emptyToUndefined(companyData.salaryViewBasis),
     salaryViewPeriod: emptyToUndefined(companyData.salaryViewPeriod),
     salaryViewCurrency: emptyToUndefined(companyData.salaryViewCurrency),
+    paymentCurrency: emptyToUndefined(companyData.paymentCurrency),
     registrationNumber: emptyToUndefined(companyData.registrationNumber),
     benefits: companyData.benefits || [],
   };

@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Icon from 'components/AppIcon';
+import { useCurrentUser } from 'lib/CurrentUserContext';
 import { creditWord } from 'utils/formatCredits';
-import { formatPrice, getPackageBookmarkBonuses, listPackages, packageToFrontend } from '../creditsApi';
+import { checkoutCurrencyNote, formatPrice, getPackageBookmarkBonuses, listPackages, packageToFrontend } from '../creditsApi';
 import styles from '../styles/credits.module.scss';
 
 /** Whole-percent saving per unlock against the 1-Credit package, rounded down so it's never overstated. */
@@ -34,6 +35,9 @@ const PackagesHead = () => (
 const CreditPackages = ({ onPurchase }) => {
   const [packages, setPackages] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Paying in another currency than the EUR prices: one note under the packages says how it's charged.
+  const { company } = useCurrentUser();
+  const currencyNote = checkoutCurrencyNote(company?.paymentCurrency);
 
   useEffect(() => {
     // Bonuses are optional decoration — packages still render if that call fails.
@@ -122,6 +126,8 @@ const CreditPackages = ({ onPurchase }) => {
           );
         })}
       </div>
+
+      {currencyNote && <p className={styles.pkgsNote}>* {currencyNote}</p>}
 
       <ul className={styles.paynote}>
         {payNotes.map((note) => (

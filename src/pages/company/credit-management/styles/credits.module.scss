@@ -805,6 +805,15 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
   color: $ink;
 }
 
+// One note under the packages: the currency Paddle charges at checkout.
+.pkgsNote {
+  margin: 14px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: $slate;
+  text-align: center;
+}
+
 .pkgPriceSub {
   font-size: 0.82rem;
   color: $slate;

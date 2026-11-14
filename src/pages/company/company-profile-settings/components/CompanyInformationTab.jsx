@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
-import { COMPANY_SIZE_OPTIONS, INDUSTRY_OPTIONS, WORK_MODE_OPTIONS, uploadCompanyLogo } from '../companyApi';
+import { COMPANY_SIZE_OPTIONS, INDUSTRY_OPTIONS, PAYMENT_CURRENCY_OPTIONS, WORK_MODE_OPTIONS, uploadCompanyLogo } from '../companyApi';
 import { SALARY_BASIS_OPTIONS, SALARY_PERIOD_OPTIONS } from 'lib/salaryView';
 import { currencySelectOptions } from 'utils/currencyService';
 import SectionHead from './SectionHead';
@@ -481,6 +481,31 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
           currency. The salary filter's range is typed in the currency above and compared at today's exchange rate.
           Anyone on your team can switch any of these in the Salary filter; they go back to these when they close the
           tab or sign out.
+        </span>
+      </div>
+
+      {/* Payments — what the company's card is charged in; Credit prices stay in EUR */}
+      <div className={styles.card}>
+        <SectionHead icon="CreditCard" title="Payments" subtitle="The currency your card is charged in when you buy Credits" />
+
+        <div className={styles.form2}>
+          <div {...fieldProps('paymentCurrency')}>
+            <label className={styles.flabel}>Payment currency {requiredMark}</label>
+            <div className={errors.paymentCurrency ? styles.selectInvalid : undefined}>
+              <Select
+                value={companyData?.paymentCurrency || ''}
+                onChange={(v) => handleInputChange('paymentCurrency', v)}
+                options={PAYMENT_CURRENCY_OPTIONS}
+                placeholder="Select currency…"
+                searchable
+              />
+            </div>
+            {fieldError('paymentCurrency')}
+          </div>
+        </div>
+        <span className={styles.fhint}>
+          Credit prices are in EUR. At checkout, Paddle charges your card in this currency at today's exchange rate.
+          Your purchase history stays in EUR.
         </span>
       </div>
 

@@ -19,10 +19,8 @@ import {
   getMyReviews,
   reviewsToReputationData,
   getCompanyPreferences,
-  updateCompanyPreferences,
   updateMyPreferences,
   companyPreferencesToFrontend,
-  companyWidePreferencesToPayload,
   personalPreferencesToPayload,
   deleteCompanyAccount,
   validateCompany,
@@ -99,7 +97,7 @@ const CompanyProfileSettings = () => {
       id: 'preferences',
       name: 'Account settings',
       icon: 'Settings',
-      description: 'Billing currency and security'
+      description: 'Time zone and security'
     }
   ];
 
@@ -161,8 +159,7 @@ const CompanyProfileSettings = () => {
     }
     setIsSavingPrefs(true);
     try {
-      // Billing currency is company-wide (owner-only); everything else on the tab is the signed-in member's own.
-      if (isCompanyOwner) await updateCompanyPreferences(companyWidePreferencesToPayload(preferences));
+      // Everything saved on this tab is the signed-in member's own.
       const saved = await updateMyPreferences(personalPreferencesToPayload(preferences));
       setPreferences(companyPreferencesToFrontend(saved));
       // Silent: picks up a changed display name without unmounting this page.

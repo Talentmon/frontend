@@ -3,13 +3,13 @@ import { useClerk } from '@clerk/clerk-react';
 import Icon from 'components/AppIcon';
 import Select from 'components/ui/Select';
 import { getTimezoneOptions } from 'utils/timezones';
-import { BILLING_CURRENCY_OPTIONS } from '../companyApi';
 import ChangeEmailModal from './ChangeEmailModal';
 import SectionHead from './SectionHead';
 import YourDevicesCard from './YourDevicesCard';
 import styles from '../styles/company.module.scss';
 
-// Billing currency and account deletion are company-wide (owner-only); language and security are each person's own.
+// Account deletion is company-wide (owner-only); language and security are each person's own.
+// There's no billing currency to pick: credits are priced and paid in EUR.
 // Saved with the page header's Save button on desktop, the one at the bottom on phones.
 const AccountPreferencesTab = ({
   preferences,
@@ -133,25 +133,6 @@ const AccountPreferencesTab = ({
               options={timezoneOptions}
               searchable
             />
-          </div>
-        </div>
-      </div>
-
-      {/* Billing currency — company-wide, everyone sees it, only the owner changes it */}
-      <div className={styles.card}>
-        <div className={styles.cardRow}>
-          <div className={styles.cardRowText}>
-            <SectionHead icon="Wallet" title="Billing currency" subtitle="Credit prices and payments for the whole team" flat />
-          </div>
-          <div className={styles.cardRowControl}>
-            <Select
-              aria-label="Billing currency"
-              value={preferences?.currency}
-              onChange={(value) => handlePreferenceChange('currency', value)}
-              options={BILLING_CURRENCY_OPTIONS}
-              disabled={!isOwner}
-            />
-            {!isOwner && <span className={styles.fhint}>Only the account owner can change this.</span>}
           </div>
         </div>
       </div>

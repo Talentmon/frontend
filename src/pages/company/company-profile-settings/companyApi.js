@@ -229,38 +229,19 @@ export function changeLoginEmail(emailAddressId, password) {
 export function getCompanyPreferences() {
   return apiClient.get('/companies/me/preferences').then((r) => r.data);
 }
-/** Company-wide billing currency — Owner-only. */
-export function updateCompanyPreferences(patch) {
-  return apiClient.patch('/companies/me/preferences', patch).then((r) => r.data);
-}
 /** The signed-in team member's own settings (language, security). */
 export function updateMyPreferences(patch) {
   return apiClient.patch('/companies/me/preferences/personal', patch).then((r) => r.data);
 }
 
-// Company-wide: what credit packages are priced and paid in. Mirrors BILLING_CURRENCIES on the backend.
-export const BILLING_CURRENCY_OPTIONS = [
-  { value: 'EUR', label: 'Euro (EUR)' },
-  { value: 'USD', label: 'US dollar (USD)' },
-  { value: 'GBP', label: 'British pound (GBP)' },
-  { value: 'CNY', label: 'Chinese yuan (CNY)' },
-];
-
+// Credits are priced and paid in EUR only, so there's no billing currency to pick here.
 export function companyPreferencesToFrontend(data) {
   return {
     name: data.name || '',
     email: data.email || '',
     language: 'en',
     timezone: data.timezone,
-    currency: BILLING_CURRENCY_OPTIONS.some((option) => option.value === data.currency) ? data.currency : 'EUR',
     twoFactorEnabled: data.twoFactorEnabled,
-  };
-}
-
-/** Owner-only, company-wide settings: billing currency. */
-export function companyWidePreferencesToPayload(preferences) {
-  return {
-    currency: preferences.currency,
   };
 }
 

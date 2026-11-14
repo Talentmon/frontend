@@ -1,7 +1,7 @@
 import apiClient from 'lib/apiClient';
 import { formatMoney } from 'utils/currencyService';
 
-// ---- Packages, priced in the company's billing currency ----
+// ---- Packages, priced in EUR (the one billing currency) ----
 export function listPackages() {
   return apiClient.get('/companies/me/credits/packages').then((r) => r.data);
 }

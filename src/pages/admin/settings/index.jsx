@@ -40,12 +40,10 @@ const CURRENCY_OPTIONS = [
   { value: 'eur', label: 'Euro (€)' },
 ];
 
-// Every package has a fixed price in each billing currency a company can pick.
+// Credits are priced and paid in EUR only (BILLING_CURRENCY on the backend);
+// Paddle lets buyers pay in their own currency at checkout.
 const PRICE_CURRENCIES = [
   { code: 'EUR', symbol: '€' },
-  { code: 'USD', symbol: '$' },
-  { code: 'GBP', symbol: '£' },
-  { code: 'CNY', symbol: '¥' },
 ];
 
 const CREDIT_VALIDITY_OPTIONS = [
@@ -368,7 +366,7 @@ const AdminSettings = () => {
               <section className={`panel${activeTab === 'platform' ? ' on' : ''}`}>
                 {!isOwner && <p className="csub" style={{ marginBottom: 10 }}>Only the Owner can change pricing and platform rules — you can view them here.</p>}
                 <div className="card">
-                  <h3>Credit packages &amp; pricing</h3><div className="csub">What companies pay to buy credits, in each billing currency — a company pays in the one its owner picks</div>
+                  <h3>Credit packages &amp; pricing</h3><div className="csub">What companies pay to buy credits, in euros — at checkout Paddle can show and charge the buyer's own currency</div>
                   {creditPackages.map((pkg) => (
                     <div className="pack" key={pkg.id}>
                       <div className="pn"><b>{pkg.name}</b><span>{pkg.popular ? 'most popular' : pkg.code}</span></div>

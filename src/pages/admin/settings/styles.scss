@@ -168,7 +168,7 @@
   .pack .pn b { font-weight: 600; }
   .pack .pn span { font-size: .8rem; color: var(--adp-slate); display: block; }
   .pack .pcredits { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--adp-slate); font-size: .85rem; }
-  .pack .pprices { display: grid; grid-template-columns: repeat(4, 112px); gap: 8px; }
+  .pack .pprices { display: grid; grid-auto-flow: column; grid-auto-columns: 140px; gap: 8px; }
 
   /* notif matrix */
   .notif-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-top: 1px solid var(--adp-line); font-size: .9rem; }
@@ -226,7 +226,7 @@
     .snav-sep { display: none; }
     .form2 { grid-template-columns: 1fr; }
     .pack { grid-template-columns: 1fr auto; }
-    .pack .pprices { grid-column: 1 / -1; grid-template-columns: repeat(2, 1fr); }
+    .pack .pprices { grid-column: 1 / -1; grid-auto-flow: row; grid-template-columns: 1fr; }
   }
   @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; }

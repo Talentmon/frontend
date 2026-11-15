@@ -13,6 +13,7 @@ import AcceptInvite from './pages/landing/accept-invite';
 import TermsOfService from './pages/landing/legal/TermsOfService';
 import PrivacyPolicy from './pages/landing/legal/PrivacyPolicy';
 import RefundPolicy from './pages/landing/legal/RefundPolicy';
+import About from './pages/landing/about';
 
 // Admin
 import AdminPanel from './pages/admin';
@@ -53,6 +54,7 @@ const Routes = () => {
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/refund-policy" element={<RefundPolicy />} />
+        <Route path="/about" element={<About />} />
 
         {/* Admin */}
         <Route path="/admin" element={<RequireAuth roles={['ADMIN']}><AdminPanel /></RequireAuth>} />

@@ -2,17 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useLocation } from 'react-router-dom';
 import Icon from 'components/AppIcon';
-import { homePathFor, useCurrentUser } from 'lib/CurrentUserContext';
+import { COMPANY_LINE, LEGAL_DOCS as DOCS, SiteFooter, SiteNav, SUPPORT_EMAIL } from './SiteChrome';
 import styles from './legal.module.scss';
-
-const SUPPORT_EMAIL = 'talentmon.app@gmail.com';
-const COMPANY_LINE = 'Talentmon LTD (Talentmon d.o.o.), Republic of Serbia';
-
-const DOCS = [
-  { path: '/terms-of-service', label: 'Terms of Service', short: 'Terms', icon: 'FileText' },
-  { path: '/privacy-policy', label: 'Privacy Policy', short: 'Privacy', icon: 'ShieldCheck' },
-  { path: '/refund-policy', label: 'Refund Policy', short: 'Refunds', icon: 'RotateCcw' },
-];
 
 const slugify = (text) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
@@ -48,7 +39,6 @@ const Toc = ({ sections, activeId }) => (
 // summary and a contact card. The legal text itself is passed as children.
 const LegalLayout = ({ title, subtitle, updated, keyPoints = [], children }) => {
   const location = useLocation();
-  const { role, company } = useCurrentUser();
   const bodyRef = useRef(null);
   const [sections, setSections] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -89,31 +79,13 @@ const LegalLayout = ({ title, subtitle, updated, keyPoints = [], children }) => 
     if (id && sections.length) setTimeout(() => scrollToId(id), 80);
   }, [location.hash, sections]);
 
-  const appPath = role ? homePathFor(role, company) : null;
-  const year = new Date().getFullYear();
-
   return (
     <div className={styles.page}>
       <Helmet>
         <title>{title} - Talentmon</title>
       </Helmet>
 
-      {/* ===== Site nav ===== */}
-      <nav className={styles.nav}>
-        <div className={styles.wrap}>
-          <Link to="/" className={styles.brand}>
-            <span className={styles.mark}><img src="/assets/images/talentmon.png" alt="" /></span>
-            <span>Talent<b>mon</b></span>
-          </Link>
-          <div className={styles.navLinks}>
-            <Link to="/">For companies</Link>
-            <Link to="/landing-page-candidates">For candidates</Link>
-          </div>
-          <Link to={appPath || '/login'} className={styles.navBtn}>
-            {appPath ? 'Open Talentmon' : 'Log in'}
-          </Link>
-        </div>
-      </nav>
+      <SiteNav />
 
       {/* ===== Title band ===== */}
       <header className={styles.hero}>
@@ -209,43 +181,7 @@ const LegalLayout = ({ title, subtitle, updated, keyPoints = [], children }) => 
         </article>
       </div>
 
-      {/* ===== Site footer ===== */}
-      <footer className={styles.foot}>
-        <div className={styles.wrap}>
-          <div className={styles.footGrid}>
-            <div>
-              <Link to="/" className={styles.brand}>
-                <span className={styles.mark}><img src="/assets/images/talentmon.png" alt="" /></span>
-                <span>Talent<b>mon</b></span>
-              </Link>
-              <p className={styles.footTag}>
-                A pre-screened talent pool you browse anonymously and pay for only when you find a real match.
-              </p>
-            </div>
-            <div className={styles.footCol}>
-              <h4>Product</h4>
-              <Link to="/">For companies</Link>
-              <Link to="/landing-page-candidates">For candidates</Link>
-              <a href="/#pricing">Pricing</a>
-            </div>
-            <div className={styles.footCol}>
-              <h4>Legal</h4>
-              {DOCS.map((doc) => (
-                <Link key={doc.path} to={doc.path}>{doc.label}</Link>
-              ))}
-            </div>
-            <div className={styles.footCol}>
-              <h4>Contact</h4>
-              <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>
-              <span>Republic of Serbia</span>
-            </div>
-          </div>
-          <div className={styles.footBottom}>
-            <span>© {year} Talentmon LTD. All rights reserved.</span>
-            <span>Payments are processed by Paddle, our Merchant of Record.</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 };

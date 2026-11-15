@@ -6,7 +6,28 @@ import { getTimezoneOptions } from 'utils/timezones';
 import ChangeEmailModal from './ChangeEmailModal';
 import SectionHead from './SectionHead';
 import YourDevicesCard from './YourDevicesCard';
+import { FieldError, Group, Hint } from './FormBits';
 import styles from '../styles/company.module.scss';
+
+// Weak / Okay / Strong for the new password — a nudge only; Clerk does the real check.
+const STRENGTH = [
+  { label: '', color: '#8693a0' },
+  { label: 'Weak', color: '#D14343' },
+  { label: 'Okay', color: '#E6A93C' },
+  { label: 'Strong', color: '#2E9E63' },
+];
+
+const strengthLevel = (pw) => {
+  if (!pw) return 0;
+  if (pw.length < 8) return 1;
+  let score = 1;
+  if (pw.length >= 12) score += 1;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score += 1;
+  if (/\d/.test(pw)) score += 1;
+  if (/[^A-Za-z0-9]/.test(pw)) score += 1;
+  if (score <= 2) return 1;
+  return score <= 3 ? 2 : 3;
+};
 
 // Account deletion is company-wide (owner-only); language and security are each person's own.
 // There's no billing currency to pick: credits are priced and paid in EUR.
@@ -26,6 +47,7 @@ const AccountPreferencesTab = ({
   const [pwCurrent, setPwCurrent] = useState('');
   const [pwNew, setPwNew] = useState('');
   const [pwConfirm, setPwConfirm] = useState('');
+  const [pwShow, setPwShow] = useState(false);
   // On by default: a password usually changes because someone else might know the old one.
   const [pwSignOutOthers, setPwSignOutOthers] = useState(true);
   const [pwBusy, setPwBusy] = useState(false);
@@ -34,9 +56,12 @@ const AccountPreferencesTab = ({
 
   const pwTooShort = pwNew.length > 0 && pwNew.length < 8;
   const pwMismatch = pwConfirm.length > 0 && pwConfirm !== pwNew;
+  const pwMatch = pwConfirm.length > 0 && pwConfirm === pwNew;
+  const level = strengthLevel(pwNew);
+  const canUpdate = !!pwCurrent && !!pwNew && !!pwConfirm && !pwTooShort && !pwMismatch;
 
   const changePassword = async () => {
-    if (!pwCurrent || !pwNew || !pwConfirm || pwTooShort || pwMismatch) return;
+    if (!canUpdate) return;
     setPwBusy(true);
     try {
       await clerk.user.updatePassword({ currentPassword: pwCurrent, newPassword: pwNew, signOutOfOtherSessions: pwSignOutOthers });
@@ -61,21 +86,21 @@ const AccountPreferencesTab = ({
 
   const timezoneOptions = useMemo(() => getTimezoneOptions(preferences?.timezone), [preferences?.timezone]);
 
+  const lock = <span className={styles.inputLock} title="Can't be changed here"><Icon name="Lock" size={15} /></span>;
+
   return (
     <div className={styles.stack}>
       {/* Your profile — the name teammates see on what you unlock, save and buy */}
       <div className={styles.card}>
-        <SectionHead
-          icon="UserRound"
-          title="Your profile"
-          subtitle="Shown to your team next to what you unlock, save and buy — without a name they see your email"
-        />
+        <SectionHead icon="UserRound" title="Your profile" subtitle="How you appear to your team." />
 
         <div className={styles.form2}>
           <div className={styles.field}>
-            <label className={styles.flabel} htmlFor="profileName">Your name {!isOwner && <span className={styles.req}>*</span>}</label>
+            <label className={styles.flabel} htmlFor="profileName">
+              Your name {!isOwner && <span className={styles.req}>*</span>}
+            </label>
             <div className={styles.inputIcon}>
-              <Icon name="User" size={17} />
+              <Icon name="User" size={16} />
               <input
                 id="profileName"
                 className={nameMissing ? `${styles.finput} ${styles.finvalid}` : styles.finput}
@@ -83,20 +108,28 @@ const AccountPreferencesTab = ({
                 maxLength={100}
                 placeholder="e.g. Jane Smith"
                 value={preferences?.name || ''}
+                aria-invalid={nameMissing}
                 onChange={(e) => handlePreferenceChange('name', e.target.value)}
               />
             </div>
-            {nameMissing && <span className={styles.ferr}>Your name is required.</span>}
+            {nameMissing && <FieldError>Your name is required.</FieldError>}
+            <Hint>
+              Your team sees it next to what you unlock, save and buy.{isOwner && ' Without a name, they see your email.'}
+            </Hint>
           </div>
           <div className={styles.field}>
             <label className={styles.flabel} htmlFor="profileEmail">Login email</label>
             <div className={styles.inputAction}>
-              <div className={styles.inputIcon}>
-                <Icon name="Mail" size={17} />
+              <div className={`${styles.inputIcon} ${styles.inputIconR}`}>
+                <Icon name="Mail" size={16} />
                 <input id="profileEmail" className={styles.finput} type="email" value={preferences?.email || ''} disabled />
+                {lock}
               </div>
-              <button type="button" className={styles.btnSm} onClick={() => setShowEmailModal(true)}>Change</button>
+              <button type="button" className={styles.btnSm} style={{ height: 42 }} onClick={() => setShowEmailModal(true)}>
+                Change
+              </button>
             </div>
+            <Hint>You sign in with this email.</Hint>
           </div>
         </div>
       </div>
@@ -114,15 +147,17 @@ const AccountPreferencesTab = ({
 
       {/* Language & Region */}
       <div className={styles.card}>
-        <SectionHead icon="Globe" title="Language & region" subtitle="How the platform is displayed to you" />
+        <SectionHead icon="Globe" title="Language and region" subtitle="How the platform is shown to you." />
 
         <div className={styles.form2}>
           <div className={styles.field}>
             <label className={styles.flabel} htmlFor="interfaceLanguage">Interface language</label>
-            <div className={styles.inputIcon}>
-              <Icon name="Languages" size={17} />
+            <div className={`${styles.inputIcon} ${styles.inputIconR}`}>
+              <Icon name="Languages" size={16} />
               <input id="interfaceLanguage" className={styles.finput} type="text" value="English" disabled />
+              {lock}
             </div>
+            <Hint>More languages are on the way.</Hint>
           </div>
 
           <div className={styles.field}>
@@ -141,13 +176,13 @@ const AccountPreferencesTab = ({
 
       {/* Data & Security */}
       <div className={styles.card}>
-        <SectionHead icon="ShieldCheck" title="Data & security" subtitle="Keep your account secure" />
+        <SectionHead icon="ShieldCheck" title="Data and security" subtitle="Keep your account safe." />
 
-        <div className={`${styles.form2} ${styles.pwRow}`}>
+        <Group label="Password">
           <div className={styles.field}>
             <label className={styles.flabel} htmlFor="pwCurrent">Current password</label>
             <div className={styles.inputIcon}>
-              <Icon name="Lock" size={17} />
+              <Icon name="Lock" size={16} />
               <input
                 id="pwCurrent"
                 className={styles.finput}
@@ -159,93 +194,116 @@ const AccountPreferencesTab = ({
               />
             </div>
           </div>
-        </div>
+          <div aria-hidden="true" />
 
-        <div className={`${styles.form2} ${styles.pwRow}`}>
           <div className={styles.field}>
             <label className={styles.flabel} htmlFor="pwNew">New password</label>
-            <div className={styles.inputIcon}>
-              <Icon name="Lock" size={17} />
+            <div className={`${styles.inputIcon} ${styles.inputIconR}`}>
+              <Icon name="Lock" size={16} />
               <input
                 id="pwNew"
-                className={pwTooShort ? `${styles.finput} ${styles.finvalid}` : styles.finput}
-                type="password"
+                className={styles.finput}
+                type={pwShow ? 'text' : 'password'}
                 autoComplete="new-password"
                 placeholder="At least 8 characters"
                 value={pwNew}
                 onChange={(e) => setPwNew(e.target.value)}
               />
+              <button
+                type="button"
+                className={`${styles.inInputBtn} ${styles.inInputBtnGrey}`}
+                aria-label={pwShow ? 'Hide password' : 'Show password'}
+                title={pwShow ? 'Hide password' : 'Show password'}
+                onClick={() => setPwShow((v) => !v)}
+              >
+                <Icon name={pwShow ? 'EyeOff' : 'Eye'} size={17} strokeWidth={1.9} />
+              </button>
             </div>
-            {pwTooShort && <span className={styles.ferr}>Use at least 8 characters.</span>}
+            {pwNew && (
+              <div className={styles.pwStrength}>
+                <span className={styles.pwBars} aria-hidden="true">
+                  {[1, 2, 3].map((i) => (
+                    <span key={i} style={i <= level ? { background: STRENGTH[level].color } : undefined} />
+                  ))}
+                </span>
+                <span className={styles.pwLevel} style={{ color: STRENGTH[level].color }} aria-live="polite">
+                  {STRENGTH[level].label}
+                </span>
+              </div>
+            )}
+            {pwTooShort && <Hint>Use at least 8 characters.</Hint>}
           </div>
 
           <div className={styles.field}>
             <label className={styles.flabel} htmlFor="pwConfirm">Confirm new password</label>
             <div className={styles.inputIcon}>
-              <Icon name="Lock" size={17} />
+              <Icon name="Lock" size={16} />
               <input
                 id="pwConfirm"
                 className={pwMismatch ? `${styles.finput} ${styles.finvalid}` : styles.finput}
-                type="password"
+                type={pwShow ? 'text' : 'password'}
                 autoComplete="new-password"
                 placeholder="Type the new password again"
                 value={pwConfirm}
+                aria-invalid={pwMismatch}
                 onChange={(e) => setPwConfirm(e.target.value)}
                 onPaste={(e) => e.preventDefault()}
                 onDrop={(e) => e.preventDefault()}
               />
             </div>
-            {pwMismatch
-              ? <span className={styles.ferr}>Passwords do not match.</span>
-              : <span className={styles.fhint}>Type it again — pasting is disabled here.</span>}
+            {pwMismatch && <FieldError>The passwords don't match yet.</FieldError>}
+            {pwMatch && (
+              <span className={styles.okMsg} style={{ marginTop: 6, fontSize: 12.5, fontWeight: 400 }}>
+                <Icon name="Check" size={13} strokeWidth={2.6} />
+                Passwords match.
+              </span>
+            )}
+            <Hint>Type it again. Pasting is turned off here.</Hint>
           </div>
-        </div>
 
-        <label className={styles.pwOthers}>
-          <input type="checkbox" checked={pwSignOutOthers} onChange={(e) => setPwSignOutOthers(e.target.checked)} />
-          <span className={`${styles.bCheck} ${pwSignOutOthers ? styles.checked : ''}`}><Icon name="Check" size={12} /></span>
-          Sign out of all other devices
-        </label>
-
-        <div>
-          <button
-            className={`${styles.btnSm} ${styles.btnPw}`}
-            disabled={pwBusy || !pwCurrent || !pwNew || !pwConfirm || pwTooShort || pwMismatch}
-            onClick={changePassword}
-          >
-            <Icon name="KeyRound" size={17} />
-            {pwBusy ? 'Updating…' : 'Update password'}
-          </button>
-        </div>
-
-        <div className={`${styles.toggleRow} ${styles.forceBorder}`}>
-          <label className={styles.toggle}>
-            <input
-              type="checkbox"
-              checked={preferences?.twoFactorEnabled}
-              onChange={(e) => handlePreferenceChange('twoFactorEnabled', e?.target?.checked)}
-            />
-            <span className={styles.toggleTrack}></span>
-          </label>
-          <div className={styles.toggleTxt}>
-            <b>Two-factor authentication (2FA)</b>
-            <span>Add an extra layer of security to your account</span>
-          </div>
-        </div>
-
-        {isOwner && (
-          <div className={`${styles.dangerRow} ${styles.dangerRowDel}`}>
-            <div className={styles.dangerLead}>
-              <Icon name="Trash2" size={22} />
-              <div className={`${styles.dangerTxt} ${styles.del}`}>
-                <b>Delete account</b>
-                <span>Permanently delete the company account — the whole team loses access</span>
-              </div>
-            </div>
-            <button className={`${styles.btnSm} ${styles.btnSmRed}`} onClick={onDeleteAccount}>
-              <Icon name="Trash2" size={16} />Delete account
+          <div className={styles.pwFoot}>
+            <label className={styles.pwOthers}>
+              <input type="checkbox" checked={pwSignOutOthers} onChange={(e) => setPwSignOutOthers(e.target.checked)} />
+              <span className={`${styles.bCheck} ${pwSignOutOthers ? styles.checked : ''}`}><Icon name="Check" size={12} strokeWidth={3.4} /></span>
+              Sign out of all other devices
+            </label>
+            <button type="button" className={styles.btnGold} disabled={pwBusy || !canUpdate} onClick={changePassword}>
+              <Icon name="KeyRound" size={16} />
+              {pwBusy ? 'Updating…' : 'Update password'}
             </button>
           </div>
+        </Group>
+
+        <Group label="Sign-in protection" grid={false}>
+          <div className={styles.switchRow}>
+            <div className={styles.switchText}>
+              <b id="tfaLabel">Two-factor authentication (2FA)</b>
+              <span>Add an extra layer of security to your account</span>
+            </div>
+            <label className={styles.toggle}>
+              <input
+                type="checkbox"
+                role="switch"
+                aria-labelledby="tfaLabel"
+                checked={!!preferences?.twoFactorEnabled}
+                onChange={(e) => handlePreferenceChange('twoFactorEnabled', e?.target?.checked)}
+              />
+              <span className={styles.toggleTrack}></span>
+            </label>
+          </div>
+        </Group>
+
+        {isOwner && (
+          <Group label="Danger zone" grid={false}>
+            <div className={styles.dangerBox}>
+              <span className={styles.dangerIcon} aria-hidden="true"><Icon name="Trash2" size={18} /></span>
+              <div className={styles.dangerText}>
+                <b>Delete company account</b>
+                <span>Removes the company profile and any remaining credits. Everyone on your team loses access.</span>
+              </div>
+              <button type="button" className={styles.btnRedGhost} onClick={onDeleteAccount}>Delete account…</button>
+            </div>
+          </Group>
         )}
       </div>
 

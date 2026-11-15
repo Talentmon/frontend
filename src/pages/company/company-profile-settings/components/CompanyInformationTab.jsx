@@ -4,8 +4,9 @@ import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
 import { COMPANY_SIZE_OPTIONS, INDUSTRY_OPTIONS, PAYMENT_CURRENCY_OPTIONS, WORK_MODE_OPTIONS, uploadCompanyLogo } from '../companyApi';
 import { SALARY_BASIS_OPTIONS, SALARY_PERIOD_OPTIONS } from 'lib/salaryView';
-import { currencySelectOptions } from 'utils/currencyService';
+import { currencySelectOptions, currencySymbol, getCurrency } from 'utils/currencyService';
 import SectionHead from './SectionHead';
+import { FieldError, Group, Hint } from './FormBits';
 import styles from '../styles/company.module.scss';
 import { ACCEPTED_IMAGE_TYPES } from 'utils/resizeImage';
 import { COUNTRY_NAMES, COUNTRY_OPTIONS } from 'utils/countries';
@@ -25,8 +26,28 @@ const BENEFITS_LIST = [
 const BENEFIT_OPTIONS = BENEFITS_LIST.map((benefit) => ({ value: benefit, label: benefit }));
 const CURRENCY_OPTIONS = currencySelectOptions();
 
+const WORK_MODE_CARD = {
+  REMOTE: { icon: 'Monitor', sub: 'Work from anywhere' },
+  HYBRID: { icon: 'ArrowLeftRight', sub: 'Office and home' },
+  ONSITE: { icon: 'Building2', sub: 'From the office' },
+};
+
+const SHORT_MAX = 200;
+const LONG_MAX = 1000;
+
+// A typed "nordlight.com" still opens; anything else gets https:// in front, so it can't run as a script link.
+const toHref = (url) => (/^https?:\/\//i.test(url) ? url : `https://${url}`);
+
+/** "12 / 200", gold near the limit. */
+const Counter = ({ length, max }) => (
+  <span className={`${styles.taCount}${length > max * 0.9 ? ` ${styles.taCountNear}` : ''}`} aria-live="polite">
+    {length} / {max}
+  </span>
+);
+
 // `readOnly`: recruiters see the company profile but only the owner edits it (the backend enforces the same).
-const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fireToast, errors = {}, readOnly = false }) => {
+// `onOpenAccount`: switches to the Account settings tab, where the login email is changed.
+const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fireToast, errors = {}, readOnly = false, onOpenAccount }) => {
   const [logoPreview, setLogoPreview] = useState(companyData?.logo);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -39,25 +60,39 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
   };
 
   // Required-field error plumbing — `data-invalid` is what the page scrolls to on a blocked save.
-  const fieldProps = (field) => ({
-    className: styles.field,
+  const fieldProps = (field, extra = '') => ({
+    className: extra ? `${styles.field} ${extra}` : styles.field,
     'data-invalid': errors[field] ? 'true' : undefined,
   });
-  const inputClass = (field, base = styles.finput) => (errors[field] ? `${base} ${styles.finvalid}` : base);
-  const fieldError = (field) => (errors[field] ? <span className={styles.ferr}>{errors[field]}</span> : null);
+  const inputClass = (field) => (errors[field] ? `${styles.finput} ${styles.finvalid}` : styles.finput);
+  const fieldError = (field) => <FieldError>{errors[field]}</FieldError>;
   const requiredMark = <span className={styles.req}>*</span>;
   // Country used to be typed in; a saved name that isn't on the list stays selectable instead of vanishing.
   const savedCountry = companyData?.country;
   const countryOptions = savedCountry && !COUNTRY_NAMES.includes(savedCountry)
     ? [{ value: savedCountry, label: savedCountry }, ...COUNTRY_OPTIONS]
     : COUNTRY_OPTIONS;
-  // An input with its icon inside, like the Account settings fields.
-  const withIcon = (icon, input) => (
-    <div className={styles.inputIcon}>
-      <Icon name={icon} size={17} />
+  // An input with its icon inside; `right` is a lock or an "open link" button at the other end.
+  const withIcon = (icon, input, right = null) => (
+    <div className={right ? `${styles.inputIcon} ${styles.inputIconR}` : styles.inputIcon}>
+      <Icon name={icon} size={16} />
       {input}
+      {right}
     </div>
   );
+  const openLink = (url, label) =>
+    url?.trim() ? (
+      <a
+        className={styles.inInputBtn}
+        href={toHref(url.trim())}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Open ${label} in a new tab`}
+        title={`Open ${label} in a new tab`}
+      >
+        <Icon name="ExternalLink" size={15} />
+      </a>
+    ) : null;
 
   const handleLogoUpload = async (event) => {
     const file = event.target?.files?.[0];
@@ -81,6 +116,32 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
     }
   };
 
+  const benefits = companyData?.benefits || [];
+  const shortLength = companyData?.shortDescription?.length || 0;
+  const longLength = companyData?.detailedDescription?.length || 0;
+  // Payments: the symbol inside the currency field and the three "How you're charged" steps.
+  const payCurrency = companyData?.paymentCurrency || '';
+  const paySymbol = payCurrency ? currencySymbol(payCurrency) : '¤';
+  const payName = getCurrency(payCurrency)?.name || payCurrency;
+  const payInEur = payCurrency === 'EUR';
+  const paySteps = [
+    { n: '01', icon: 'Tag', tone: 'payToneGold', title: 'Prices are in EUR', text: 'Credits are always priced in euros.' },
+    payInEur
+      ? { n: '02', icon: 'ArrowLeftRight', tone: 'payToneBlue', title: 'No conversion', text: 'You pay in euros, so nothing changes.' }
+      : { n: '02', icon: 'ArrowLeftRight', tone: 'payToneBlue', title: 'Converted at checkout', text: "Paddle uses that day's exchange rate." },
+    payCurrency
+      ? {
+          n: '03', icon: 'CreditCard', tone: 'payToneSolid', last: true, title: `Charged in ${payCurrency}`,
+          text: payInEur ? 'This is what your bank statement shows.' : `Your bank statement shows the amount in ${payName}.`,
+        }
+      : { n: '03', icon: 'CreditCard', tone: 'payToneSolid', last: true, title: 'Charged in your currency', text: 'Pick a payment currency first.' },
+  ];
+
+  const previewMeta = [
+    INDUSTRY_OPTIONS.find((o) => o.value === companyData?.industry)?.label,
+    companyData?.location?.trim(),
+  ].filter(Boolean).join(' · ');
+
   return (
     // A disabled <fieldset> disables every input, Select trigger and button inside it in one go.
     <fieldset className={styles.stack} disabled={readOnly} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
@@ -93,18 +154,21 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
 
       {/* Company Logo Section */}
       <div className={styles.card}>
-        <SectionHead icon="Image" title="Company logo" subtitle="Shown on your public profile and in search results" />
+        <SectionHead icon="Image" title="Company logo" subtitle="Shown on your public profile and in the company list." />
 
         <div className={styles.logoUp}>
           <div className={styles.logoBox}>
             {logoPreview ? (
               <Image src={logoPreview} alt="Company logo" className={styles.logoImg} />
             ) : (
-              <Icon name="Building2" size={28} />
+              <>
+                <Icon name="Image" size={26} strokeWidth={1.7} />
+                No logo yet
+              </>
             )}
           </div>
 
-          <div>
+          <div className={styles.logoBody}>
             <input
               type="file"
               accept={ACCEPTED_IMAGE_TYPES.join(',')}
@@ -120,59 +184,68 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
                 disabled
                 title="Logo upload is temporarily unavailable"
               >
-                <Icon name="Upload" size={15} />Upload unavailable
+                <Icon name="Upload" size={16} />{isUploading ? 'Uploading…' : 'Upload unavailable'}
               </button>
             </div>
             <p className={styles.logoHint}>
-              Recommended dimensions: 200×200px · JPG, PNG, WEBP — resized automatically
+              Square image, at least 200 × 200 px. JPG, PNG or WEBP.
+              <br />
+              We resize it automatically.
             </p>
+          </div>
+
+          <div className={styles.logoPreview} aria-hidden="true">
+            <p className={styles.logoPreviewLabel}>In the company list</p>
+            <div className={styles.logoPreviewCard}>
+              <span className={styles.logoPreviewMark}>
+                {logoPreview ? <img src={logoPreview} alt="" /> : <Icon name="Building2" size={17} strokeWidth={1.8} />}
+              </span>
+              <span className={styles.logoPreviewText}>
+                <b>{companyData?.name?.trim() || 'Your company'}</b>
+                <span>{previewMeta || 'Industry · City'}</span>
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Basic Information */}
       <div className={styles.card}>
-        <SectionHead icon="Building2" title="Basic information" subtitle="Key details that candidates will see" />
+        <SectionHead icon="Building2" title="Basic information" subtitle="Key details that candidates will see on your company profile." />
 
-        <div className={styles.form2}>
+        <Group label="Company">
           <div {...fieldProps('name')}>
-            <label className={styles.flabel}>Company name {requiredMark}</label>
+            <label className={styles.flabel} htmlFor="coName">Company name {requiredMark}</label>
             {withIcon('Building2', (
               <input
+                id="coName"
                 className={inputClass('name')}
                 type="text"
                 placeholder="Enter company name"
                 value={companyData?.name}
                 onChange={(e) => handleInputChange('name', e?.target?.value)}
-                required
+                aria-invalid={!!errors.name}
               />
             ))}
             {fieldError('name')}
           </div>
 
           <div {...fieldProps('foundedYear')}>
-            <label className={styles.flabel}>Year founded {requiredMark}</label>
+            <label className={styles.flabel} htmlFor="coYear">Year founded {requiredMark}</label>
             {withIcon('CalendarDays', (
               <input
+                id="coYear"
                 className={inputClass('foundedYear')}
-                type="number"
-                min={1800}
-                max={new Date().getFullYear()}
+                type="text"
+                inputMode="numeric"
+                maxLength={4}
                 placeholder="2010"
                 value={companyData?.foundedYear}
-                onChange={(e) => handleInputChange('foundedYear', e?.target?.value)}
-                required
+                onChange={(e) => handleInputChange('foundedYear', e?.target?.value.replace(/\D/g, ''))}
+                aria-invalid={!!errors.foundedYear}
               />
             ))}
             {fieldError('foundedYear')}
-          </div>
-
-          <div className={styles.field}>
-            <label className={styles.flabel}>Company email {requiredMark}</label>
-            {withIcon('Mail', <input className={styles.finput} type="email" value={companyData?.email || ''} disabled />)}
-            <span className={styles.fhint}>
-              {readOnly ? "The account owner's login email." : 'Your login email — change it under Account settings.'}
-            </span>
           </div>
 
           <div {...fieldProps('industry')}>
@@ -202,29 +275,16 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
             {fieldError('size')}
             {/* Size sets how many team accounts the company gets, so it changes at most once a year. */}
             {companyData?.sizeChangeableFrom ? (
-              <span className={styles.fhint}>
-                Can be changed again on {new Date(companyData.sizeChangeableFrom).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}.
-              </span>
+              <Hint info>
+                You can change it again on {new Date(companyData.sizeChangeableFrom).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}.
+              </Hint>
             ) : companyData?.savedSize ? (
-              <span className={styles.fhint}>Company size can be changed once a year.</span>
+              <Hint info>You can change this once a year.</Hint>
             ) : null}
           </div>
+        </Group>
 
-          <div {...fieldProps('location')}>
-            <label className={styles.flabel}>City {requiredMark}</label>
-            {withIcon('MapPin', (
-              <input
-                className={inputClass('location')}
-                type="text"
-                placeholder="London"
-                value={companyData?.location}
-                onChange={(e) => handleInputChange('location', e?.target?.value)}
-                required
-              />
-            ))}
-            {fieldError('location')}
-          </div>
-
+        <Group label="Location">
           <div {...fieldProps('country')}>
             <label className={styles.flabel}>Country {requiredMark}</label>
             <div className={errors.country ? styles.selectInvalid : undefined}>
@@ -239,25 +299,62 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
             {fieldError('country')}
           </div>
 
-          <div {...fieldProps('address')}>
-            <label className={styles.flabel}>Address {requiredMark}</label>
+          <div {...fieldProps('location')}>
+            <label className={styles.flabel} htmlFor="coCity">City {requiredMark}</label>
+            {withIcon('MapPin', (
+              <input
+                id="coCity"
+                className={inputClass('location')}
+                type="text"
+                placeholder="London"
+                value={companyData?.location}
+                onChange={(e) => handleInputChange('location', e?.target?.value)}
+                aria-invalid={!!errors.location}
+              />
+            ))}
+            {fieldError('location')}
+          </div>
+
+          <div {...fieldProps('address', styles.fieldFull)}>
+            <label className={styles.flabel} htmlFor="coAddress">Address {requiredMark}</label>
             {withIcon('Map', (
               <input
+                id="coAddress"
                 className={inputClass('address')}
                 type="text"
                 placeholder="12 High Street"
                 value={companyData?.address}
                 onChange={(e) => handleInputChange('address', e?.target?.value)}
-                required
+                aria-invalid={!!errors.address}
               />
             ))}
             {fieldError('address')}
           </div>
+        </Group>
+
+        <Group label="Contact and legal">
+          <div className={`${styles.field} ${styles.fieldFull}`}>
+            <label className={styles.flabel} htmlFor="coEmail">Company email {requiredMark}</label>
+            {withIcon(
+              'Mail',
+              <input id="coEmail" className={styles.finput} type="email" value={companyData?.email || ''} disabled />,
+              <span className={styles.inputLock} title="Managed in Account settings"><Icon name="Lock" size={16} /></span>,
+            )}
+            {readOnly ? (
+              <Hint>The account owner's login email.</Hint>
+            ) : (
+              <Hint>
+                This is your login email. You can change it in{' '}
+                <button type="button" className={styles.fhintLink} onClick={onOpenAccount}>Account settings</button>.
+              </Hint>
+            )}
+          </div>
 
           <div className={styles.field}>
-            <label className={styles.flabel}>Company registration number</label>
+            <label className={styles.flabel} htmlFor="coReg">Company registration number</label>
             {withIcon('Hash', (
               <input
+                id="coReg"
                 className={styles.finput}
                 type="text"
                 placeholder="12345678"
@@ -268,9 +365,10 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
           </div>
 
           <div className={styles.field}>
-            <label className={styles.flabel}>Tax ID number</label>
+            <label className={styles.flabel} htmlFor="coTax">Tax ID number</label>
             {withIcon('Receipt', (
               <input
+                id="coTax"
                 className={styles.finput}
                 type="text"
                 placeholder="123456789"
@@ -279,66 +377,73 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
               />
             ))}
           </div>
-        </div>
+        </Group>
       </div>
 
       {/* Company Description */}
       <div className={styles.card}>
-        <SectionHead icon="FileText" title="Company description" subtitle="Tell candidates who you are" />
+        <SectionHead icon="FileText" title="Company description" subtitle="Tell candidates who you are." />
 
-        <div {...fieldProps('shortDescription')} style={{ marginBottom: 16 }}>
-          <label className={styles.flabel}>Short description {requiredMark}</label>
-          <textarea
-            rows={4}
-            maxLength={200}
-            placeholder="Describe your company in a few sentences..."
-            value={companyData?.shortDescription}
-            onChange={(e) => handleInputChange('shortDescription', e?.target?.value)}
-            className={inputClass('shortDescription', styles.ftext)}
-            required
-          />
-          <div className={styles.counterRow}>
-            {fieldError('shortDescription')}
-            <div className={styles.counter}>{companyData?.shortDescription?.length || 0}/200 characters</div>
+        <div {...fieldProps('shortDescription')} style={{ marginBottom: 18 }}>
+          <label className={styles.flabel} htmlFor="coShort">Short description {requiredMark}</label>
+          <div className={errors.shortDescription ? `${styles.taWrap} ${styles.taInvalid}` : styles.taWrap}>
+            <textarea
+              id="coShort"
+              rows={2}
+              maxLength={SHORT_MAX}
+              placeholder="Describe your company in a sentence or two…"
+              value={companyData?.shortDescription}
+              onChange={(e) => handleInputChange('shortDescription', e?.target?.value)}
+              aria-invalid={!!errors.shortDescription}
+            />
+            <Counter length={shortLength} max={SHORT_MAX} />
           </div>
+          {fieldError('shortDescription')}
+          <Hint>A sentence or two. Candidates see it on your profile until you add a detailed description.</Hint>
         </div>
 
         <div className={styles.field}>
-          <label className={styles.flabel}>Detailed description</label>
-          <textarea
-            rows={8}
-            maxLength={1000}
-            placeholder="Describe your company, mission, vision, and values in more detail..."
-            value={companyData?.detailedDescription}
-            onChange={(e) => handleInputChange('detailedDescription', e?.target?.value)}
-            className={styles.ftext}
-          />
-          <div className={styles.counter}>{companyData?.detailedDescription?.length || 0}/1000 characters</div>
+          <label className={styles.flabel} htmlFor="coLong">Detailed description</label>
+          <div className={styles.taWrap}>
+            <textarea
+              id="coLong"
+              rows={5}
+              maxLength={LONG_MAX}
+              placeholder="Your mission, how you work, who you hire…"
+              value={companyData?.detailedDescription}
+              onChange={(e) => handleInputChange('detailedDescription', e?.target?.value)}
+            />
+            <Counter length={longLength} max={LONG_MAX} />
+          </div>
+          <Hint>Shown on your company profile. Tell candidates what you build, how you work and who you hire.</Hint>
         </div>
       </div>
 
       {/* Contact Information */}
       <div className={styles.card}>
-        <SectionHead icon="Contact" title="Contact information" subtitle="How candidates and partners can reach you" />
+        <SectionHead icon="Contact" title="Contact information" subtitle="How candidates and partners can reach you." />
 
         <div className={styles.form2}>
           <div className={styles.field}>
-            <label className={styles.flabel}>Contact email</label>
+            <label className={styles.flabel} htmlFor="coContactEmail">Contact email</label>
             {withIcon('Mail', (
               <input
+                id="coContactEmail"
                 className={styles.finput}
                 type="email"
-                placeholder="contact@yoursite.com"
+                placeholder="jobs@company.com"
                 value={companyData?.contactEmail}
                 onChange={(e) => handleInputChange('contactEmail', e?.target?.value)}
               />
             ))}
+            <Hint>Candidates use this to reach you.</Hint>
           </div>
 
           <div className={styles.field}>
-            <label className={styles.flabel}>Phone</label>
+            <label className={styles.flabel} htmlFor="coPhone">Phone</label>
             {withIcon('Phone', (
               <input
+                id="coPhone"
                 className={styles.finput}
                 type="tel"
                 placeholder="+44 20 7946 0958"
@@ -349,61 +454,85 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
           </div>
 
           <div className={styles.field}>
-            <label className={styles.flabel}>LinkedIn profile</label>
-            {withIcon('Linkedin', (
+            <label className={styles.flabel} htmlFor="coLinkedin">LinkedIn page</label>
+            {withIcon(
+              'Linkedin',
               <input
+                id="coLinkedin"
                 className={styles.finput}
                 type="url"
-                placeholder="https://linkedin.com/company/yourcompany"
+                placeholder="https://linkedin.com/company/…"
                 value={companyData?.linkedinUrl}
                 onChange={(e) => handleInputChange('linkedinUrl', e?.target?.value)}
-              />
-            ))}
+              />,
+              openLink(companyData?.linkedinUrl, 'LinkedIn page'),
+            )}
           </div>
 
           <div className={styles.field}>
-            <label className={styles.flabel}>Website</label>
-            {withIcon('Link2', (
+            <label className={styles.flabel} htmlFor="coWebsite">Website</label>
+            {withIcon(
+              'Link2',
               <input
+                id="coWebsite"
                 className={styles.finput}
                 type="url"
-                placeholder="https://www.yoursite.com"
+                placeholder="https://company.com"
                 value={companyData?.website}
                 onChange={(e) => handleInputChange('website', e?.target?.value)}
-              />
-            ))}
+              />,
+              openLink(companyData?.website, 'website'),
+            )}
           </div>
         </div>
       </div>
 
       {/* Work Conditions */}
       <div className={styles.card}>
-        <SectionHead icon="Briefcase" title="Work conditions" subtitle="Work mode and working hours flexibility" />
+        <SectionHead icon="Briefcase" title="Work conditions" subtitle="Work mode and how flexible your hours are." />
 
-        <div className={styles.field} style={{ marginBottom: 18 }}>
-          <label className={styles.flabel}>Work mode</label>
-          <div className={styles.modeGroup}>
-            {WORK_MODE_OPTIONS.map(mode => (
-              <button
-                key={mode.value}
-                type="button"
-                className={`${styles.modeBtn} ${companyData?.workMode === mode.value ? styles.modeBtnOn : ''}`}
-                onClick={() => handleInputChange('workMode', companyData?.workMode === mode.value ? '' : mode.value)}
-              >
-                {mode.label}
-              </button>
-            ))}
+        <div className={styles.field}>
+          <span className={styles.flabel} id="workModeLabel">Work mode</span>
+          <div className={styles.modeCards} role="radiogroup" aria-labelledby="workModeLabel">
+            {WORK_MODE_OPTIONS.map((mode) => {
+              const on = companyData?.workMode === mode.value;
+              const card = WORK_MODE_CARD[mode.value] || {};
+              return (
+                <button
+                  key={mode.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  className={`${styles.modeCard}${on ? ` ${styles.modeCardOn}` : ''}`}
+                  onClick={() => handleInputChange('workMode', on ? '' : mode.value)}
+                >
+                  <span className={styles.modeIcon} aria-hidden="true"><Icon name={card.icon || 'Briefcase'} size={18} /></span>
+                  <span className={styles.modeText}>
+                    <b>{mode.label}</b>
+                    {card.sub && <span>{card.sub}</span>}
+                  </span>
+                  {on && (
+                    <span className={styles.modeCheck} aria-hidden="true"><Icon name="Check" size={11} strokeWidth={3.2} /></span>
+                  )}
+                </button>
+              );
+            })}
           </div>
+          {!companyData?.workMode && <Hint>Pick the one that fits most of your roles.</Hint>}
         </div>
 
-        <div className={styles.flexRow}>
-          <div>
-            <div className={styles.flabel} style={{ marginBottom: 2 }}>Flexible working hours</div>
-            <div style={{ fontSize: '.82rem', color: '#566776' }}>Employees can choose when they work within working hours</div>
+        <div className={styles.divider} />
+
+        <div className={styles.switchRow}>
+          <div className={styles.switchText}>
+            <b id="flexHoursLabel">Flexible working hours</b>
+            <span>People choose when they work within your working hours.</span>
           </div>
           <label className={styles.toggle}>
             <input
               type="checkbox"
+              role="switch"
+              aria-labelledby="flexHoursLabel"
               checked={!!companyData?.flexibleHours}
               onChange={(e) => handleInputChange('flexibleHours', e.target.checked)}
             />
@@ -412,20 +541,41 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
         </div>
       </div>
 
-      {/* Benefits */}
+      {/* Benefits — a dropdown, with each pick shown as a removable pill below it */}
       <div className={styles.card}>
-        <SectionHead icon="Gift" title="Benefits" subtitle="Choose the benefits you offer employees" />
+        <SectionHead icon="Gift" title="Benefits" subtitle="What employees get on top of salary." />
 
         <div className={styles.field}>
-          <label className={styles.flabel}>Benefits</label>
+          <label className={styles.flabel}>What do you offer?</label>
           <Select
             multiple
-            value={companyData?.benefits || []}
-            onChange={(benefits) => handleInputChange('benefits', benefits)}
+            value={benefits}
+            onChange={(next) => handleInputChange('benefits', next)}
             options={BENEFIT_OPTIONS}
-            placeholder="Choose benefits..."
+            placeholder="Choose benefits…"
             multipleLabel={(count) => `${count} benefits selected`}
           />
+          {benefits.length > 0 ? (
+            <div className={styles.benChips}>
+              {benefits.map((benefit) => (
+                <span key={benefit} className={`${styles.benChip}${readOnly ? ` ${styles.benChipRO}` : ''}`}>
+                  {benefit}
+                  {!readOnly && (
+                    <button
+                      type="button"
+                      className={styles.benChipX}
+                      aria-label={`Remove ${benefit}`}
+                      onClick={() => handleInputChange('benefits', benefits.filter((b) => b !== benefit))}
+                    >
+                      <Icon name="X" size={12} strokeWidth={2.6} />
+                    </button>
+                  )}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <Hint>Pick everything you offer. Candidates see these on your profile.</Hint>
+          )}
         </div>
       </div>
 
@@ -434,29 +584,36 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
         <SectionHead
           icon="Banknote"
           title="Salary view"
-          subtitle="How candidates' salaries are shown to your team in Search, Bookmarked and Purchased, and the currency the salary filter starts in"
+          subtitle="How candidates' salaries are shown to your team in Search, Bookmarked and Purchased."
         />
 
-        <div className={styles.form2}>
+        <div className={styles.form3}>
           {[
             { field: 'salaryViewBasis', label: 'Net or gross', options: SALARY_BASIS_OPTIONS },
             { field: 'salaryViewPeriod', label: 'Per month or per year', options: SALARY_PERIOD_OPTIONS }
           ].map(({ field, label, options }) => (
             <div key={field} {...fieldProps(field)}>
-              <span className={styles.flabel}>{label} {requiredMark}</span>
-              <div className={styles.modeGroup} role="radiogroup" aria-label={label}>
-                {options.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={companyData?.[field] === option.value}
-                    className={`${styles.modeBtn} ${companyData?.[field] === option.value ? styles.modeBtnOn : ''}`}
-                    onClick={() => handleInputChange(field, option.value)}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+              <span className={styles.flabel} id={`${field}Label`}>{label} {requiredMark}</span>
+              <div
+                className={errors[field] ? `${styles.seg} ${styles.segInvalid}` : styles.seg}
+                role="radiogroup"
+                aria-labelledby={`${field}Label`}
+              >
+                {options.map((option) => {
+                  const on = companyData?.[field] === option.value;
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      role="radio"
+                      aria-checked={on}
+                      className={`${styles.segBtn}${on ? ` ${styles.segOn}` : ''}`}
+                      onClick={() => handleInputChange(field, option.value)}
+                    >
+                      {option.label}
+                    </button>
+                  );
+                })}
               </div>
               {fieldError(field)}
             </div>
@@ -476,24 +633,39 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
             {fieldError('salaryViewCurrency')}
           </div>
         </div>
-        <span className={styles.fhint}>
-          Candidates give both net and gross, so every profile can be shown either way, always in the candidate's own
-          currency. The salary filter's range is typed in the currency above and compared at today's exchange rate.
-          Anyone on your team can switch any of these in the Salary filter; they go back to these when they close the
-          tab or sign out.
-        </span>
+
+        <div className={styles.note}>
+          <Icon name="Info" size={16} />
+          <div>
+            <p>
+              Candidates give both net and gross, so every profile can be shown either way, always in the candidate's
+              own currency. The salary filter's range is typed in the Salary filter currency and compared at today's exchange rate.
+            </p>
+            <p>
+              Anyone on your team can switch any of these in the Salary filter; they go back to these when they close the
+              tab or sign out.
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Payments — what the company's card is charged in; Credit prices stay in EUR */}
       <div className={styles.card}>
-        <SectionHead icon="CreditCard" title="Payments" subtitle="The currency your card is charged in when you buy Credits" />
+        <SectionHead icon="CreditCard" title="Payments" subtitle="The currency your card is charged in when you buy Credits." />
 
-        <div className={styles.form2}>
+        <div className={styles.payTop}>
           <div {...fieldProps('paymentCurrency')}>
             <label className={styles.flabel}>Payment currency {requiredMark}</label>
-            <div className={errors.paymentCurrency ? styles.selectInvalid : undefined}>
+            <div className={`${styles.paySelect}${errors.paymentCurrency ? ` ${styles.selectInvalid}` : ''}`}>
+              <span
+                className={styles.paySym}
+                style={paySymbol.length > 2 ? { fontSize: 10 } : paySymbol.length === 2 ? { fontSize: 12 } : undefined}
+                aria-hidden="true"
+              >
+                {paySymbol}
+              </span>
               <Select
-                value={companyData?.paymentCurrency || ''}
+                value={payCurrency}
                 onChange={(v) => handleInputChange('paymentCurrency', v)}
                 options={PAYMENT_CURRENCY_OPTIONS}
                 placeholder="Select currency…"
@@ -502,11 +674,42 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
             </div>
             {fieldError('paymentCurrency')}
           </div>
+
+          <div className={styles.payTip}>
+            <span className={styles.payTipIcon} aria-hidden="true"><Icon name="DollarSign" size={16} strokeWidth={2.1} /></span>
+            <p><b>Match your card's currency.</b> Applies to the whole team.</p>
+          </div>
         </div>
-        <span className={styles.fhint}>
-          Credit prices are in EUR. At checkout, Paddle charges your card in this currency at today's exchange rate.
-          Your purchase history stays in EUR.
-        </span>
+
+        {/* EUR price → (conversion) → what the card is charged in; the last step follows the pick above. */}
+        <div className={styles.payFlow}>
+          <p className={styles.payFlowLabel}>How you're charged</p>
+          <ol className={styles.paySteps}>
+            {paySteps.map((stepItem, i) => (
+              <React.Fragment key={stepItem.n}>
+                {i > 0 && (
+                  <li className={styles.payArrow} aria-hidden="true"><Icon name="ArrowRight" size={16} strokeWidth={2.2} /></li>
+                )}
+                <li className={`${styles.payStep}${stepItem.last ? ` ${styles.payStepLast}` : ''}`}>
+                  <span className={styles.payStepTop}>
+                    <span className={`${styles.payStepIcon} ${styles[stepItem.tone]}`} aria-hidden="true">
+                      <Icon name={stepItem.icon} size={17} />
+                    </span>
+                    <span className={styles.payStepNum} aria-hidden="true">{stepItem.n}</span>
+                  </span>
+                  <span className={styles.payStepText}>
+                    <b aria-live={stepItem.last ? 'polite' : undefined}>{stepItem.title}</b>
+                    <span>{stepItem.text}</span>
+                  </span>
+                </li>
+              </React.Fragment>
+            ))}
+          </ol>
+          <p className={styles.payHistory}>
+            <Icon name="History" size={15} />
+            Your purchase history always stays in EUR, whatever currency you pay in.
+          </p>
+        </div>
       </div>
 
       {/* Phones/tablets only — on desktop the page header's Save is always in view */}

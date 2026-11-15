@@ -49,7 +49,10 @@ const metaLine = (member) => {
   return '';
 };
 
-const TeamManagementTab = ({ fireToast, onOwnershipTransferred }) => {
+const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+
+// `onOpenAccount`: switches to Account settings, where you add your own name.
+const TeamManagementTab = ({ fireToast, onOwnershipTransferred, onOpenAccount }) => {
   const { isCompanyOwner, company } = useCurrentUser();
   // undefined until loaded; null = no cap (1000+ employees). Used seats = the list itself (active + pending).
   const [seatLimit, setSeatLimit] = useState(undefined);
@@ -79,6 +82,7 @@ const TeamManagementTab = ({ fireToast, onOwnershipTransferred }) => {
   }, [loadTeam, isCompanyOwner]);
 
   const seatsFull = typeof seatLimit === 'number' && team.length >= seatLimit;
+  const seatsLeft = typeof seatLimit === 'number' ? Math.max(0, seatLimit - team.length) : null;
 
   const handleInvite = async (e) => {
     e?.preventDefault();
@@ -173,135 +177,189 @@ const TeamManagementTab = ({ fireToast, onOwnershipTransferred }) => {
     }
   };
 
+  // Seats used, beside the Team members title — the owner's view only (the seats call is owner-only).
+  let seatMeter = null;
+  if (isCompanyOwner && typeof seatLimit === 'number') {
+    seatMeter = (
+      <div
+        className={styles.seatMeter}
+        role="meter"
+        aria-label="Team seats used"
+        aria-valuemin={0}
+        aria-valuemax={seatLimit}
+        aria-valuenow={Math.min(team.length, seatLimit)}
+      >
+        <span className={`${styles.seatDots}${seatLimit > 5 ? ` ${styles.seatDotsMany}` : ''}`} aria-hidden="true">
+          {Array.from({ length: seatLimit }, (_, i) => (
+            <span key={i} className={i < team.length ? styles.seatOn : undefined} />
+          ))}
+        </span>
+        <span><b>{team.length} of {seatLimit}</b> seats used</span>
+      </div>
+    );
+  } else if (isCompanyOwner && seatLimit === null) {
+    seatMeter = (
+      <div className={styles.seatMeter}>
+        <span><b>{plural(team.length, 'person', 'people')}</b> · no seat limit</span>
+      </div>
+    );
+  }
+
+  let inviteSubtitle = 'They join this company with their own login.';
+  if (seatLimit === null) inviteSubtitle = 'Companies with 1000+ employees can add as many people as they need.';
+  else if (seatsLeft === 0) inviteSubtitle = 'All seats are taken.';
+  else if (seatsLeft !== null) inviteSubtitle = `You can invite ${plural(seatsLeft, 'more person', 'more people')}.`;
+
   return (
     <div className={styles.stack}>
       <div className={styles.card}>
-        <SectionHead
-          icon="Users"
-          title="Team members"
-          subtitle="Everyone shares this company profile and credit balance, but each person signs in with their own account — and every unlock, bookmark and purchase shows who made it."
-        />
+        <SectionHead icon="Users" title="Team members" subtitle="People who work in this company account." aside={seatMeter} />
 
-        {loading ? (
-          <div className={styles.emptyTeam}>Loading…</div>
-        ) : team.length === 0 ? (
-          <div className={styles.emptyTeam}>No team members yet.</div>
-        ) : (
-          team.map((member) => {
-            const isOwner = member.role === 'Owner';
-            const meta = metaLine(member);
-            return (
-              <div className={styles.teamRow} key={member.id}>
-                <div className={`${styles.teamAvatar}${isOwner ? ` ${styles.owner}` : ''}`}>
-                  {initials(member.name || member.email)}
-                </div>
-                <div className={styles.teamInfo}>
-                  <div className={styles.teamName}>
-                    {member.name || member.email}
-                    {member.isYou && <span className={styles.youTag}>(you)</span>}
+        <p className={styles.teamIntro}>
+          Everyone shares this company profile and credit balance, but signs in with their own account. Every unlock,
+          bookmark and purchase shows who made it.
+        </p>
+
+        <ul className={styles.memberList} aria-label="Team members">
+          {loading ? (
+            <li className={styles.emptyTeam}>Loading…</li>
+          ) : team.length === 0 ? (
+            <li className={styles.emptyTeam}>No team members yet.</li>
+          ) : (
+            team.map((member) => {
+              const isOwner = member.role === 'Owner';
+              const invited = member.status !== 'active';
+              const meta = metaLine(member);
+              const busy = busyId === member.id;
+              return (
+                <li className={styles.teamRow} key={member.id}>
+                  <span
+                    className={`${styles.teamAvatar}${isOwner ? ` ${styles.owner}` : ''}${invited ? ` ${styles.invited}` : ''}`}
+                    aria-hidden="true"
+                  >
+                    {invited ? <Icon name="Mail" size={17} /> : initials(member.name || member.email)}
+                  </span>
+                  <div className={styles.teamInfo}>
+                    <div className={styles.teamName}>
+                      <span className={styles.teamNameText}>{member.name || member.email}</span>
+                      {member.isYou && <span className={styles.youTag}>(you)</span>}
+                    </div>
+                    {member.name && <div className={styles.teamEmail}>{member.email}</div>}
+                    {member.isYou && !member.name && (
+                      <div className={styles.teamMeta}>
+                        No name yet.{' '}
+                        <button type="button" className={styles.fhintLink} onClick={onOpenAccount}>Add your name</button>
+                      </div>
+                    )}
+                    {meta && (
+                      <div className={`${styles.teamMeta}${member.status === 'expired' ? ` ${styles.expired}` : ''}`}>{meta}</div>
+                    )}
                   </div>
-                  {member.name && <div className={styles.teamEmail}>{member.email}</div>}
-                  {meta && (
-                    <div className={`${styles.teamMeta}${member.status === 'expired' ? ` ${styles.expired}` : ''}`}>{meta}</div>
-                  )}
-                </div>
-                <div className={styles.teamBadges}>
-                  <span className={`${styles.roleBadge}${isOwner ? ` ${styles.owner}` : ''}`}>{member.role}</span>
-                  <span className={`${styles.statusBadge} ${styles[member.status]}`}>{STATUS_LABEL[member.status]}</span>
-                  {isCompanyOwner && member.status !== 'active' && (
-                    <button
-                      type="button"
-                      className={styles.teamAction}
-                      disabled={busyId === member.id}
-                      onClick={() => handleResend(member)}
-                    >
-                      Resend
-                    </button>
-                  )}
-                  {isCompanyOwner && !isOwner && member.status === 'active' && (
-                    <button
-                      type="button"
-                      className={styles.teamAction}
-                      title="Hand the company account over to this person"
-                      disabled={busyId === member.id}
-                      onClick={() => openTransfer(member)}
-                    >
-                      Make owner
-                    </button>
-                  )}
-                  {isCompanyOwner && !isOwner && (
-                    <button
-                      type="button"
-                      className={styles.teamRemove}
-                      title={member.status === 'active' ? 'Remove member' : 'Cancel invite'}
-                      disabled={busyId === member.id}
-                      onClick={() => handleRemove(member)}
-                    >
-                      <Icon name="Trash2" size={15} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
+                  <div className={styles.teamBadges}>
+                    <span className={`${styles.roleBadge}${isOwner ? ` ${styles.owner}` : ''}`}>{member.role}</span>
+                    <span className={`${styles.statusBadge} ${styles[member.status]}`}>{STATUS_LABEL[member.status]}</span>
+                    {isCompanyOwner && invited && (
+                      <button
+                        type="button"
+                        className={styles.teamIconBtn}
+                        title="Resend invite"
+                        aria-label={`Resend invite to ${member.email}`}
+                        disabled={busy}
+                        onClick={() => handleResend(member)}
+                      >
+                        <Icon name="RotateCw" size={15} strokeWidth={2.1} />
+                      </button>
+                    )}
+                    {isCompanyOwner && !isOwner && !invited && (
+                      <button
+                        type="button"
+                        className={styles.teamAction}
+                        title="Hand the company account over to this person"
+                        disabled={busy}
+                        onClick={() => openTransfer(member)}
+                      >
+                        Make owner
+                      </button>
+                    )}
+                    {isCompanyOwner && !isOwner && (
+                      <button
+                        type="button"
+                        className={invited ? styles.teamIconBtn : styles.teamRemove}
+                        title={invited ? 'Cancel invite' : 'Remove member'}
+                        aria-label={invited ? `Cancel invite for ${member.email}` : `Remove ${member.name || member.email}`}
+                        disabled={busy}
+                        onClick={() => handleRemove(member)}
+                      >
+                        <Icon name={invited ? 'X' : 'Trash2'} size={15} strokeWidth={2.2} />
+                      </button>
+                    )}
+                  </div>
+                </li>
+              );
+            })
+          )}
+        </ul>
       </div>
 
       {isCompanyOwner ? (
         <div className={styles.card}>
-          <SectionHead
-            icon="UserPlus"
-            title="Invite member"
-            subtitle="They'll get an email with a link to set their name and password and join this company — the link is valid for 7 days. Each person can belong to only one company."
-          />
-
-          {seatLimit !== undefined && (
-            <div className={`${styles.seatInfo}${seatsFull ? ` ${styles.full}` : ''}`}>
-              <Icon name="Users" size={15} />
-              {seatLimit === null ? (
-                <span>Companies with 1000+ employees can add as many team accounts as they need.</span>
-              ) : seatsFull ? (
-                <span>
-                  <b>{team.length} of {seatLimit}</b> team accounts used — the maximum for a company with {SIZE_RANGE[company?.size] || 'your'} employees.
-                  Cancel a pending invite or remove a member to add someone new.
-                </span>
-              ) : (
-                <span>
-                  <b>{team.length} of {seatLimit}</b> team accounts used (pending invites included) — you can invite{' '}
-                  <b>{seatLimit - team.length}</b> more.
-                </span>
-              )}
-            </div>
-          )}
+          <SectionHead icon="UserPlus" title="Invite a teammate" subtitle={inviteSubtitle} />
 
           <form className={styles.inviteRow} onSubmit={handleInvite}>
             <div className={styles.field}>
               <label className={styles.flabel} htmlFor="inviteEmail">Email</label>
               <div className={styles.inputIcon}>
-                <Icon name="Mail" size={17} />
+                <Icon name="Mail" size={16} />
                 <input
                   id="inviteEmail"
-                  className={styles.finput}
+                  className={inviteError ? `${styles.finput} ${styles.finvalid}` : styles.finput}
                   type="email"
                   placeholder="colleague@company.com"
                   value={inviteEmail}
                   disabled={seatsFull}
+                  aria-invalid={!!inviteError}
                   onChange={(e) => { setInviteEmail(e.target.value); setInviteError(''); }}
                 />
               </div>
             </div>
-            <div className={styles.field} style={{ maxWidth: 180 }}>
-              <label className={styles.flabel}>Role</label>
-              <div className={styles.roleStatic}>Recruiter</div>
+            <div className={styles.field}>
+              <span className={styles.flabel}>Role</span>
+              <div className={styles.roleStatic} title="Everyone you invite joins as a Recruiter">
+                Recruiter
+                <span className={styles.inputLock}><Icon name="Lock" size={15} /></span>
+              </div>
             </div>
-            <button type="submit" className={styles.btnPrimary} disabled={inviteBusy || seatsFull}>
-              <Icon name="Send" size={15} />{inviteBusy ? 'Sending…' : 'Send'}
+            <button type="submit" className={styles.btnGold} disabled={inviteBusy || seatsFull}>
+              <Icon name="Send" size={16} strokeWidth={2.2} />{inviteBusy ? 'Sending…' : 'Send invite'}
             </button>
           </form>
-          {inviteError && <div className={styles.counter} style={{ color: '#cf4b4b', textAlign: 'left', marginTop: 8 }}>{inviteError}</div>}
-          {justInvited && !inviteError && (
-            <div className={styles.counter} style={{ color: '#2f9e69', textAlign: 'left', marginTop: 8 }}>Invite sent to {justInvited}.</div>
+
+          {inviteError && (
+            <span className={styles.ferr}>
+              <Icon name="AlertCircle" size={13} strokeWidth={2.2} />
+              {inviteError}
+            </span>
           )}
+          {justInvited && !inviteError && (
+            <p className={styles.okMsg} role="status">
+              <Icon name="Check" size={14} strokeWidth={2.6} />
+              Invite sent to {justInvited}
+            </p>
+          )}
+
+          {seatsFull && (
+            <p className={styles.seatFull} role="status">
+              <Icon name="Info" size={15} />
+              All {seatLimit} seats are taken — the maximum for a company with {SIZE_RANGE[company?.size] || 'your'} employees.
+              Cancel a pending invite or remove a member to free one up.
+            </p>
+          )}
+
+          <ul className={styles.bullets}>
+            <li>They get an email with a link to set their name and password. The link works for 7 days.</li>
+            <li>Each person can belong to only one company.</li>
+            {typeof seatLimit === 'number' && <li>Pending invites count toward your {seatLimit} seats.</li>}
+          </ul>
         </div>
       ) : (
         <div className={styles.readOnlyNote}>

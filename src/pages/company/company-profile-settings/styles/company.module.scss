@@ -44,7 +44,6 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   @include page-bg;
   min-height: 100vh;
 }
-
 .head {
   display: flex;
   align-items: flex-end;
@@ -100,24 +99,89 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   @media (min-width: $sticky-from) { display: none; }
 }
 
+// "Preview profile" in the page header: white, quiet; on hover the border
+// darkens, a soft shadow lifts it and the eye turns gold.
 .btnGhost {
+  height: 42px;
   display: inline-flex;
   align-items: center;
-  gap: .5em;
-  padding: .74em 1.2em;
-  border: 1.5px solid $line;
-  border-radius: $r-sm;
+  gap: 8px;
+  padding: 0 16px 0 14px;
+  border: 1px solid #DDE1E6;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: .9rem;
+  font-size: 14px;
+  line-height: 18px;
+  white-space: nowrap;
   background: $white;
   color: $ink;
-  box-shadow: 0 1px 2px rgba(11, 26, 44, .04);
-  transition: border-color .2s, transform .2s $ease, box-shadow .2s;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, .05);
+  transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease, transform .15s ease;
+
+  svg {
+    color: $slate-2;
+    transition: color .15s ease;
+  }
 
   &:hover {
-    border-color: $ink;
-    transform: translateY(-1px);
-    box-shadow: 0 10px 22px -14px rgba(11, 26, 44, .5);
+    border-color: #C5CBD3;
+    background: #FAFBFC;
+    box-shadow: 0 1px 2px rgba(11, 26, 44, .05), 0 8px 18px -12px rgba(11, 26, 44, .35);
+
+    svg { color: $gold-deep; }
+  }
+
+  &:active {
+    transform: translateY(1px);
+    background: #F1F3F6;
+    box-shadow: none;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+}
+
+// Save, top (desktop) and bottom (phones): solid gold, no shadow; on hover it
+// gets lighter (text stays dark), pressing nudges it down.
+.headR .btnPrimary,
+.saveBottom .btnPrimary {
+  height: 42px;
+  gap: 8px;
+  padding: 0 18px 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: $gold;
+  color: #3B2606;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: none;
+  transition: background-color .15s ease, color .15s ease, transform .15s ease;
+
+  &:hover:not(:disabled) {
+    background: #EFBC5E;
+    color: #3B2606;
+    transform: none;
+    filter: none;
+    box-shadow: none;
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+    background: $gold;
+  }
+
+  &:focus-visible {
+    outline: 2px solid $gold;
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    opacity: .55;
+    box-shadow: none;
   }
 }
 
@@ -163,14 +227,15 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
 }
 
 // ===== Layout =====
+// minmax(0, 1fr): a tab's content can't stretch the column, so every tab is the same width.
 .layout {
   display: grid;
-  grid-template-columns: 262px 1fr;
+  grid-template-columns: 262px minmax(0, 1fr);
   gap: 22px;
   align-items: start;
 
   @media (max-width: 920px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -274,20 +339,22 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
 
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 18px;
 }
 
 // ===== Generic card =====
+// The card's header (SectionHead) runs edge to edge with a divider under it,
+// so the card's top padding is the header's and the body pads itself below.
 .card {
   position: relative;
   background: $white;
   border: 1px solid $line;
-  border-radius: $r-lg;
-  padding: 26px;
-  box-shadow: $sh-card;
-  transition: box-shadow .25s;
+  border-radius: 20px;
+  padding: 22px 26px 26px;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, .04), 0 14px 32px -22px rgba(11, 26, 44, .3);
 
-  &:hover { box-shadow: $sh-card-h; }
+  @media (max-width: 560px) { padding: 20px 18px 22px; }
 }
 
 .cardTitle {
@@ -319,44 +386,23 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
 // ===== Forms =====
 .form2 {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px 18px;
 
   @media (max-width: 680px) {
     grid-template-columns: 1fr;
   }
 }
 
-// A one-control card: title + subtitle on the left, the control on the right
-// (Account settings → Billing currency). Stacks on narrow screens.
-.cardRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px 24px;
-
-  .cardSub { margin-bottom: 0; }
-
-  @media (max-width: 680px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-}
-
-.cardRowText { min-width: 0; }
-
-.cardRowControl {
-  flex: 0 0 260px;
-  display: grid;
-  gap: 6px;
-
-  @media (max-width: 680px) {
-    flex-basis: auto;
-  }
-}
-
 .field {
-  margin-bottom: 2px;
+  min-width: 0;
+}
+
+// Three side by side (Salary view: net/gross, month/year, currency); wraps when the card gets narrow.
+.form3 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 16px 18px;
 }
 
 .fieldFull {
@@ -365,82 +411,106 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
 
 .flabel {
   display: block;
-  font-size: .82rem;
+  font-size: 13px;
+  line-height: 18px;
   font-weight: 600;
   margin-bottom: 6px;
-  color: $ink;
+  color: #1E293B;
 }
 
 .req { color: $red; }
 
 .finput,
-.fselect,
 .ftext {
   width: 100%;
-  border: 1.5px solid $line;
-  background: $paper-2;
-  border-radius: $r-sm;
-  padding: .74em .9em;
-  font-size: .9rem;
+  box-sizing: border-box;
+  border: 1px solid #DDE1E6;
+  background: $white;
+  border-radius: 10px;
+  padding: 0 12px;
+  font-size: 14px;
   color: $ink;
   font-family: inherit;
-  transition: border-color .18s, box-shadow .18s, background-color .18s;
+  transition: border-color .15s ease, box-shadow .15s ease;
 
-  &:hover,
+  &:hover:not(:disabled) { border-color: #C5CBD3; }
+
   &:focus {
     outline: none;
     border-color: $gold;
-    background: $white;
     box-shadow: 0 0 0 3px rgba(230, 169, 60, .18);
   }
 
   &::placeholder { color: $slate-2; }
 }
 
+.finput { height: 42px; }
+
+// Read-only (login email, interface language): dashed and greyed, with a lock on the right.
+.finput:disabled {
+  border-style: dashed;
+  border-color: #D5DAE0;
+  background: #F6F7F9;
+  color: #475569;
+  cursor: default;
+  opacity: 1;
+  -webkit-text-fill-color: #475569;
+}
+
 .ftext {
   resize: vertical;
   min-height: 80px;
+  padding: 12px 14px;
   line-height: 1.55;
 }
 
 // Required field left empty on a blocked save — after .finput/.ftext so it wins on hover/focus too.
-.finvalid {
-  border-color: $red;
-  background: $white;
+.finvalid,
+.finvalid:hover:not(:disabled) {
+  border-color: #D14343;
+}
 
-  &:hover,
-  &:focus {
-    border-color: $red;
-    box-shadow: 0 0 0 3px rgba(207, 75, 75, .14);
-  }
+.finvalid:focus {
+  border-color: #D14343;
+  box-shadow: 0 0 0 3px rgba(209, 67, 67, .15);
 }
 
 // Same red border for the shared <Select> trigger, which can't take .finvalid directly.
 .selectInvalid button[aria-haspopup="listbox"] {
-  border-color: $red;
+  border-color: #D14343 !important;
 }
 
 .ferr {
-  display: block;
-  font-size: .76rem;
-  font-weight: 600;
-  color: $red;
-  margin-top: 5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  line-height: 16px;
+  color: #B42318;
+  margin-top: 6px;
+
+  svg { flex: none; }
 }
 
 .fhint {
-  display: block;
-  font-size: .76rem;
-  color: $slate-2;
-  margin-top: 5px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: #6B7482;
+  margin-top: 6px;
+
+  > svg { flex: none; margin-top: 2px; color: $slate-2; }
 }
 
-.counterRow {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
+.fhintLink {
+  font-weight: 600;
+  color: #9A6410;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 
-  .counter { margin-left: auto; }
+  &:hover { color: #7A4E0A; }
 }
 
 // ===== Onboarding gate banner =====
@@ -515,43 +585,34 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   color: $ink;
 }
 
-.fselect {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%238693A0' stroke-width='2'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right .8em center;
-  cursor: pointer;
-  padding-right: 2.2em;
-}
-
-.counter {
-  font-size: .74rem;
-  color: $slate-2;
-  text-align: right;
-  margin-top: 5px;
-  font-family: 'JetBrains Mono', monospace;
-}
-
 // ===== Logo upload =====
+// The company-list preview drops under the logo when the card gets too narrow for all three.
 .logoUp {
   display: flex;
-  gap: 20px;
-  align-items: center;
   flex-wrap: wrap;
+  gap: 22px;
+  align-items: center;
 }
 
 .logoBox {
-  width: 90px;
-  height: 90px;
-  border-radius: 18px;
-  background: $mist;
-  border: 2px dashed $line;
-  display: grid;
-  place-items: center;
+  width: 116px;
+  height: 116px;
+  box-sizing: border-box;
+  border-radius: 20px;
+  background: #F8FAFC;
+  border: 1.5px dashed #D5DAE0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   flex: none;
   overflow: hidden;
-  color: $slate;
-  transition: border-color .18s, background-color .18s;
+  color: $slate-2;
+  font-size: 12px;
+  line-height: 16px;
+
+  > svg { color: #A0A8B3; }
 }
 
 .logoImg {
@@ -560,57 +621,113 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   object-fit: cover;
 }
 
+.logoBody {
+  flex: 1;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .logoActions {
   display: flex;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 8px;
   flex-wrap: wrap;
 }
 
 .upBtn {
+  height: 38px;
   display: inline-flex;
   align-items: center;
-  gap: .5em;
-  border: 1.5px solid $line;
-  border-radius: $r-sm;
-  padding: .62em 1em;
+  gap: 8px;
+  border: 1px solid #DDE1E6;
+  border-radius: 10px;
+  padding: 0 14px 0 12px;
   font-weight: 600;
-  font-size: .86rem;
+  font-size: 14px;
+  line-height: 18px;
   background: $white;
   color: $ink;
-  transition: border-color .2s, transform .2s $ease;
+  transition: border-color .15s ease, background-color .15s ease;
 
-  &:hover {
-    border-color: $ink;
-    transform: translateY(-1px);
+  &:hover:not(:disabled) {
+    border-color: #C9D0D8;
+    background: #F8FAFC;
   }
 
   &:disabled {
-    opacity: .6;
+    opacity: .5;
     cursor: not-allowed;
-    transform: none;
   }
 }
 
-.rmBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: .5em;
-  border: 1.5px solid $red;
-  color: $red;
-  border-radius: $r-sm;
-  padding: .62em 1em;
-  font-weight: 600;
-  font-size: .86rem;
-  background: $white;
-  transition: background-color .2s, border-color .2s;
+// How the company shows up in the candidates' company list.
+.logoPreview {
+  flex: none;
+  width: 230px;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #EEF0F3;
+  border-radius: 14px;
+  background: #FAFBFC;
 
-  &:hover { background: $red-bg; }
+  @media (max-width: 760px) { width: 100%; }
+}
+
+.logoPreviewLabel {
+  margin: 0 0 8px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: $slate-2;
+}
+
+.logoPreviewCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: $white;
+  border: 1px solid #E9ECF0;
+  border-radius: 10px;
+}
+
+.logoPreviewMark {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: #F1F3F6;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  color: #A0A8B3;
+
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+
+.logoPreviewText {
+  min-width: 0;
+
+  b, span {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  b { font-size: 13px; line-height: 17px; font-weight: 700; color: $ink; }
+  span { font-size: 12px; line-height: 16px; color: #5B6573; }
 }
 
 .logoHint {
-  font-size: .8rem;
-  color: $slate;
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: #6B7482;
 }
 
 // ===== Reputation =====
@@ -872,29 +989,10 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   }
 }
 
-// ===== Toggles =====
-.toggleRow {
-  display: flex;
-  align-items: flex-start;
-  gap: 13px;
-  padding: 14px 0;
-  border-top: 1px solid $line;
-
-  &:first-of-type {
-    border-top: none;
-    padding-top: 0;
-  }
-
-  &.forceBorder {
-    border-top: 1px solid $line;
-    margin-top: 8px;
-  }
-}
-
 .toggle {
   position: relative;
-  width: 44px;
-  height: 25px;
+  width: 46px;
+  height: 26px;
   flex: none;
   cursor: pointer;
   display: inline-block;
@@ -905,134 +1003,214 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
     width: 0;
     height: 0;
   }
+
+  input:focus-visible + .toggleTrack { outline: 2px solid $gold; outline-offset: 2px; }
 }
 
 .toggleTrack {
   position: absolute;
   inset: 0;
-  background: $mist;
-  border-radius: 99px;
-  transition: background-color .2s;
+  background: #CBD2DA;
+  border-radius: 13px;
+  transition: background-color .2s ease;
   pointer-events: none;
-  box-shadow: inset 0 1px 2px rgba(11, 26, 44, .12);
 
   &::before {
     content: "";
     position: absolute;
-    width: 19px;
-    height: 19px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     background: #fff;
     top: 3px;
     left: 3px;
-    transition: transform .2s $ease;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, .25);
+    transition: transform .2s ease;
+    box-shadow: 0 1px 3px rgba(11, 26, 44, .25);
   }
 }
 
 .toggle input:checked + .toggleTrack {
-  background: linear-gradient(135deg, $gold-2, $gold);
+  background: $gold;
 
-  &::before { transform: translateX(19px); }
+  &::before { transform: translateX(20px); }
 }
 
-.toggleTxt {
+// A setting with its switch on the right (Flexible working hours, 2FA).
+.switchRow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.switchText {
+  flex: 1;
+  min-width: 0;
+
   b {
     display: block;
-    font-size: .92rem;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 600;
     color: $ink;
   }
 
   span {
-    font-size: .82rem;
-    color: $slate;
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    line-height: 18px;
+    color: #5B6573;
   }
 }
 
+.divider {
+  height: 1px;
+  background: #EEF0F3;
+  margin: 18px 0;
+}
+
 // ===== Data & security card =====
+// Card header: icon tile, title + subtitle, then a divider across the whole
+// card (it reaches out over the card's padding).
 .secHead {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 14px;
-  padding-bottom: 18px;
-  margin-bottom: 20px;
-  border-bottom: 1px solid $line;
+  margin: -22px -26px 22px;
+  padding: 20px 24px 18px 26px;
+  border-bottom: 1px solid #EEF0F3;
 
-  // The gold bar runs along title + subtitle here, so the title drops its own.
-  &::before {
-    content: '';
-    align-self: stretch;
-    width: 4px;
-    border-radius: 3px;
-    background: linear-gradient(180deg, $gold-2, $gold-deep);
-    flex: none;
+  @media (max-width: 560px) {
+    margin: -20px -18px 20px;
+    padding: 18px 18px 16px;
   }
 
+  // Same Bricolage title as the rest of the app's cards.
   .cardTitle {
     font-size: 1.25rem;
-    margin-bottom: 2px;
+    line-height: 1.3;
+    margin: 0;
     &::before { display: none; }
   }
 
-  .cardSub { margin: 0; font-size: .9rem; }
+  .cardSub {
+    margin: 2px 0 0;
+    font-size: 14px;
+    line-height: 20px;
+    color: #5B6573;
+  }
 }
 
-.secIcon { display: grid; place-items: center; flex: none; color: $ink; }
+.secIcon {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: #FDF3E1;
+  color: $gold-deep;
+  display: grid;
+  place-items: center;
+}
 
 // Takes the row; drops an `aside` onto its own line when the card gets narrow.
-.secText { flex: 1 1 200px; min-width: 0; }
+.secText { flex: 1 1 220px; min-width: 0; }
 
 .secAside { margin-left: auto; flex: none; align-self: center; }
 
 // Header beside a control in the same row — no divider below it.
 .secHeadFlat {
-  padding-bottom: 0;
   margin-bottom: 0;
   border-bottom: none;
 }
 
 .inputAction .inputIcon { flex: 1; min-width: 0; }
 
-.pwRow { margin-bottom: 16px; }
-
 .inputIcon {
   position: relative;
 
   > svg {
     position: absolute;
-    left: 13px;
+    left: 12px;
     top: 50%;
     transform: translateY(-50%);
     color: $slate-2;
     pointer-events: none;
   }
 
-  .finput {
-    padding-left: 2.7em;
-    &::placeholder { color: $slate-2; }
+  .finput { padding-left: 38px; }
+}
+
+// Room on the right for a lock, an eye or an "open link" button.
+.inputIconR .finput { padding-right: 42px; }
+
+.inputLock {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  color: #A0A8B3;
+}
+
+// Small square button inside the right end of an input (open link, show password).
+.inInputBtn {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: $slate-2;
+  background: transparent;
+  transition: background-color .15s, color .15s;
+
+  &:hover { background: #FDF3E1; color: #9A6410; }
+}
+
+// Show/hide password: a grey hover instead of gold.
+.inInputBtnGrey:hover { background: #EEF0F3; color: $ink; }
+
+// Fields grouped under a small mono label with a rule (Company, Location, Password…).
+.group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+
+  & + & { margin-top: 18px; }
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  margin: 0 0 14px;
+
+  span {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: $slate-2;
+    white-space: nowrap;
+  }
+
+  &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #EEF0F3;
   }
 }
-
-.btnPw {
-  padding: .72em 1.25em;
-  font-size: .9rem;
-  gap: .55em;
-  margin-bottom: 20px;
-
-  &:disabled { opacity: .6; cursor: default; transform: none; border-color: $line; }
-}
-
-.dangerLead {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  color: $red;
-
-  svg { flex: none; margin-top: 1px; }
-}
-
-.dangerRowDel .btnSmRed { padding: .7em 1.2em; font-size: .88rem; gap: .5em; }
 
 // ===== Your devices =====
 .devList {
@@ -1103,10 +1281,11 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
 .pwOthers {
   display: inline-flex;
   align-items: center;
-  gap: .55em;
-  margin: 4px 0 14px;
-  font-size: .86rem;
-  color: $ink;
+  gap: 10px;
+  padding: 4px 0;
+  font-size: 14px;
+  line-height: 20px;
+  color: #1E293B;
   cursor: pointer;
   user-select: none;
 
@@ -1118,69 +1297,30 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   }
 
   input:focus-visible + span { outline: 2px solid $gold; outline-offset: 2px; }
-
-  .bCheck {
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-
-    svg { width: 12px; height: 12px; }
-  }
-}
-
-// ===== Danger / security zone =====
-.dangerRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  padding: 14px 0;
-  border-top: 1px solid $line;
-  flex-wrap: wrap;
-
-  &:first-of-type { border-top: none; padding-top: 0; }
-}
-
-.dangerTxt {
-  b { display: block; font-size: .92rem; color: $ink; }
-  span { font-size: .82rem; color: $slate; }
-
-  &.del b { color: $red; }
-}
-
-.dangerRowDel {
-  margin-top: 4px;
-  padding: 16px;
-  border-radius: $r-md;
-  background: $red-bg;
-  border: 1px solid rgba(207, 75, 75, .22);
 }
 
 .btnSm {
-  padding: .58em 1.05em;
-  border: 1.5px solid $line;
-  border-radius: $r-sm;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid #DDE1E6;
+  border-radius: 10px;
   font-weight: 600;
-  font-size: .84rem;
+  font-size: 14px;
+  line-height: 18px;
   background: $white;
   color: $ink;
   display: inline-flex;
   align-items: center;
-  gap: .4em;
-  transition: border-color .2s, transform .2s $ease;
+  gap: 6px;
+  white-space: nowrap;
+  transition: border-color .15s ease, background-color .15s ease;
 
-  &:hover {
-    border-color: $ink;
-    transform: translateY(-1px);
+  &:hover:not(:disabled) {
+    border-color: #C9D0D8;
+    background: #F8FAFC;
   }
-}
 
-.btnSmRed {
-  border-color: $red;
-  color: $white;
-  background: $red;
-
-  &:hover { background: #b83e3e; border-color: #b83e3e; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
 }
 
 // ===== Public profile preview modal =====
@@ -1608,6 +1748,30 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
     border-left: none;
 
     &:nth-child(odd) { border-right: 1px dashed $line; }
+  }
+}
+
+// Settings → Recent ratings: no gold bar on the card's edge and no hover lift (the profile preview keeps both).
+// Columns may shrink below their content so the cards can't widen the settings column.
+// Two cards side by side need ~690px of card; below that (narrow desktop, or a
+// phone/tablet before the menu goes on top) they stack, so the category row fits.
+.dRevGridTight {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+
+  @media (min-width: 921px) and (max-width: 1060px), (max-width: 760px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.dRevGridTight .dRevCard {
+  padding-left: 18px;
+  transition: none;
+
+  &::before { display: none; }
+
+  &:hover {
+    transform: none;
+    box-shadow: none;
   }
 }
 
@@ -2062,58 +2226,439 @@ $red-deep: #b53e3e;
   .btnDel { width: 100%; }
 }
 
-// ===== Work mode selector =====
-.modeGroup {
+// ===== Work mode cards =====
+.modeCards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+
+  @media (max-width: 640px) { grid-template-columns: 1fr; }
+}
+
+.modeCard {
+  position: relative;
   display: flex;
-  border: 1.5px solid $line;
-  border-radius: $r-sm;
-  overflow: hidden;
-  width: fit-content;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1.5px solid #E1E5EA;
+  border-radius: 14px;
+  background: $white;
+  text-align: left;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  &:hover:not(:disabled):not(.modeCardOn) { border-color: #C5CBD3; }
 }
 
-.modeBtn {
-  padding: .68em 1.18em;
-  font-size: .88rem;
-  font-weight: 600;
-  color: $slate;
-  background: $paper-2;
-  border-right: 1px solid $line;
-  transition: background-color .16s, color .16s;
-
-  &:last-child { border-right: none; }
-  &:hover:not(.modeBtnOn) { background: $mist; color: $ink; }
+.modeCardOn {
+  border-color: $gold;
+  background: #FFFBF3;
 }
 
-.modeBtnOn {
-  background: $ink;
+.modeIcon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #F1F3F6;
+  color: #5B6573;
+  display: grid;
+  place-items: center;
+
+  .modeCardOn & { background: #FDF3E1; color: #9A6410; }
+}
+
+.modeText {
+  min-width: 0;
+
+  b {
+    display: block;
+    font-size: 14px;
+    line-height: 19px;
+    font-weight: 700;
+    color: $ink;
+  }
+
+  span {
+    display: block;
+    font-size: 12.5px;
+    line-height: 17px;
+    color: #5B6573;
+  }
+}
+
+.modeCheck {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: $gold;
   color: $white;
+  display: grid;
+  place-items: center;
 }
 
-// ===== Flexible hours row =====
-.flexRow {
+// ===== Segmented control (Salary view) =====
+.seg {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: #F1F3F6;
+  border-radius: 11px;
+}
+
+.segBtn {
+  flex: 1;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: transparent;
+  color: #5B6573;
+  font-size: 13.5px;
+  line-height: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color .15s ease, color .15s ease;
+
+  &:hover:not(:disabled):not(.segOn) { color: $ink; }
+}
+
+.segOn {
+  background: $white;
+  color: $ink;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, .14);
+}
+
+// The seg itself can't take a red border, so a missing pick outlines the track.
+.segInvalid { box-shadow: inset 0 0 0 1px #D14343; }
+
+// ===== Grey info box under a card's fields =====
+.note {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 12px 14px;
+  background: #F6F7F9;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 19px;
+  color: #475569;
+
+  > svg { flex: none; margin-top: 2px; color: $slate-2; }
+  p { margin: 0; }
+  p + p { margin-top: 6px; }
+}
+
+// ===== Payments card =====
+.payTop {
+  display: grid;
+  grid-template-columns: 320px minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+
+  @media (max-width: 760px) { grid-template-columns: 1fr; gap: 12px; }
+}
+
+// The currency field, with the picked currency's symbol in a small tile on the left.
+.paySelect {
+  position: relative;
+
+  button[role="combobox"] { padding-left: 44px; }
+}
+
+.paySym {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  z-index: 1;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  background: #FDF3E1;
+  color: #9A6410;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+// "Match your card's currency" beside the field, lined up with the field (under the label).
+.payTip {
+  margin-top: 24px;
+  min-height: 42px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 14px 6px 6px;
+  background: #F6F7F9;
+  border: 1px solid #EEF0F3;
+  border-radius: 12px;
+
+  p {
+    margin: 0;
+    min-width: 0;
+    font-size: 13px;
+    line-height: 18px;
+    color: #475569;
+  }
+
+  b { font-weight: 600; color: $ink; }
+
+  @media (max-width: 760px) { margin-top: 0; }
+}
+
+.payTipIcon {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: $white;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, .08);
+  color: #9A6410;
+  display: grid;
+  place-items: center;
+}
+
+.payFlow {
+  margin-top: 20px;
+  padding: 14px;
+  background: #F6F7F9;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.payFlowLabel {
+  margin: 0 2px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10.5px;
+  line-height: 14px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #6B7482;
+}
+
+.paySteps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+
+  @media (max-width: 760px) { flex-direction: column; }
+}
+
+.payStep {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: $white;
+  border: 1px solid #E9ECF0;
+  border-radius: 14px;
+}
+
+// The step that follows the pick: what the card is actually charged in.
+.payStepLast {
+  border: 1.5px solid $gold;
+  box-shadow: 0 0 0 3px rgba(230, 169, 60, .12);
+}
+
+.payStepTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding-top: 14px;
+}
+
+.payStepIcon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+}
+
+.payToneGold { background: #FDF3E1; color: #9A6410; }
+.payToneBlue { background: #E8EFFC; color: #2F5BB7; }
+.payToneSolid { background: $gold; color: #3B2606; }
+
+.payStepNum {
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 600;
+  color: #A0A8B3;
+}
+
+.payStepText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  b {
+    font-size: 14px;
+    line-height: 19px;
+    font-weight: 700;
+    color: $ink;
+  }
+
+  span {
+    font-size: 12.5px;
+    line-height: 17px;
+    color: #5B6573;
+  }
+}
+
+.payArrow {
+  flex: none;
+  align-self: center;
+  display: flex;
+  color: #B8C0C9;
+
+  @media (max-width: 760px) { transform: rotate(90deg); }
+}
+
+.payHistory {
+  margin: 0 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 18px;
+  color: #475569;
+
+  svg { flex: none; color: $slate-2; }
+}
+
+// ===== Textarea with its counter inside =====
+.taWrap {
+  position: relative;
+  border: 1px solid #DDE1E6;
+  border-radius: 12px;
+  background: $white;
+  transition: border-color .15s ease, box-shadow .15s ease;
+
+  &:hover { border-color: #C5CBD3; }
+
+  &:focus-within {
+    border-color: $gold;
+    box-shadow: 0 0 0 3px rgba(230, 169, 60, .18);
+  }
+
+  textarea {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 70px;
+    padding: 12px 14px 28px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
+    font-family: inherit;
+    font-size: 14.5px;
+    line-height: 22px;
+    color: $ink;
+    outline: none;
+
+    &::placeholder { color: $slate-2; }
+  }
+}
+
+.taInvalid,
+.taInvalid:hover { border-color: #D14343; }
+.taInvalid:focus-within { border-color: #D14343; box-shadow: 0 0 0 3px rgba(209, 67, 67, .15); }
+
+.taCount {
+  position: absolute;
+  right: 12px;
+  bottom: 8px;
+  font-size: 12px;
+  line-height: 16px;
+  color: $slate-2;
+  pointer-events: none;
+}
+
+.taCountNear { color: #9A6410; }
+
+// ===== Benefit pills under the dropdown (same look as the Bookmarked filter chips) =====
+.benChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.benChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 3px 0 10px;
+  border-radius: 999px;
+  background: #FDF3E1;
+  border: 1px solid #F1D39B;
+  color: #9A6410;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+
+}
+
+// Read-only: no remove button, so even padding on both sides.
+.benChipRO { padding-right: 10px; }
+
+.benChipX {
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: #9A6410;
+
+  &:hover { background: #F6E3BE; }
+}
+
+// Settings dropdowns: same height, radius and border as the inputs next to them.
+.stack button[role="combobox"] {
+  height: 42px;
+  border-radius: 10px;
+  border-color: #DDE1E6;
+  font-size: 14px;
+
+  &:hover:enabled { border-color: #C5CBD3; box-shadow: none; }
+  &:focus { border-color: $gold; box-shadow: 0 0 0 3px rgba(230, 169, 60, .18); }
 }
 
 // Checkbox box (used by "Sign out of all other devices").
 .bCheck {
-  width: 17px;
-  height: 17px;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
   border-radius: 5px;
-  border: 1.5px solid $line;
+  border: 1.5px solid $gold;
+  background: $white;
   display: grid;
   place-items: center;
   flex: none;
-  transition: .15s;
+  transition: background-color .15s;
 
-  svg { width: 11px; height: 11px; color: #fff; opacity: 0; }
+  svg { width: 12px; height: 12px; color: #fff; opacity: 0; }
 
   &.checked {
-    background: linear-gradient(135deg, $gold-2, $gold);
-    border-color: $gold;
+    background: $gold;
 
     svg { opacity: 1; }
   }
@@ -2172,106 +2717,131 @@ $red-deep: #b53e3e;
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: .86rem;
-  color: $slate;
-  background: $paper-2;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: #475569;
+  background: $white;
   border: 1px solid $line;
-  border-radius: $r-sm;
-  padding: .7em 1em;
+  border-radius: 14px;
+  padding: 12px 16px;
 }
 
 // ===== Team management =====
-.youTag {
-  font-size: .72rem;
-  font-weight: 600;
-  color: $slate;
-  margin-left: 6px;
+.teamIntro {
+  margin: 0 0 14px;
+  font-size: 13.5px;
+  line-height: 20px;
+  color: #475569;
 }
 
-.teamMeta {
-  font-size: .76rem;
-  color: $slate-2;
-  margin-top: 2px;
-
-  &.expired { color: $red; }
-}
-
-// Seat usage line on the owner's invite card.
-.seatInfo {
+// Seats used, beside the Team members title (owner only).
+.seatMeter {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: .84rem;
-  color: $slate;
-  background: $paper-2;
-  border: 1px solid $line;
-  border-radius: $r-sm;
-  padding: .65em .9em;
-  margin-bottom: 14px;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border: 1px solid #E9ECF0;
+  border-radius: 999px;
+  background: #FAFBFC;
+  font-size: 13px;
+  line-height: 18px;
+  color: #3D4652;
+  white-space: nowrap;
 
-  svg { flex: none; margin-top: 2px; }
-  b { color: $ink; font-weight: 600; }
-
-  &.full { background: $red-bg; border-color: transparent; color: $red; }
+  b { font-weight: 700; color: $ink; }
 }
 
-.teamAction {
-  font-size: .8rem;
-  font-weight: 600;
-  color: $gold-deep;
-  padding: 6px 8px;
-  border-radius: 8px;
-  transition: .15s;
+.seatDots {
+  display: flex;
+  gap: 3px;
 
-  &:hover:not(:disabled) { background: $amber-bg; }
-  &:disabled { opacity: .55; cursor: default; }
+  span {
+    width: 14px;
+    height: 8px;
+    border-radius: 4px;
+    background: #E2E6EB;
+  }
+
+  .seatOn { background: $gold; }
+}
+
+// Many seats (51+ employees): thinner dots so the meter stays short.
+.seatDotsMany span { width: 7px; }
+
+.memberList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #E9ECF0;
+  border-radius: 14px;
 }
 
 .teamRow {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 0;
-  border-top: 1px solid $line;
+  padding: 12px 16px;
 
-  // The card header's divider already separates the first member.
-  &:first-of-type,
-  .secHead + & { border-top: none; padding-top: 0; }
+  & + & { border-top: 1px solid #F1F3F6; }
 }
 
 .teamAvatar {
   width: 40px;
   height: 40px;
+  box-sizing: border-box;
   border-radius: 50%;
-  background: $mist;
+  background: #F1F3F6;
   color: $ink;
   display: grid;
   place-items: center;
   font-weight: 700;
-  font-size: .85rem;
+  font-size: 14px;
   flex: none;
 
-  &.owner { background: linear-gradient(135deg, $gold-2, $gold); color: #241704; }
+  &.owner { background: $gold; color: #3B2606; font-weight: 800; }
+
+  // Invited, not joined yet: an envelope in a dashed circle.
+  &.invited { background: transparent; border: 1.5px dashed #CBD2DA; color: $slate-2; }
 }
 
 .teamInfo { flex: 1; min-width: 0; }
 
+// A long name/email gets the "…", while "(you)" after it always stays in view.
 .teamName {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
   font-weight: 600;
-  font-size: .92rem;
+  font-size: 14px;
+  line-height: 20px;
   color: $ink;
+}
+
+.teamNameText {
+  min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.teamEmail {
-  font-size: .8rem;
-  color: $slate;
+.youTag {
+  flex: none;
+  font-weight: 400;
+  color: $slate-2;
+  margin-left: 4px;
+}
+
+.teamEmail,
+.teamMeta {
+  font-size: 12.5px;
+  line-height: 16px;
+  color: #6B7482;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.teamMeta.expired { color: #B42318; }
 
 .teamBadges {
   display: flex;
@@ -2292,68 +2862,266 @@ $red-deep: #b53e3e;
   }
 }
 
-.roleBadge {
-  font-size: .74rem;
+.roleBadge,
+.statusBadge {
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 99px;
-  background: $mist;
-  color: $ink;
+  white-space: nowrap;
+}
 
-  &.owner { background: $amber-bg; color: $gold-deep; }
+.roleBadge {
+  background: #F1F3F6;
+  color: #3D4652;
+
+  &.owner { background: #FDF3E1; color: #9A6410; font-weight: 700; }
 }
 
 .statusBadge {
-  font-size: .72rem;
-  font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 99px;
+  &.active {
+    background: #E7F4EC;
+    color: #1C6B45;
 
-  &.active { background: $green-bg; color: $green; }
-  &.pending { background: $blue-bg; color: $blue; }
-  &.expired { background: $red-bg; color: $red; }
+    &::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #2E9E63;
+    }
+  }
+
+  &.pending { background: #FFF6E5; color: #9A6410; }
+  &.expired { background: #FDECEC; color: #B42318; }
 }
 
+.teamAction {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #9A6410;
+  transition: background-color .15s;
+
+  &:hover:not(:disabled) { background: #FDF3E1; }
+  &:disabled { opacity: .5; cursor: default; }
+}
+
+// Square icon buttons in a member row (resend, cancel, remove).
+.teamIconBtn,
 .teamRemove {
-  color: $slate;
   width: 32px;
   height: 32px;
   border-radius: 8px;
   display: grid;
   place-items: center;
   flex: none;
-  transition: .15s;
+  color: #3D4652;
+  transition: background-color .15s, color .15s;
 
-  &:hover { background: $red-bg; color: $red; }
+  &:hover:not(:disabled) { background: #EEF0F3; color: $ink; }
+  &:disabled { opacity: .5; cursor: default; }
 }
 
-.inviteRow {
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
+.teamRemove:hover:not(:disabled) { background: #FDECEC; color: #B42318; }
 
-  .field { flex: 1; margin-bottom: 0; }
+.inviteRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 170px auto;
+  gap: 10px;
+  align-items: end;
+
+  .field { margin-bottom: 0; }
 
   @media (max-width: 620px) {
-    flex-direction: column;
-    align-items: stretch;
+    grid-template-columns: 1fr;
   }
 }
 
+// The only role an invite can have — shown like a locked field.
 .roleStatic {
-  width: 100%;
-  border: 1.5px solid $line;
-  background: $paper-2;
-  border-radius: $r-sm;
-  padding: .74em .9em;
-  font-size: .9rem;
-  color: $ink;
+  position: relative;
+  height: 42px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 0 38px 0 12px;
+  border: 1px dashed #D5DAE0;
+  border-radius: 10px;
+  background: #F6F7F9;
+  font-size: 14px;
+  color: #475569;
 }
 
 .emptyTeam {
-  font-size: .86rem;
-  color: $slate;
-  padding: 6px 0 2px;
+  font-size: 13.5px;
+  color: #5B6573;
+  padding: 14px 16px;
+}
+
+// Green "done" line (invite sent, passwords match).
+.okMsg {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: #1C6B45;
+
+  svg { flex: none; }
+}
+
+// All seats taken.
+.seatFull {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: #FDF3E1;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 18px;
+  color: #7A4E0A;
+
+  svg { flex: none; }
+}
+
+.bullets {
+  margin: 14px 0 0;
+  padding: 12px 14px 12px 34px;
+  background: #F6F7F9;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 20px;
+  color: #475569;
+  list-style: disc;
+}
+
+// ===== Gold and red-outline buttons (Send invite, Update password, Delete account…) =====
+.btnGold {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px 0 16px;
+  border: 0;
+  border-radius: 10px;
+  background: $gold;
+  color: #3B2606;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background-color .15s ease, color .15s ease;
+
+  &:hover:not(:disabled) { background: $gold-deep; color: $white; }
+  &:disabled { opacity: .45; cursor: not-allowed; }
+}
+
+.btnRedGhost {
+  flex: none;
+  height: 38px;
+  padding: 0 14px;
+  border: 1px solid #F1C4C4;
+  border-radius: 10px;
+  background: $white;
+  color: #B42318;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 600;
+  transition: background-color .15s, border-color .15s;
+
+  &:hover { background: #FDECEC; border-color: #D14343; }
+}
+
+// ===== Account → Data and security =====
+.pwStrength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.pwBars {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+
+  span {
+    flex: 1;
+    height: 5px;
+    border-radius: 3px;
+    background: #E2E6EB;
+  }
+}
+
+.pwLevel {
+  font-size: 12.5px;
+  line-height: 16px;
+  font-weight: 600;
+}
+
+.pwFoot {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.dangerBox {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #F3C7C7;
+  border-radius: 14px;
+  background: #FFF7F7;
+
+  @media (max-width: 560px) { flex-wrap: wrap; }
+}
+
+.dangerIcon {
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #FDECEC;
+  color: #B42318;
+  display: grid;
+  place-items: center;
+}
+
+.dangerText {
+  flex: 1;
+  min-width: 0;
+
+  b {
+    display: block;
+    font-size: 14px;
+    line-height: 20px;
+    font-weight: 700;
+    color: #7A1D14;
+  }
+
+  span {
+    display: block;
+    margin-top: 2px;
+    font-size: 13px;
+    line-height: 18px;
+    color: #8B3A32;
+  }
 }
 
 // ===== Preview legal info =====

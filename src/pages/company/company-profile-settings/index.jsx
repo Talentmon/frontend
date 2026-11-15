@@ -79,25 +79,25 @@ const CompanyProfileSettings = () => {
       id: 'company',
       name: 'Company information',
       icon: 'Building2',
-      description: 'Basic details and contact information'
+      description: 'Profile and payments'
     },
     {
       id: 'team',
       name: 'Team',
       icon: 'Users',
-      description: 'Members and invitations'
+      description: 'Members and invites'
     },
     {
       id: 'reputation',
-      name: 'Reputation management',
+      name: 'Reputation',
       icon: 'Star',
-      description: 'Ratings, reviews, and statistics'
+      description: 'Ratings and reviews'
     },
     {
       id: 'preferences',
       name: 'Account settings',
       icon: 'Settings',
-      description: 'Time zone and security'
+      description: 'Login, security, time zone'
     }
   ];
 
@@ -227,10 +227,17 @@ const CompanyProfileSettings = () => {
             fireToast={fireToast}
             errors={fieldErrors}
             readOnly={!isCompanyOwner}
+            onOpenAccount={() => setActiveTab('preferences')}
           />
         );
       case 'team':
-        return <TeamManagementTab fireToast={fireToast} onOwnershipTransferred={handleOwnershipTransferred} />;
+        return (
+          <TeamManagementTab
+            fireToast={fireToast}
+            onOwnershipTransferred={handleOwnershipTransferred}
+            onOpenAccount={() => setActiveTab('preferences')}
+          />
+        );
       case 'reputation':
         return <ReputationManagementTab reputationData={reputationData} />;
       case 'preferences':

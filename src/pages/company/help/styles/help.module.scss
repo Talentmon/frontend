@@ -1029,6 +1029,13 @@ $two-col-from: 981px;
     font-size: .92rem;
     line-height: 1.6;
     color: rgba(255, 255, 255, .7);
+
+    // "Your suggestions"
+    a {
+      color: $gold-2;
+      font-weight: 600;
+      &:hover { text-decoration: underline; }
+    }
   }
 
   @media (max-width: 680px) { padding: 22px 18px; }

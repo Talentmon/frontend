@@ -38,17 +38,19 @@ const REQUIRED_FIELDS = [
   'Country',
   'Address',
   'Short description',
+  'Salary view',
+  'Payment currency',
 ];
 
 const FILTER_GROUPS = [
   { name: 'Basic search', text: 'Position and location' },
-  { name: 'Salary', text: 'Range for the candidate’s minimum salary (net per month), in the currency you pick' },
+  { name: 'Salary', text: 'Range for the candidate’s salary minimum: net or gross, per month or per year, typed in the currency you pick' },
   { name: 'Experience & education', text: 'Years of experience and highest education' },
   { name: 'Skills', text: 'Skill categories and specific skills' },
   { name: 'Languages', text: 'Languages, each with a minimum level' },
   { name: 'Industry', text: 'Industry, then subindustry' },
   { name: 'Certifications', text: 'Any certification, or by issuer, family or exact name' },
-  { name: 'Status & preferences', text: 'Actively searching or open to offers, job type, notice period, relocation and business travel' },
+  { name: 'Status & preferences', text: 'Actively searching or open to offers, job type, work mode, notice period, relocation and business travel' },
 ];
 
 const PIPELINE = [
@@ -205,7 +207,7 @@ const CompanyHelp = () => {
           <p className={styles.heroText}>
             You describe the person you're looking for with filters, see only the candidates who match, and contact
             them yourself. Every candidate here has a profile because they're open to new opportunities. Profiles stay
-            anonymous until you unlock them: you see experience, skills, minimum salary and availability, but not
+            anonymous until you unlock them: you see experience, skills, salary minimum and availability, but not
             the name, photo, contact details or employers. When a profile looks right, unlock it for one Credit and
             reach out.
           </p>
@@ -300,6 +302,11 @@ const CompanyHelp = () => {
                   <ul className={styles.bullets}>
                     <li><b>Company email</b> is your login email and is filled in for you.</li>
                     <li><b>Short description</b> has room for 200 characters. Candidates read it first, so make it count.</li>
+                    <li>
+                      <b>Salary view</b> sets how your team sees candidates' salaries: net or gross, per month or per
+                      year, and the currency of the salary filter (see <b>Salaries</b> under Search).
+                    </li>
+                    <li><b>Payment currency</b> is the currency your card is charged in when you buy Credits (see Credits).</li>
                   </ul>
                 </div>
                 <Figure
@@ -355,7 +362,7 @@ const CompanyHelp = () => {
                   { icon: 'Infinity', title: 'Credits never expire', text: 'Buy once and use them whenever you need them.' },
                   { icon: 'Users', title: 'One balance for the team', text: 'Everyone on your team can buy Credits and spends from the same balance. It is always shown in the top bar.' },
                   { icon: 'Bookmark', title: 'Bonus bookmark slots', text: 'Larger packages add extra bookmark slots for 6 months. The bonus is shown on each package.' },
-                  { icon: 'Wallet', title: 'Your currency', text: "Prices include VAT and are shown in your company's billing currency (EUR, USD, GBP or CNY), set under Account settings." },
+                  { icon: 'Wallet', title: 'Prices in EUR', text: "Prices are in euros and include VAT. Your card is charged in your payment currency (Company information → Payments). If that isn't EUR, Paddle converts the price at the day's rate, and the Purchase tab and checkout tell you so. History always shows EUR." },
                   { icon: 'History', title: 'History', text: 'Every purchase and unlock, grouped by day, with totals at the top and Export CSV. With a team, it shows who made each one.' },
                   { icon: 'BarChart3', title: 'Analytics', text: 'Hire rate, cost per hire and time to hire, where your unlocked candidates are now, and what each team member unlocked.' },
                 ]}
@@ -454,6 +461,28 @@ const CompanyHelp = () => {
                 </p>
               </div>
 
+              <div className={styles.subTitle}>Salaries</div>
+              <div className={styles.prose}>
+                <p>
+                  Candidates give their salary minimum both net and gross. Your team sees it the way your company set
+                  under <b>Salary view</b> in Company information, for example net per month, and the line above the
+                  results says which: “Found 24 candidates · Salaries: net per month”. Cards and CVs always show the
+                  amount in the candidate's own currency.
+                </p>
+                <ul className={styles.bullets}>
+                  <li>
+                    Switch between net and gross, or per month and per year, in the <b>Salary</b> filter. The switch
+                    holds on Search, Bookmarked and Purchased until you close the tab or sign out, then your company's
+                    setting applies again.
+                  </li>
+                  <li>
+                    The filter's range is typed in the currency you pick there and compared with each candidate's
+                    salary at today's exchange rate, updated daily.
+                  </li>
+                  <li>Sorting by salary follows the same view.</li>
+                </ul>
+              </div>
+
               <div className={styles.subTitle}>Reading a candidate card</div>
               <div className={`${styles.split} ${styles.splitCard}`}>
                 <Figure
@@ -467,7 +496,7 @@ const CompanyHelp = () => {
                   <div className={styles.seeHide}>
                     <div className={styles.see}>
                       <span className={styles.seeHead}><Icon name="Eye" size={15} />What you see</span>
-                      Status (actively searching or open to offers), position, years of experience, minimum salary,
+                      Status (actively searching or open to offers), position, years of experience, salary minimum,
                       location, work arrangement, notice period, top skills and a short summary.
                     </div>
                     <div className={styles.hide}>
@@ -576,9 +605,12 @@ const CompanyHelp = () => {
                     confirmation shows the price and what your balance will be afterwards.
                   </p>
                   <Callout tone="gold" icon="Scale" title="The salary clause">
-                    By unlocking, you accept that <b>the salary the candidate entered is the minimum you'll offer
-                    them</b>. That's what makes candidates trust the platform, and after a hire they're asked whether it
-                    was honored (see Reputation).
+                    By unlocking, you accept that <b>the salary minimum the candidate entered is the lowest you'll
+                    offer them</b>. The confirmation names both amounts, the one your team sees first, for example
+                    “€1,500 net / month (€2,100 gross / month)”, and they're kept with the unlock even if the candidate
+                    changes their profile later. If net and gross don't match, offering at least the gross amount meets
+                    the clause. That's what makes candidates trust the platform, and after a hire they're asked whether
+                    it was honored (see Reputation).
                   </Callout>
                   <div className={styles.subTitle}>After you unlock</div>
                   <ul className={styles.checks}>
@@ -633,7 +665,7 @@ const CompanyHelp = () => {
                       { icon: 'Mail', title: 'Contact', text: 'Email and phone with a copy button (click to write or call), and a link to their LinkedIn.' },
                       { icon: 'FileText', title: 'Open CV', text: 'The full CV, with Send email and Print. Choose "Save as PDF" in the print dialog to keep a PDF.' },
                       { icon: 'Download', title: 'Download CV', text: 'Saves a copy of the CV to your computer.' },
-                      { icon: 'Pencil', title: 'Notes', text: 'The same notes as on Saved. Each shows who wrote it and when; your whole team sees them and can edit them.' },
+                      { icon: 'Pencil', title: 'Notes', text: 'The same notes as on Bookmarked. Each shows who wrote it and when; your whole team sees them and can edit them.' },
                       { icon: 'Route', title: 'Hire tracking', text: 'The bar at the bottom shows the current status. Open it and click a pill to change it.' },
                       { icon: 'Briefcase', title: 'Hiring for', text: 'The position you\'re considering them for: pick one you already use or type a new one. It fills in the hire form, and the pipeline can show one position at a time.' },
                       { icon: 'Unlock', title: 'Unlocked date', text: 'When the profile was unlocked, and by whom.' },
@@ -709,15 +741,16 @@ const CompanyHelp = () => {
                   <Steps
                     items={[
                       <>Go to <b>Company Profile → Team</b>.</>,
-                      <>Enter your colleague's email and click <b>Send</b>.</>,
+                      <>Enter your colleague's email and click <b>Send invite</b>.</>,
                       <>They get an email with a link to set their name and password. The link is valid for 7 days.</>,
                     ]}
                   />
                   <ul className={styles.bullets}>
                     <li>Each person can belong to only one company.</li>
                     <li>
-                      Only the account owner edits the company profile and billing currency, removes saved cards and
-                      changes the low balance alert, and can hand the account over to a teammate with <b>Make owner</b>.
+                      Only the account owner edits the company profile (including the salary view and payment
+                      currency), removes saved cards and changes the low balance alert, and can hand the account over
+                      to a teammate with <b>Make owner</b>.
                     </li>
                   </ul>
                 </div>
@@ -780,7 +813,7 @@ const CompanyHelp = () => {
                   <span className={styles.repIcon}><Icon name="ShieldCheck" size={18} /></span>
                   <b>The salary rule has teeth</b>
                   <p>
-                    They're asked whether the minimum salary from their profile was honored. If it wasn't, their overall
+                    They're asked whether the salary minimum from their profile was honored. If it wasn't, their overall
                     rating is capped at 3, no matter how perfect everything else was.
                   </p>
                 </div>
@@ -792,7 +825,7 @@ const CompanyHelp = () => {
               </div>
               <div className={styles.split}>
                 <div className={styles.prose}>
-                  <Path>Company Profile → Reputation management</Path>
+                  <Path>Company Profile → Reputation</Path>
                   <p>
                     Here you'll find your overall score, the star breakdown, how many candidates recommend you, and
                     every comment. The same ratings appear on your public company profile, which candidates look at
@@ -805,8 +838,8 @@ const CompanyHelp = () => {
                 </div>
                 <Figure
                   src="/help/reputation.webp"
-                  alt="Reputation management with overall score and ratings"
-                  caption="Your ratings under Reputation management."
+                  alt="Reputation tab with overall score and ratings"
+                  caption="Your ratings on the Reputation tab."
                   onZoom={setZoomed}
                 />
               </div>
@@ -820,6 +853,10 @@ const CompanyHelp = () => {
                 <p>
                   Can't find what you're looking for, or something doesn't work as described? Write to us and we'll get
                   back to you.
+                </p>
+                <p>
+                  Have an idea for Talentmon? Post it on <a href="/suggestions">Your suggestions</a> in the profile
+                  menu, where other companies can vote on it.
                 </p>
                 <div className={styles.legal}>
                   <a href="/terms-of-service" target="_blank" rel="noopener noreferrer">Terms of Service</a>

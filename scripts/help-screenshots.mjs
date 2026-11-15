@@ -8,7 +8,7 @@
 // It logs in as a test company and replaces the candidate, bookmark, purchase
 // and balance responses with the made-up people below, so every picture shows
 // the same fake data. All non-GET requests are blocked, so nothing is saved to
-// the database. "Match" facts are hidden until real matching exists.
+// the database. "Match" (facts and the cards' ring) is hidden until real matching exists.
 import { createRequire } from 'node:module';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -57,6 +57,15 @@ const CITY_COUNTRY = {
   'New York': 'United States', Austin: 'United States', Chicago: 'United States', Seattle: 'United States', Boston: 'United States',
   Toronto: 'Canada', Berlin: 'Germany', Amsterdam: 'Netherlands', Dublin: 'Ireland'
 };
+
+// All four amounts the backend sends for a net monthly salary, each also in EUR.
+function salaryFields(net) {
+  const gross = Math.round(net / 0.7 / 50) * 50;
+  const amounts = { NetMonth: net, GrossMonth: gross, NetYear: net * 12, GrossYear: gross * 12 };
+  return Object.fromEntries(
+    Object.entries(amounts).flatMap(([key, value]) => [[`salary${key}`, value], [`salary${key}BaseEur`, value]])
+  );
+}
 
 function candidate(spec) {
   const cid = `help-cand-${spec.key}`;
@@ -129,10 +138,11 @@ function candidate(spec) {
       candidateId: cid,
       mode: spec.mode,
       type: 'FULL_TIME',
+      // Net and gross like a real profile (gross ≈ net / 0.7), 12 salaries a year.
       salaryCurrency: 'EUR',
-      salaryAmount: spec.salary,
       salaryPeriod: 'MONTH',
-      salaryAmountBaseEur: spec.salary,
+      salariesPerYear: 12,
+      ...salaryFields(spec.salary),
       ...NOTICE[spec.notice],
       travelReady: !!spec.travel,
       relocationReady: !!spec.relocation,
@@ -394,8 +404,12 @@ const NEW_COMPANY = {
   workMode: null,
   flexibleHours: false,
   benefits: [],
+  salaryViewBasis: null,
+  salaryViewPeriod: null,
+  salaryViewCurrency: null,
+  paymentCurrency: null,
   profileComplete: false,
-  missingFields: ['foundedYear', 'industry', 'size', 'location', 'country', 'address', 'shortDescription'],
+  missingFields: ['foundedYear', 'industry', 'size', 'location', 'country', 'address', 'shortDescription', 'salaryViewBasis', 'salaryViewPeriod', 'salaryViewCurrency', 'paymentCurrency'],
 };
 
 const BASE_OVERRIDES = {
@@ -459,6 +473,8 @@ async function installApiMock(page) {
 async function hideMatch(page) {
   await page.addInitScript(() => {
     const hide = () => {
+      // The grid cards' match ring.
+      document.querySelectorAll('[class*="_scRing_"]').forEach((el) => { el.style.display = 'none'; });
       document.querySelectorAll('[class*="factK"]').forEach((el) => {
         if (el.textContent.trim().toLowerCase() !== 'match') return;
         const fact = el.closest('[class*="_fact_"]') || el.parentElement;
@@ -699,8 +715,8 @@ const SHOTS = {
   search: shotSearch,
   bookmarks: shotBookmarks,
   purchased: shotPurchased,
-  team: (p) => shotSettingsTab(p, 'Team', 'Invite member', 'team'),
-  reputation: (p) => shotSettingsTab(p, 'Reputation management', 'Overall reputation', 'reputation'),
+  team: (p) => shotSettingsTab(p, 'Team', 'Invite a teammate', 'team'),
+  reputation: (p) => shotSettingsTab(p, 'Reputation', 'Overall reputation', 'reputation'),
 };
 const only = process.env.HELP_SHOTS_ONLY?.split(',').map((name) => name.trim());
 

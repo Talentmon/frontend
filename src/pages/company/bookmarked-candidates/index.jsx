@@ -4,6 +4,7 @@ import Header from 'components/ui/Header';
 import BookmarkedCandidatesHeader from './components/BookmarkedCandidatesHeader';
 import BookmarkedCandidatesFilters from './components/BookmarkedCandidatesFilters';
 import BookmarkedFilterSidebar from './components/BookmarkedFilterSidebar';
+import CvSide from '../candidate-filters/CvSide';
 import BookmarkedResultsBar from './components/BookmarkedResultsBar';
 import BulkActionsToolbar from './components/BulkActionsToolbar';
 import BookmarkedCandidatesGrid from './components/BookmarkedCandidatesGrid';
@@ -506,14 +507,14 @@ const BookmarkedCandidatesPage = () => {
           <EmptyBookmarksState onSearchCandidates={handleSearchCandidates} />
         ) : isCompact ? (
           <div className={cf.cvLayout}>
-            <div className={cf.cvSide}>
+            <CvSide>
               <BookmarkedFilterSidebar
                 filters={filters}
                 onFiltersChange={handleFiltersChange}
                 opts={filterOpts}
                 recruiterOptions={recruiterOptions}
               />
-            </div>
+            </CvSide>
             <div className={cf.cvResults}>
               <ListSearch
                 id="bm-search"

@@ -11,6 +11,7 @@ import PurchasedFilters, { AttentionChip } from './components/PurchasedFilters';
 import { ListSearch } from '../candidate-filters/CandidateFilterBar';
 import { CV_PUSH_BREAKPOINT, useMinWidth } from '../candidate-filters/cvLayout';
 import PurchasedFilterSidebar from './components/PurchasedFilterSidebar';
+import CvSide from '../candidate-filters/CvSide';
 import PurchasedResultsBar from './components/PurchasedResultsBar';
 import FeedbackModal from './components/FeedbackModal';
 import CandidatePreviewDrawer from '../candidate-search-dashboard/components/CandidatePreviewDrawer';
@@ -401,9 +402,9 @@ const PurchasedProfiles = () => {
 
           {isCompact ? (
             <div className={cf.cvLayout}>
-              <div className={cf.cvSide}>
+              <CvSide>
                 <PurchasedFilterSidebar filters={filters} onFiltersChange={setFilters} profiles={purchasedProfiles} />
-              </div>
+              </CvSide>
               <div className={cf.cvResults}>{results}</div>
             </div>
           ) : results}

@@ -118,20 +118,35 @@ main.cvMain {
   }
 }
 
+// The page's bottom padding (.page in bookmarked/purchased.module.scss).
+$page-bottom: 70px;
+
 // The filters column takes what's left (up to Search's 320px) beside the card.
+// --side-top: where the filters stick, under the site header (as on Search).
+// --side-gap: what's left under the filters card, above the window's bottom edge.
 .cvLayout {
+  --side-top: 84px;
+  --side-gap: 20px;
   display: grid;
   grid-template-columns: minmax(0, 320px) 448px;
   justify-content: end;
   align-items: start;
   column-gap: 22px;
+  // As tall as the stuck filters at least, so their growing (CvSide) never
+  // changes how far the page scrolls.
+  min-height: calc(100dvh - var(--side-top) - var(--side-gap));
+  // The page's bottom padding moves inside, under the cards (.cvResults): with
+  // only --side-gap left below, the end of the page never pushes the stuck
+  // filters up under the header.
+  margin-bottom: calc(var(--side-gap) - #{$page-bottom});
 }
 
 // The filters stay in view while the cards scroll (Search's sticky sidebar).
+// CvSide sets the max-height as the page scrolls; this is the stuck one.
 .cvSide {
   position: sticky;
-  top: 84px;
-  max-height: calc(100dvh - 104px);
+  top: var(--side-top);
+  max-height: calc(100dvh - var(--side-top) - var(--side-gap));
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -139,6 +154,7 @@ main.cvMain {
 
 .cvResults {
   min-width: 0;
+  padding-bottom: calc(#{$page-bottom} - var(--side-gap));
 }
 
 .cvSearch {

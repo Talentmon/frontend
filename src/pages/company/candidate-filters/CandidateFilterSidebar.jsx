@@ -9,8 +9,8 @@ import { useSalaryView } from 'lib/salaryView';
 // Search's groups (FilterSidebar.jsx), with the fields Bookmarked and Purchased share.
 const SIDE_GROUPS = [
   { id: 'location', title: 'Location', keys: ['location'] },
-  { id: 'experience', title: 'Experience & Education', keys: ['experience', 'education'] },
   { id: 'salary', title: 'Salary', keys: ['salary'] },
+  { id: 'experience', title: 'Experience & Education', keys: ['experience', 'education'] },
   { id: 'skills', title: 'Skills', keys: ['skills'] },
   { id: 'languages', title: 'Languages', keys: ['languages'] },
   { id: 'industry', title: 'Industry', keys: ['industry'] },

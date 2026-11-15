@@ -97,18 +97,18 @@ const FILTER_GROUPS = [
     ]
   },
   {
+    id: 'salary',
+    title: 'Salary',
+    fields: [
+      { key: 'salary', type: 'salaryRange' }
+    ]
+  },
+  {
     id: 'experience',
     title: 'Experience & Education',
     fields: [
       { key: 'experience', type: 'select', label: 'Experience Level', placeholder: 'Select experience', options: experienceOptions },
       { key: 'education', type: 'select', label: 'Education', placeholder: 'Select education', options: educationOptions }
-    ]
-  },
-  {
-    id: 'salary',
-    title: 'Salary',
-    fields: [
-      { key: 'salary', type: 'salaryRange' }
     ]
   },
   {

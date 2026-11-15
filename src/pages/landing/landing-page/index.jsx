@@ -13,6 +13,7 @@ const PLANS = [
   { name: 'Agency', credits: 100, price: '€1,829', perUnlock: '€18.29', save: 26, bonus: 20 },
 ];
 
+// The Hire tracking stages on a Purchased card.
 const STATUS_OPTIONS = [
   { value: 'new', label: 'New' },
   { value: 'contacted', label: 'Contacted' },
@@ -20,6 +21,20 @@ const STATUS_OPTIONS = [
   { value: 'hired', label: 'Hired' },
   { value: 'rejected', label: 'Rejected' }
 ];
+
+const SUPPORT_EMAIL = 'talentmon.app@gmail.com';
+
+// The demo card's match ring, drawn like the one on the Search cards.
+const RING_R = 26;
+const RING_C = 2 * Math.PI * RING_R;
+const DEMO_MATCH = 94;
+
+// "15 Nov 2026", the date format of the company pages.
+const shortDate = (date) => (
+  date ? date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : ''
+);
+
+const COPIED_MS = 1600;
 
 const LandingPage = () => {
   const [navOpen, setNavOpen] = useState(false);
@@ -33,25 +48,16 @@ const LandingPage = () => {
   const [bookmarkedDate, setBookmarkedDate] = useState(null);
   const [bookmarkMsg, setBookmarkMsg] = useState('');
   const [isNotesOpen, setIsNotesOpen] = useState(false);
-  const [notes, setNotes] = useState('');
-  const [isEditingNotes, setIsEditingNotes] = useState(true);
+  // Notes like the company pages keep them: a list, each "You, just now".
+  const [notes, setNotes] = useState([]);
+  const [noteDraft, setNoteDraft] = useState('');
+  const [editingNoteId, setEditingNoteId] = useState(null);
   const [recruitmentStatus, setRecruitmentStatus] = useState('new');
-  const [isStatusOpen, setIsStatusOpen] = useState(false);
+  const [isTrackingOpen, setIsTrackingOpen] = useState(false);
+  const [copied, setCopied] = useState(null);
   const rootRef = useRef(null);
-  const statusRef = useRef(null);
-  const notesTextareaRef = useRef(null);
   const bookmarkMsgTimeoutRef = useRef(null);
-
-  useEffect(() => {
-    if (!isStatusOpen) return undefined;
-    const handleOutsideClick = (e) => {
-      if (statusRef.current && !statusRef.current.contains(e.target)) {
-        setIsStatusOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleOutsideClick);
-    return () => document.removeEventListener('mousedown', handleOutsideClick);
-  }, [isStatusOpen]);
+  const copiedTimeoutRef = useRef(null);
 
   useEffect(() => {
     const nodes = rootRef.current?.querySelectorAll('.fx') || [];
@@ -73,6 +79,7 @@ const LandingPage = () => {
   const handleUnlock = () => {
     if (revealed) return;
     setRevealed(true);
+    setIsNotesOpen(false);
     setFlashing(true);
     setBalance((b) => Math.max(b - 1, 0));
     setUnlockedDate(new Date());
@@ -100,91 +107,124 @@ const LandingPage = () => {
   useEffect(() => () => {
     if (bookmarkMsgTimeoutRef.current) clearTimeout(bookmarkMsgTimeoutRef.current);
     if (balanceBumpTimeoutRef.current) clearTimeout(balanceBumpTimeoutRef.current);
+    if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
   }, []);
 
-  const handleBookmarkToggle = () => {
-    if (!bookmarked) {
-      setBookmarked(true);
-      setBookmarkedDate(new Date());
-      showBookmarkMsg('Saved to bookmark');
-    } else {
-      setIsNotesOpen((v) => !v);
-    }
+  // Once saved, the bookmark button becomes the notes pencil (notesButton).
+  const handleBookmark = () => {
+    setBookmarked(true);
+    setBookmarkedDate(new Date());
+    showBookmarkMsg('Saved to Bookmarked');
   };
 
   const handleRemoveBookmark = () => {
     setBookmarked(false);
     setBookmarkedDate(null);
     setIsNotesOpen(false);
-    showBookmarkMsg('Removed from bookmark');
+    showBookmarkMsg('Removed from Bookmarked');
   };
 
-  useEffect(() => {
-    if (isEditingNotes && notesTextareaRef.current) {
-      notesTextareaRef.current.style.minHeight = `${notesTextareaRef.current.offsetHeight}px`;
+  const handleSaveNote = () => {
+    const text = noteDraft.trim();
+    if (!text) return;
+    if (editingNoteId) {
+      setNotes((list) => list.map((note) => (note.id === editingNoteId ? { ...note, text, edited: true } : note)));
+    } else {
+      setNotes((list) => [...list, { id: Date.now(), text }]);
     }
-  }, [isEditingNotes, revealed, bookmarked]);
-
-  const handleSaveNotes = () => {
-    if (!notes.trim()) return;
-    setIsEditingNotes(false);
+    setNoteDraft('');
+    setEditingNoteId(null);
   };
 
-  const handleDeleteNotes = () => {
-    setNotes('');
-    setIsEditingNotes(true);
+  const handleEditNote = (note) => {
+    setEditingNoteId(note.id);
+    setNoteDraft(note.text);
   };
 
-  const handleCopy = (value) => {
-    navigator.clipboard?.writeText(value);
+  const handleCancelEdit = () => {
+    setEditingNoteId(null);
+    setNoteDraft('');
   };
 
-  const formatUnlockedDate = (date) => (
-    date ? date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }) : ''
+  const handleDeleteNote = (id) => {
+    setNotes((list) => list.filter((note) => note.id !== id));
+    if (editingNoteId === id) handleCancelEdit();
+  };
+
+  const handleCopy = (key, value) => {
+    navigator.clipboard?.writeText(value)?.catch(() => {});
+    setCopied(key);
+    if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+    copiedTimeoutRef.current = setTimeout(() => setCopied(null), COPIED_MS);
+  };
+
+  const currentStage = STATUS_OPTIONS.find((opt) => opt.value === recruitmentStatus);
+
+  const notesButton = (className) => (
+    <button
+      type="button"
+      className={`${className}${notes.length ? ' on' : ''}${isNotesOpen ? ' open' : ''}`}
+      onClick={() => setIsNotesOpen((v) => !v)}
+      aria-label={isNotesOpen ? 'Close notes' : 'Notes'}
+      aria-expanded={isNotesOpen}
+    >
+      <Icon name="Pencil" size={17} />
+      {notes.length > 0 && <span className="tc-count">{notes.length}</span>}
+    </button>
   );
 
   const notesPanel = (
     <div className={`tc-notes-wrap${isNotesOpen ? ' open' : ''}`}>
       <div className="tc-notes-inner">
         <div className="tc-notes">
-          {isEditingNotes ? (
-            <>
-              <textarea
-                ref={notesTextareaRef}
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Add a note about the candidate..."
-                className="tc-notes-textarea"
-                rows={3}
-              />
-              <button
-                type="button"
-                className="tc-notes-save"
-                onClick={handleSaveNotes}
-                disabled={!notes.trim()}
-              >
-                <Icon name="Check" size={14} />
-                Save
-              </button>
-            </>
-          ) : (
-            <>
-              <p className="tc-notes-text">{notes}</p>
-              <div className="tc-notes-actions">
-                <button type="button" className="tc-notes-edit" onClick={() => setIsEditingNotes(true)}>
-                  <Icon name="Pencil" size={13} />
-                  Edit
-                </button>
-                <button type="button" className="tc-notes-delete" onClick={handleDeleteNotes} aria-label="Delete note">
-                  <Icon name="X" size={15} />
-                </button>
-              </div>
-            </>
+          {notes.length > 0 && (
+            <ul className="tc-note-list" aria-label="Notes">
+              {notes.map((note) => (
+                <li key={note.id} className="tc-note">
+                  <p className="tc-note-text">{note.text}</p>
+                  <div className="tc-note-foot">
+                    <span>You, just now{note.edited ? ' · edited' : ''}</span>
+                    <span className="tc-note-btns">
+                      <button type="button" onClick={() => handleEditNote(note)} aria-label="Edit note">
+                        <Icon name="Pencil" size={14} />
+                      </button>
+                      <button type="button" onClick={() => handleDeleteNote(note.id)} aria-label="Delete note">
+                        <Icon name="Trash2" size={14} />
+                      </button>
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
+          <label className="tc-note-label" htmlFor="lpNote">{editingNoteId ? 'Edit note' : 'Note'}</label>
+          <textarea
+            id="lpNote"
+            value={noteDraft}
+            onChange={(e) => setNoteDraft(e.target.value)}
+            placeholder="Add a note about this candidate..."
+            className="tc-notes-textarea"
+            rows={3}
+          />
+          <div className="tc-note-actions">
+            {editingNoteId && (
+              <button type="button" className="tc-note-cancel" onClick={handleCancelEdit}>Cancel</button>
+            )}
+            <button type="button" className="tc-notes-save" onClick={handleSaveNote} disabled={!noteDraft.trim()}>
+              <Icon name="Check" size={14} />
+              Save note
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
+
+  const contactRows = [
+    { key: 'email', icon: 'Mail', label: 'Email', value: 'michael.carter@proton.me' },
+    { key: 'phone', icon: 'Phone', label: 'Phone', value: '+1 415 555 0142' },
+    { key: 'linkedin', icon: 'Linkedin', label: 'LinkedIn', value: 'linkedin.com/in/michaelcarter-dev', link: 'https://linkedin.com/in/michaelcarter-dev' },
+  ];
 
   return (
     <div className="lp" ref={rootRef}>
@@ -249,207 +289,186 @@ const LandingPage = () => {
           {/* SIGNATURE: interactive unlock card */}
           <div className="card-stage fx">
             <div className="balance" id="heroBalance"><span className="coin" />Credits <span id="balNum" className={balanceBump ? 'bump' : ''}>{balance}</span></div>
+            {/* The Search card, then the Bookmarked card once saved, then the Purchased card once unlocked. */}
             <div className={`talent-card${revealed ? ' revealed' : ''}${flashing ? ' flashing' : ''}`} id="heroCard">
               <span className="flash" />
 
-              {!revealed ? (
+              {revealed ? (
                 <div className="tc-top">
-                  {bookmarked && (
-                    <span className="tc-unlocked-tag"><Icon name="Bookmark" size={13} />Saved {formatUnlockedDate(bookmarkedDate)}</span>
-                  )}
-                  <div className="tc-top-right" style={!bookmarked ? { marginLeft: 'auto' } : undefined}>
-                    <span className="tc-badge"><span className="pulse" />Actively searching</span>
-                    {bookmarked && (
-                      <button
-                        type="button"
-                        className="tc-bookmark-remove"
-                        onClick={handleRemoveBookmark}
-                        title="Remove from saved"
-                        aria-label="Remove from saved"
-                      >
-                        <Icon name="X" size={16} />
-                      </button>
-                    )}
-                  </div>
+                  <span className="tc-top-note"><Icon name="Unlock" size={14} className="tc-top-unlock" />Unlocked on {shortDate(unlockedDate)}</span>
                 </div>
-              ) : (
+              ) : bookmarked && (
                 <div className="tc-top">
-                  <span className="tc-unlocked-tag"><Icon name="Unlock" size={13} />Unlocked {formatUnlockedDate(unlockedDate)}</span>
-                  <span className="tc-badge"><span className="pulse" />Available immediately</span>
+                  <span className="tc-top-note"><Icon name="Bookmark" size={14} className="tc-top-saved" />Saved on {shortDate(bookmarkedDate)}</span>
+                  <button
+                    type="button"
+                    className="tc-bookmark-remove"
+                    onClick={handleRemoveBookmark}
+                    title="Remove from Bookmarked"
+                    aria-label="Remove from Bookmarked"
+                  >
+                    <Icon name="X" size={18} />
+                  </button>
                 </div>
               )}
 
-              <div className="tc-identity">
+              <div className="tc-head">
                 <div className="tc-avatar">
-                  <span className="mono">MC</span>
-                  <span className="lock">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
-                  </span>
+                  {revealed ? (
+                    <span className="mono">MC</span>
+                  ) : (
+                    <>
+                      <Icon name="User" size={30} strokeWidth={1.6} />
+                      <span className="tc-lock"><Icon name="Lock" size={11} strokeWidth={2.6} /></span>
+                    </>
+                  )}
                 </div>
-                <div className="tc-namewrap">
-                  <span className="tc-name"><span className="tc-name-text">Michael Carter</span></span>
-                  <div className="tc-role">Senior React Engineer · 7 yrs</div>
+
+                <div className="tc-info">
+                  {revealed ? (
+                    <span className="tc-name">Michael Carter</span>
+                  ) : (
+                    <span className="tc-pills" aria-hidden="true"><i /><i /></span>
+                  )}
+                  <h3 className="tc-title">Senior React Engineer</h3>
+                  <div className="tc-meta">
+                    <span><Icon name="MapPin" size={14} />San Francisco</span>
+                    <span><Icon name="Laptop" size={14} />Remote</span>
+                  </div>
+                  <span className="tc-badge"><span className="pulse" />Actively searching</span>
                 </div>
-                {revealed && (
-                  <button
-                    type="button"
-                    className={`tc-notes-toggle${notes ? ' on' : ''}`}
-                    onClick={() => setIsNotesOpen((v) => !v)}
-                    aria-label="Notes"
-                    aria-expanded={isNotesOpen}
-                  >
-                    <Icon name="Pencil" size={16} />
-                  </button>
+
+                {revealed ? notesButton('tc-icon-btn tc-head-notes') : (
+                  <div className="tc-ring">
+                    <div className="tc-ring-dial">
+                      <svg viewBox="0 0 58 58" aria-hidden="true">
+                        <circle cx="29" cy="29" r={RING_R} className="tc-ring-track" />
+                        <circle
+                          cx="29"
+                          cy="29"
+                          r={RING_R}
+                          className="tc-ring-fill"
+                          strokeDasharray={RING_C}
+                          strokeDashoffset={RING_C * (1 - DEMO_MATCH / 100)}
+                        />
+                      </svg>
+                      <span className="tc-ring-value">{DEMO_MATCH}%</span>
+                    </div>
+                    <span className="tc-ring-label">Match</span>
+                  </div>
                 )}
               </div>
 
               {revealed && notesPanel}
 
-              <div className="tc-facts">
-                <div className="tc-fact">
-                  <span className="tc-fact-ic"><Icon name="Calendar" size={16} /></span>
-                  <span className="tc-fact-text"><span className="k">Experience</span><span className="v">7 yrs</span></span>
-                </div>
-                <div className="tc-fact">
-                  <span className="tc-fact-ic"><Icon name="CreditCard" size={16} /></span>
-                  <span className="tc-fact-text"><span className="k">Salary</span><span className="v">€78,000 / yr</span></span>
-                </div>
-                <div className="tc-fact">
-                  <span className="tc-fact-ic"><Icon name="MapPin" size={16} /></span>
-                  <span className="tc-fact-text"><span className="k">Location</span><span className="v">San Francisco</span></span>
-                </div>
-                <div className="tc-fact">
-                  <span className="tc-fact-ic"><Icon name="Building2" size={16} /></span>
-                  <span className="tc-fact-text"><span className="k">Work arrangement</span><span className="v">Remote</span></span>
-                </div>
-                <div className="tc-fact">
-                  <span className="tc-fact-ic"><Icon name="Clock" size={16} /></span>
-                  <span className="tc-fact-text"><span className="k">Notice period</span><span className="v">2 weeks</span></span>
-                </div>
-                <div className="tc-fact">
-                  <span className="tc-fact-ic"><Icon name="TrendingUp" size={16} /></span>
-                  <span className="tc-fact-text"><span className="k">Match</span><span className="v gold">94%</span></span>
-                </div>
+              <div className="tc-stats">
+                <div className="tc-stat"><span className="k">Salary minimum</span><span className="v">$150,000</span></div>
+                <div className="tc-stat"><span className="k">Experience</span><span className="v">7 years</span></div>
+                <div className="tc-stat"><span className="k">Notice period</span><span className="v">2 weeks</span></div>
               </div>
 
               <div className="tc-skills">
                 <span>React</span><span>TypeScript</span><span>Node.js</span><span>GraphQL</span>
-                <span className="tc-more">+2</span>
+                <span className="tc-more">+2 more</span>
               </div>
 
               <p className="tc-desc">Senior engineer with seven years building and scaling React/TypeScript front ends, most of it owning a shared component library end to end. Comfortable pairing with design and shipping across the stack when the team needs it.</p>
 
-              {revealed && (
-                <div className="tc-contact-box">
-                  <div className="tc-contact-head"><Icon name="Check" size={14} />Contact unlocked</div>
-                  <div className="tc-crow">
-                    <span className="tc-crow-ic"><Icon name="Mail" size={15} /></span>
-                    <div className="tc-crow-info">
-                      <span className="tc-crow-label">Email</span>
-                      <div className="tc-crow-value">michael.carter@proton.me</div>
-                    </div>
-                    <button type="button" className="tc-copy" onClick={() => handleCopy('michael.carter@proton.me')} aria-label="Copy email">
-                      <Icon name="Copy" size={13} />
-                    </button>
-                  </div>
-                  <div className="tc-crow">
-                    <span className="tc-crow-ic"><Icon name="Phone" size={15} /></span>
-                    <div className="tc-crow-info">
-                      <span className="tc-crow-label">Phone</span>
-                      <div className="tc-crow-value">+1 415 555 0142</div>
-                    </div>
-                    <button type="button" className="tc-copy" onClick={() => handleCopy('+1 415 555 0142')} aria-label="Copy phone">
-                      <Icon name="Copy" size={13} />
-                    </button>
-                  </div>
-                  <div className="tc-crow">
-                    <span className="tc-crow-ic"><Icon name="Linkedin" size={15} /></span>
-                    <div className="tc-crow-info">
-                      <span className="tc-crow-label">LinkedIn</span>
-                      <div className="tc-crow-value">/in/michaelcarter-dev</div>
-                    </div>
-                    <button type="button" className="tc-copy" onClick={() => window.open('https://linkedin.com/in/michaelcarter-dev', '_blank')} aria-label="Open LinkedIn">
-                      <Icon name="ExternalLink" size={13} />
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {revealed && (
-                <div className="tc-cv-row">
-                  <button type="button" className="tc-cv-open" onClick={scrollToReveal}>
-                    <Icon name="ExternalLink" size={15} />
-                    Open CV
-                  </button>
-                  <button type="button" className="tc-cv-download" aria-label="Print CV">
-                    <Icon name="Printer" size={15} />
-                  </button>
-                </div>
-              )}
-
-              {revealed && (
-                <div className={`tc-status tc-status-${recruitmentStatus}`} ref={statusRef}>
-                  <button
-                    type="button"
-                    className="tc-status-trigger"
-                    onClick={() => setIsStatusOpen((v) => !v)}
-                    aria-haspopup="listbox"
-                    aria-expanded={isStatusOpen}
-                  >
-                    <span className="tc-status-dot" />
-                    {STATUS_OPTIONS.find((opt) => opt.value === recruitmentStatus)?.label}
-                    <Icon name="ChevronDown" size={14} className={`tc-status-chevron${isStatusOpen ? ' open' : ''}`} />
-                  </button>
-                  {isStatusOpen && (
-                    <div className="tc-status-list" role="listbox">
-                      {STATUS_OPTIONS.map((opt) => (
-                        <div
-                          key={opt.value}
-                          role="option"
-                          aria-selected={opt.value === recruitmentStatus}
-                          className={`tc-status-item${opt.value === recruitmentStatus ? ' selected' : ''}`}
-                          onClick={() => {
-                            setRecruitmentStatus(opt.value);
-                            setIsStatusOpen(false);
-                          }}
-                        >
-                          {opt.label}
-                        </div>
+              {revealed ? (
+                <>
+                  <div className="tc-contact">
+                    <h4 className="tc-contact-title">Contact</h4>
+                    <ul className="tc-contact-list">
+                      {contactRows.map((row) => (
+                        <li key={row.key} className="tc-crow">
+                          <span className="tc-crow-ic"><Icon name={row.icon} size={16} /></span>
+                          <span className="tc-crow-info">
+                            <span className="tc-crow-label">{row.label}</span>
+                            <span className="tc-crow-value">{row.value}</span>
+                          </span>
+                          {row.link ? (
+                            <button type="button" className="tc-copy" onClick={() => window.open(row.link, '_blank', 'noopener')} aria-label="Open LinkedIn profile in a new tab">
+                              <Icon name="ExternalLink" size={16} />
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className={`tc-copy${copied === row.key ? ' copied' : ''}`}
+                              onClick={() => handleCopy(row.key, row.value)}
+                              aria-label={copied === row.key ? `${row.label} copied` : `Copy ${row.label.toLowerCase()}`}
+                            >
+                              <Icon name={copied === row.key ? 'Check' : 'Copy'} size={16} />
+                            </button>
+                          )}
+                        </li>
                       ))}
+                    </ul>
+                  </div>
+
+                  <div className="tc-actions-row tc-cv-row">
+                    <button type="button" className="tc-unlock" onClick={scrollToReveal}>
+                      <Icon name="FileText" size={18} />
+                      Open CV
+                    </button>
+                    <button type="button" className="tc-icon-btn" aria-label="Download CV" title="Download CV">
+                      <Icon name="Download" size={18} />
+                    </button>
+                  </div>
+
+                  {/* Hire tracking: a bar across the card's bottom; the pills set the stage. */}
+                  <div className="tc-track">
+                    <button
+                      type="button"
+                      className="tc-track-toggle"
+                      onClick={() => setIsTrackingOpen((v) => !v)}
+                      aria-expanded={isTrackingOpen}
+                      aria-controls="lpHireStages"
+                    >
+                      <Icon name="Route" size={16} className="tc-track-icon" />
+                      <span className="tc-track-label">Hire tracking</span>
+                      {!isTrackingOpen && <span className={`tc-stage s-${currentStage.value}`}>{currentStage.label}</span>}
+                      <Icon name="ChevronDown" size={16} strokeWidth={2.2} className={`tc-track-chevron${isTrackingOpen ? ' up' : ''}`} />
+                    </button>
+                    <div className={`tc-expand${isTrackingOpen ? ' open' : ''}`}>
+                      <div className="tc-expand-inner">
+                        <div id="lpHireStages" className="tc-stages" role="group" aria-label="Hire stage">
+                          {STATUS_OPTIONS.map((stage, index) => {
+                            const isCurrent = stage.value === recruitmentStatus;
+                            return (
+                              <React.Fragment key={stage.value}>
+                                {index > 0 && index < 4 && <Icon name="ChevronRight" size={12} strokeWidth={2.6} className="tc-stage-arrow" />}
+                                {index === 4 && <span className="tc-stage-or" aria-hidden="true">or</span>}
+                                <button
+                                  type="button"
+                                  className={`tc-stage s-${stage.value}${isCurrent ? ' on' : ''}`}
+                                  onClick={() => setRecruitmentStatus(stage.value)}
+                                  aria-pressed={isCurrent}
+                                >
+                                  {stage.label}
+                                </button>
+                              </React.Fragment>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
-
-              {revealed && (
-                <button type="button" className="tc-expand-toggle">
-                  Show more
-                  <Icon name="ChevronDown" size={15} />
-                </button>
-              )}
-
-              {!revealed && (
+                  </div>
+                </>
+              ) : (
                 <div className="tc-actions">
                   <div className="tc-actions-row">
                     <button className="tc-unlock" onClick={handleUnlock}>
                       <Icon name="Unlock" size={18} />
-                      Unlock · 1 credit
+                      Unlock profile
                     </button>
-                    <button type="button" className="tc-preview" aria-label="Preview CV" title="Preview CV" onClick={scrollToReveal}>
-                      <Icon name="Eye" size={16} />
+                    <button type="button" className="tc-icon-btn tc-preview" aria-label="Preview CV" title="Preview CV" onClick={scrollToReveal}>
+                      <Icon name="Eye" size={18} />
                     </button>
-                    <button
-                      type="button"
-                      className={`tc-bookmark${bookmarked ? ' on' : ''}`}
-                      onClick={handleBookmarkToggle}
-                      aria-label={bookmarked ? (isNotesOpen ? 'Close notes' : 'Open notes') : 'Bookmark candidate'}
-                      aria-expanded={bookmarked ? isNotesOpen : undefined}
-                    >
-                      <span className="tc-bookmark-icon-wrap">
-                        <Icon name="Bookmark" size={18} className="tc-bookmark-icon-a" />
-                        <Icon name="Pencil" size={18} className="tc-bookmark-icon-b" />
-                      </span>
-                    </button>
+                    {bookmarked ? notesButton('tc-icon-btn tc-bookmark') : (
+                      <button type="button" className="tc-icon-btn tc-bookmark" onClick={handleBookmark} aria-label="Bookmark candidate" title="Bookmark candidate">
+                        <Icon name="Bookmark" size={18} />
+                      </button>
+                    )}
                   </div>
                   {bookmarkMsg && <p className="tc-bookmark-msg">{bookmarkMsg}</p>}
                   {bookmarked && notesPanel}
@@ -476,7 +495,7 @@ const LandingPage = () => {
                 <h3>Search</h3>
                 <span className="step-num">01</span>
               </div>
-              <p>Filter the pool by skills, seniority, salary minimum, location, availability and other — instantly.</p>
+              <p>Filter the pool by skills, experience, salary minimum (net or gross), location, work mode and availability — instantly.</p>
             </div>
             <div className="step fx">
               <div className="step-head">
@@ -484,7 +503,7 @@ const LandingPage = () => {
                 <h3>Shortlist</h3>
                 <span className="step-num">02</span>
               </div>
-              <p>Bookmark up to 10 promising candidates, add notes, and compare them side by side before you commit a credit.</p>
+              <p>Bookmark promising candidates — 10 on your company list, plus 5 personal slots per teammate — and leave notes your whole team sees before you commit a credit.</p>
             </div>
             <div className="step fx">
               <div className="step-head">
@@ -492,7 +511,7 @@ const LandingPage = () => {
                 <h3>Unlock</h3>
                 <span className="step-num">03</span>
               </div>
-              <p>Spend one credit to reveal name, email, phone, LinkedIn, past employers and the full CV for printing. You decide who's worth it.</p>
+              <p>Spend one credit to reveal name, email, phone, LinkedIn, past employers and the full CV. By unlocking, you agree to offer at least the salary minimum they stated.</p>
             </div>
             <div className="step fx">
               <div className="step-head">
@@ -500,7 +519,7 @@ const LandingPage = () => {
                 <h3>Track</h3>
                 <span className="step-num">04</span>
               </div>
-              <p>Move each candidate through your pipeline — contacted, interview, offer, hired — in one view.</p>
+              <p>Move each candidate through your pipeline — new, contacted, interviewed, hired — and see your hire rate and cost per hire.</p>
             </div>
           </div>
         </div>
@@ -582,7 +601,7 @@ const LandingPage = () => {
                   <div><span className="k">Location</span><span className="v">San Francisco, USA</span></div>
                   <div><span className="k">Work mode</span><span className="v">Remote</span></div>
                   <div><span className="k">Type</span><span className="v">Full-time</span></div>
-                  <div><span className="k">Salary minimum (gross)</span><span className="v gold">€78,000 / year</span></div>
+                  <div><span className="k">Salary minimum (gross)</span><span className="v gold">$150,000 / year</span><span className="v-sub">$8,300 net / month</span></div>
                   <div><span className="k">Availability</span><span className="v">2 weeks</span></div>
                   <div><span className="k">Status</span><span className="v">Actively searching</span></div>
                 </div>
@@ -695,7 +714,7 @@ const LandingPage = () => {
                   </div>
                   <div className="ul-row">
                     <span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"><path d="M6 9V3h12v6" /><rect x="4" y="9" width="16" height="7" rx="2" /><path d="M8 16h8v5H8z" /></svg></span>
-                    <span><span className="lab">Print CV</span><span className="val">Standardized PDF</span><span className="ul-note">Download a clean, print-ready PDF of the full profile.</span></span>
+                    <span><span className="lab">Full CV</span><span className="val">Print or save as PDF</span><span className="ul-note">Open the complete profile, print it, or save it as a PDF.</span></span>
                   </div>
                   <div className="ul-row">
                     <span className="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></span>
@@ -705,11 +724,11 @@ const LandingPage = () => {
 
                 <div className="ul-track">
                   <div className="th">Track</div>
-                  <p className="ul-note">Move candidate through your pipeline in one view.</p>
+                  <p className="ul-note">Move the candidate through your pipeline in one view.</p>
                   <div className="pipe">
+                    <span>New</span><span className="arw">›</span>
                     <span className="on">Contacted</span><span className="arw">›</span>
-                    <span>Interview</span><span className="arw">›</span>
-                    <span>Offer</span><span className="arw">›</span>
+                    <span>Interviewed</span><span className="arw">›</span>
                     <span>Hired</span>
                   </div>
                 </div>
@@ -819,9 +838,10 @@ const LandingPage = () => {
             <span>Every package includes</span>
             <em><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M20 6 9 17l-5-5" /></svg>Full candidate search</em>
             <em><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M20 6 9 17l-5-5" /></svg>Shortlist &amp; pipeline</em>
-            <em><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M20 6 9 17l-5-5" /></svg>Standardized PDF CV on unlock</em>
+            <em><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M20 6 9 17l-5-5" /></svg>Print-ready CV on unlock</em>
+            <em><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6"><path d="M20 6 9 17l-5-5" /></svg>Team accounts</em>
           </div>
-          <p className="price-note">Prices include VAT · Secure checkout</p>
+          <p className="price-note">Prices in EUR, VAT included · Pay in your own currency at checkout</p>
         </div>
       </section>
 
@@ -865,9 +885,8 @@ const LandingPage = () => {
             <div className="foot-col">
               <h4>Company</h4>
               <a href="/landing-page-candidates">For candidates</a>
-              <a href="#">About</a>
-              <a href="#">Careers</a>
-              <a href="#">Contact</a>
+              <a href="/about">About</a>
+              <a href={`mailto:${SUPPORT_EMAIL}`}>Contact</a>
             </div>
             <div className="foot-col">
               <h4>Legal</h4>

@@ -934,6 +934,13 @@ $hint: #5b6573;
   }
 }
 
+// " · Salaries: net per month" after the count — small and grey, and it wraps as one piece.
+.resultsSalary {
+  font-size: 0.82rem;
+  color: $slate-2;
+  white-space: nowrap;
+}
+
 .queryPill {
   display: flex;
   align-items: center;
@@ -1878,13 +1885,6 @@ $sc-gold: #f0ae2e;
   white-space: nowrap;
 }
 
-// "/ mo" after the salary minimum.
-.scStatPer {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: $sc-muted;
-  white-space: nowrap;
-}
 
 // Always one line — SkillsRow (CandidateCard.jsx) drops whatever doesn't fit
 // into the "+N more" count.

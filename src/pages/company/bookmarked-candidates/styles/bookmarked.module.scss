@@ -662,6 +662,14 @@ $push-bp: 1400px;
   }
 }
 
+// " · Salaries: net per month" after the count (Bookmarked and Purchased) —
+// small and grey, and it wraps as one piece.
+.resultsSalary {
+  font-size: 13px;
+  color: #8693a0;
+  white-space: nowrap;
+}
+
 .resultsTools {
   display: flex;
   flex-wrap: wrap;

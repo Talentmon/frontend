@@ -3,6 +3,7 @@ import Icon from 'components/AppIcon';
 
 import Select from 'components/ui/Select';
 import Button from 'components/ui/Button';
+import { salaryViewLabel, useSalaryView } from 'lib/salaryView';
 import styles from '../styles/dashboard.module.scss';
 
 const SearchToolbar = ({
@@ -17,6 +18,8 @@ const SearchToolbar = ({
   isFilterCollapsed = false,
   onToggleFilters = () => {}
 }) => {
+  // The cards show bare amounts; this says once how they're shown (follows the Salary filter).
+  const [salaryView] = useSalaryView();
   const sortOptions = [
     { value: 'relevance', label: 'Relevance' },
     { value: 'experience', label: 'Experience (descending)' },
@@ -60,6 +63,7 @@ const SearchToolbar = ({
         <div className={styles.resultsInfo}>
           <div className={styles.resultsCount}>
             Found <b>{resultsCount}</b> candidates
+            <span className={styles.resultsSalary}> · Salaries: {salaryViewLabel(salaryView)}</span>
           </div>
 
           {searchQuery && (

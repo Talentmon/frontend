@@ -174,9 +174,11 @@ export function salaryForView(expectedSalary, view = DEFAULT_SALARY_VIEW) {
 /** "€1,500" — the amount only, in the candidate's own currency. */
 export const formatSalaryAmount = (salary) => (salary ? formatMoney(salary.amount, salary.currency) : '');
 
-/** "net / mo" (cards) or "net / month" (CV). */
-export const salarySuffix = (salary, form = 'short') =>
-  salary ? `${basisWord(salary.basis)} / ${periodWord(salary.period, form)}` : '';
+/**
+ * "net per month", "gross per year": how every salary on a list is shown. The
+ * cards print the bare amount, so the results line says this once per page.
+ */
+export const salaryViewLabel = (view = DEFAULT_SALARY_VIEW) => `${basisWord(view?.basis)} per ${periodWord(view?.period, 'long') || 'month'}`;
 
 /** The EUR value a view filters and sorts on. */
 export const salaryBase = (expectedSalary, view = DEFAULT_SALARY_VIEW) => expectedSalary?.base?.[salaryKey(view)] ?? null;

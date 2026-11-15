@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
-import { formatSalaryAmount, salaryForView, salarySuffix, useSalaryView } from 'lib/salaryView';
+import { formatSalaryAmount, salaryForView, useSalaryView } from 'lib/salaryView';
 import styles from '../styles/dashboard.module.scss';
 
 // Pieces of the candidate card shared by Search (CandidateCard) and
@@ -180,10 +180,10 @@ export const CardStats = ({ candidate, salaryFirst = false }) => {
   const salaryStat = (
     <div className={styles.scStat}>
       <span className={styles.scStatK}>Salary minimum</span>
+      {/* Just the amount, never broken ("RSD 230,000"). Net/gross and month/year are the
+          same for every card, so the results line above the list says it once. */}
       <span className={styles.scStatV}>
-        {/* The amount never breaks ("RSD 230,000"); only "net / mo" may drop to the next line. */}
         <span className={styles.scStatAmount}>{salary ? formatSalaryAmount(salary) : '—'}</span>
-        {salary && <> <span className={styles.scStatPer}>{salarySuffix(salary)}</span></>}
       </span>
     </div>
   );

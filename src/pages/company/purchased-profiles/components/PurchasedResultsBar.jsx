@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import Icon from 'components/AppIcon';
 import Popover from '../../bookmarked-candidates/components/Popover';
 import bm from '../../bookmarked-candidates/styles/bookmarked.module.scss';
+import { salaryViewLabel, useSalaryView } from 'lib/salaryView';
 import { SORT_OPTIONS, sortLabel } from '../purchasedFilters';
 import styles from '../styles/purchased.module.scss';
 
@@ -74,12 +75,16 @@ export const ViewToggle = ({ viewMode, onViewModeChange }) => (
   </div>
 );
 
-/** "Showing 3 of 5 candidates". */
-export const ResultsCount = ({ shown, total, className = bm.resultsCount }) => (
-  <p role="status" className={className}>
-    Showing <strong>{shown}</strong> of {total} candidate{total === 1 ? '' : 's'}
-  </p>
-);
+/** "Showing 3 of 5 candidates · Salaries: net per month" — the cards show bare amounts. */
+export const ResultsCount = ({ shown, total, className = bm.resultsCount }) => {
+  const [salaryView] = useSalaryView();
+  return (
+    <p role="status" className={className}>
+      Showing <strong>{shown}</strong> of {total} candidate{total === 1 ? '' : 's'}
+      <span className={bm.resultsSalary}> · Salaries: {salaryViewLabel(salaryView)}</span>
+    </p>
+  );
+};
 
 /** The wide page's bar above the cards: the count, then Sort and Cards / Table. */
 const PurchasedResultsBar = ({ shown, total, sortBy, onSortChange, viewMode, onViewModeChange, compact = false }) => (

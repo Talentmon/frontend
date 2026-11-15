@@ -761,12 +761,6 @@ $t-cols: minmax(200px, 1.3fr) 104px 148px 124px 160px minmax(260px, 1.9fr) 168px
   color: $ink;
 }
 
-.tPer {
-  font-size: 0.75rem;
-  line-height: 16px;
-  color: $card-muted;
-}
-
 // "by Mirko" under the date, only when the company works as a team.
 .tBy {
   display: block;

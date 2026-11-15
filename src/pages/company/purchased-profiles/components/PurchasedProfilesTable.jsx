@@ -4,7 +4,7 @@ import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
 import CandidateNotes, { NotesButton } from '../../candidate-search-dashboard/components/CandidateNotes';
-import { formatSalaryAmount, salaryForView, salarySuffix, useSalaryView } from 'lib/salaryView';
+import { formatSalaryAmount, salaryForView, useSalaryView } from 'lib/salaryView';
 import { shortDate } from 'utils/formatDate';
 import HiringForField from './HiringForField';
 import { COLUMN_FIRST_DIR, parseSort } from '../purchasedFilters';
@@ -277,8 +277,8 @@ const PurchasedProfilesTable = ({
                   <div role="cell" className={`${styles.tCell} ${styles.tEnd} ${styles.tNowrap}`}>
                     {salary ? (
                       <>
+                        {/* Bare amount, like the cards: the results line says net/gross and month/year once. */}
                         <span className={styles.tSalary}>{formatSalaryAmount(salary)}</span>
-                        {' '}<span className={styles.tPer}>{salarySuffix(salary)}</span>
                       </>
                     ) : '—'}
                   </div>

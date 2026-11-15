@@ -3,7 +3,7 @@ import LegalLayout from './LegalLayout';
 
 const KEY_POINTS = [
   'We collect what we need to run Talentmon: account details, CV and company profile data, sign-in and usage data.',
-  'Candidate profiles stay anonymous (no name, contact details or employers) until a company unlocks them.',
+  'Candidate profiles stay anonymous (no name, photo, contact details or employers, and no address) until a company unlocks them.',
   "We never see or store your full card number. Payments are handled by Paddle; your team only sees a saved card's type, last four digits and expiry date.",
   "We don't sell your data. We share it only with the providers that run the service, listed in section 6.",
   'We use only the cookies needed to keep you signed in. No advertising or tracking cookies.',
@@ -14,7 +14,7 @@ const PrivacyPolicy = () => (
   <LegalLayout
     title="Privacy Policy"
     subtitle="What we collect, why we need it, and what happens to it."
-    updated="October 2026"
+    updated="November 2026"
     keyPoints={KEY_POINTS}
   >
     <p>
@@ -28,9 +28,11 @@ const PrivacyPolicy = () => (
     <ul>
       <li><b>Account data</b> — name and email address, managed through our authentication provider, Clerk</li>
       <li><b>Sign-in data</b> — the browser, device type, approximate location and IP address of your sign-ins, so you can see where you're signed in and sign out other devices</li>
-      <li><b>Candidate profile data</b> — the CV content you enter: experience, education, skills, and any other section you choose to fill in, plus an optional profile photo</li>
-      <li><b>Company data</b> — company name, logo, and details you provide in your company profile</li>
+      <li><b>Candidate profile data</b> — the CV content you enter: experience, education, skills, your city and country, your salary minimum (net and gross), and any other section you choose to fill in, plus an optional profile photo</li>
+      <li><b>Company data</b> — company name, logo, and details you provide in your company profile, plus its settings such as the salary view and payment currency</li>
+      <li><b>Hiring data</b> — the notes a company's team writes about candidates (with who wrote or edited each one), the hiring status of unlocked candidates, the position they're considered for, and the hiring feedback a company gives</li>
       <li><b>Reviews</b> — the ratings and comments candidates leave about companies</li>
+      <li><b>Suggestions</b> — ideas companies post on the Your suggestions page and their votes. Other companies see a suggestion without the name of the company that posted it</li>
       <li><b>Usage data</b> — actions like searches, bookmarks, and profile unlocks, needed to operate the Service</li>
     </ul>
 
@@ -67,9 +69,9 @@ const PrivacyPolicy = () => (
 
     <h2>4. Candidate profile visibility</h2>
     <p>
-      Candidate profiles are shown to companies in anonymized form (no name, contact details, or employer
-      names) until a company spends a credit to unlock the full profile. Once unlocked, the company can see
-      and, where the platform allows, download the full profile.
+      Candidate profiles are shown to companies in anonymized form (no name, photo, contact details or
+      employer names; the location is the city and country, never an address) until a company spends a credit to unlock the full
+      profile. Once unlocked, the company can see and, where the platform allows, download the full profile.
     </p>
 
     <h2>5. File storage</h2>

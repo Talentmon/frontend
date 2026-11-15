@@ -2,9 +2,11 @@ import React from 'react';
 import LegalLayout from './LegalLayout';
 
 const KEY_POINTS = [
-  'Talentmon lets companies search an anonymized pool of candidates and spend a credit to unlock a full profile.',
+  'Talentmon is a platform that connects companies with candidates. It is not a recruitment agency or an employer.',
+  "Searching, filtering, previewing anonymous CVs and bookmarking are free. A company pays only to unlock a candidate's contact details, one credit per profile.",
+  "Users enter their own information. Talentmon doesn't verify it and isn't responsible for whether a profile, CV or contact detail is true or correct.",
   'Unlocking a profile means accepting the salary clause: the candidate’s stated salary minimum is the lowest that will be offered.',
-  'Credits are bought in one-time packages, never expire and are not refundable. There is no subscription.',
+  'Credits are bought in one-time packages, priced in euros, never expire and are not refundable. There is no subscription.',
   'Anyone on a company’s team can buy credits for it, and the company is responsible for those purchases.',
   'Payments are handled by Paddle, our Merchant of Record, including invoices and VAT.',
   'Unlocked candidate data is for your own recruiting only: no scraping, reselling or sharing outside your organization.',
@@ -33,7 +35,21 @@ const TermsOfService = () => (
       credentials secure.
     </p>
 
-    <h2>2. Credits and purchases</h2>
+    <h2>2. What Talentmon is</h2>
+    <p>
+      Talentmon is a platform that connects companies with candidates. We are not a recruitment agency, an
+      employer or anyone's representative, and we are not a party to any contact, negotiation or employment
+      relationship between a company and a candidate. Whether and how they talk, and whether a job is offered
+      or accepted, is up to them.
+    </p>
+    <p>
+      Using the Service is free up to the point of contact. Candidates create and publish their profiles for
+      free. Companies can create an account, search and filter candidates, preview anonymized CVs, bookmark
+      candidates and keep notes for free. To see a candidate's name and contact details, a company unlocks the
+      profile, which costs one credit.
+    </p>
+
+    <h2>3. Credits and purchases</h2>
     <p>
       Companies unlock candidate profiles by spending credits, purchased in packages for a one-time price.
       Credits do not expire and there is no subscription or recurring billing — you only pay when you choose
@@ -41,12 +57,19 @@ const TermsOfService = () => (
       <a href="/refund-policy">Refund Policy</a>.
     </p>
     <p>
+      Prices are set in euros (EUR) and include VAT. Each company picks a payment currency in its profile. If it
+      isn't EUR, Paddle charges your card in that currency, converted at Paddle's exchange rate on the day of
+      the purchase, so the amount on your card statement can differ slightly from day to day. Your purchase
+      history on Talentmon always shows the price in EUR. Talentmon isn't responsible for exchange-rate
+      differences or for fees your bank or card issuer may charge.
+    </p>
+    <p>
       Any member of a company's team can buy credits for the company, either with a card saved to the company's
       account or with a new card. The company is responsible for every purchase its team members make, and only
       the account owner can remove a saved card.
     </p>
 
-    <h2>3. Payment processing</h2>
+    <h2>4. Payment processing</h2>
     <p>
       Our order process is conducted by our online reseller, Paddle.com. Paddle.com Market Limited is the
       Merchant of Record for all orders placed through Talentmon, and handles payment collection, invoicing,
@@ -56,23 +79,39 @@ const TermsOfService = () => (
       how they process your order.
     </p>
 
-    <h2>4. Acceptable use</h2>
+    <h2>5. Acceptable use</h2>
     <p>You agree not to:</p>
     <ul>
       <li>Scrape, bulk-export, or otherwise extract candidate data outside the normal use of the Service</li>
       <li>Resell, sublicense, or share unlocked candidate profiles with anyone outside your organization</li>
       <li>Use unlocked candidate data for any purpose other than legitimate recruiting</li>
       <li>Attempt to bypass the credit system or access profiles you haven't unlocked</li>
+      <li>Enter false or misleading information in a profile, a CV or a company profile</li>
     </ul>
 
-    <h2>5. Candidate content</h2>
+    <h2>6. Candidate content</h2>
     <p>
       Candidates own the content of their profile and CV. By publishing a profile, a candidate allows it to be
       shown (anonymized) to searching companies, and shown in full to a company that spends a credit to unlock
       it. Candidates may edit or delete their profile at any time.
     </p>
 
-    <h2>6. Salary clause</h2>
+    <h2>7. Accuracy of information</h2>
+    <p>
+      Candidates and companies enter their own information, and each of them is responsible for it being true,
+      accurate and up to date. Talentmon doesn't check or verify profiles or CVs (experience, employers,
+      education, skills, certifications and anything else a candidate adds), salaries, contact details or
+      company details, and isn't responsible if any of them is untrue, wrong, incomplete or out of date.
+      Checking a candidate's background before hiring them is up to the company.
+    </p>
+    <p>
+      In particular, if an unlocked candidate's email address, phone number or LinkedIn profile turns out to be
+      wrong, or the candidate doesn't reply, Talentmon isn't responsible for it and the credit spent on the
+      unlock isn't returned. If you believe a profile is false, tell us at{' '}
+      <a href="mailto:talentmon.app@gmail.com">talentmon.app@gmail.com</a> and we'll look into it.
+    </p>
+
+    <h2>8. Salary clause</h2>
     <p>
       When a company unlocks a candidate's profile, it accepts the salary clause: the salary minimum the
       candidate has stated is the lowest salary that will be offered to them. Candidates state their salary
@@ -83,8 +122,13 @@ const TermsOfService = () => (
       clause by offering at least the stated gross amount, because the net amount depends on the candidate's
       personal tax situation, which the company doesn't control.
     </p>
+    <p>
+      The clause always refers to the amounts in the candidate's own currency. When a company filters salaries
+      in another currency, the Service converts them at a daily exchange rate for searching only; that
+      converted figure is approximate and isn't part of the clause.
+    </p>
 
-    <h2>7. Company reviews</h2>
+    <h2>9. Company reviews</h2>
     <p>
       Candidates can rate and review the companies they've been in contact with through the Service. Reviews
       belong to the candidates who wrote them: a company can't edit or remove them, and they are not removed
@@ -92,7 +136,16 @@ const TermsOfService = () => (
       linked to the new account.
     </p>
 
-    <h2>8. Termination and account deletion</h2>
+    <h2>10. Suggestions</h2>
+    <p>
+      Companies can post ideas for the Service and vote on them on the Your suggestions page. Other companies
+      see a suggestion without the name of the company that posted it; Talentmon can see who posted it. By
+      posting a suggestion, you allow Talentmon to use the idea freely, without any obligation or payment to
+      you. We may edit the status of a suggestion, reply to it, or remove posts that are offensive, off-topic
+      or advertising.
+    </p>
+
+    <h2>11. Termination and account deletion</h2>
     <p>
       You may stop using the Service and delete your account at any time from your account settings. We may
       suspend or terminate accounts that violate these Terms.
@@ -104,22 +157,23 @@ const TermsOfService = () => (
       <a href="/privacy-policy">Privacy Policy</a>.
     </p>
 
-    <h2>9. Disclaimer and limitation of liability</h2>
+    <h2>12. Disclaimer and limitation of liability</h2>
     <p>
-      The Service is provided "as is." Talentmon doesn't guarantee the accuracy of information candidates or
-      companies submit, and isn't a party to any employment relationship formed through the Service. To the
-      extent permitted by law, Talentmon's liability arising from your use of the Service is limited to the
-      amount you paid us in the preceding 12 months.
+      The Service is provided "as is." Talentmon doesn't guarantee that a company will find a candidate, that a
+      candidate will find a job, or that any contact will lead to an interview or a hire, and isn't responsible
+      for what companies and candidates say or do to each other. To the extent permitted by law, Talentmon's
+      liability arising from your use of the Service is limited to the amount you paid us in the preceding 12
+      months.
     </p>
 
-    <h2>10. Governing law</h2>
+    <h2>13. Governing law</h2>
     <p>
       These Terms are governed by the laws of the Republic of Serbia. Any dispute arising from them will be
       resolved by the competent courts of the Republic of Serbia, unless mandatory consumer protection law
       where you live gives you the right to bring it elsewhere.
     </p>
 
-    <h2>11. Changes to these Terms</h2>
+    <h2>14. Changes to these Terms</h2>
     <p>
       We may update these Terms from time to time. Continued use of the Service after a change means you
       accept the updated Terms.

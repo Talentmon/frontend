@@ -51,6 +51,7 @@ const Combobox = React.forwardRef(({
     const optionId = (index) => `${instanceId}-opt-${index}`;
 
     const selectedValues = multiple ? (value || []) : [];
+    const hasChips = selectedValues.length > 0;
     const singleValue = multiple ? "" : (value || "");
     const inputValue = multiple ? draft : singleValue;
 
@@ -217,13 +218,20 @@ const Combobox = React.forwardRef(({
                     aria-autocomplete="list"
                     aria-activedescendant={isOpen && highlight >= 0 ? optionId(highlight) : undefined}
                     disabled={disabled}
-                    placeholder={multiple && selectedValues?.length > 0 ? "" : placeholder}
+                    placeholder={hasChips ? "" : placeholder}
                     value={inputValue}
                     onChange={handleInputChange}
                     onFocus={() => !isOpen && openDropdown()}
                     onClick={() => !isOpen && openDropdown()}
                     onKeyDown={handleKeyDown}
-                    className="h-7 min-w-[96px] flex-1 border-none bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed"
+                    // Next to chips it only needs room for what's typed (a few
+                    // letters to start), so it stays on the chips' line and
+                    // wraps only once that room runs out; alone it fits the placeholder.
+                    style={hasChips ? { minWidth: `min(100%, ${Math.max(5, (inputValue?.length || 0) + 2)}ch)` } : undefined}
+                    className={cn(
+                        "h-7 flex-1 border-none bg-transparent px-1 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
+                        !hasChips && "min-w-[96px]"
+                    )}
                 />
             </div>
 

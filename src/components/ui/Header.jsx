@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
 import { useCurrentUser } from '../../lib/CurrentUserContext';
@@ -35,6 +35,20 @@ const NavIcon = ({ icon }) => (typeof icon === 'string'
 const Header = () => {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const menuButtonRef = useRef(null);
+  const menuRef = useRef(null);
+
+  // Like the bell and profile dropdowns: a click anywhere else closes the menu.
+  useEffect(() => {
+    if (!isMobileMenuOpen) return undefined;
+    const onOutside = (e) => {
+      if (!menuButtonRef.current?.contains(e.target) && !menuRef.current?.contains(e.target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onOutside);
+    return () => document.removeEventListener('mousedown', onOutside);
+  }, [isMobileMenuOpen]);
   // Until the company profile is complete, every page except profile
   // settings is locked (RequireAuth + backend gate) — the nav shows that
   // instead of linking somewhere that would just bounce back.
@@ -82,10 +96,11 @@ const Header = () => {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-[1000] bg-[#0B1A2C] border-b border-[#10243A]">
-      {/* Three columns on desktop, so the nav sits in the middle of the page, not between the sides. */}
-      <div className="flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] md:gap-6 h-16 pl-7 pr-6">
+      {/* Three columns from 1280px, so the nav sits in the middle of the page, not between the sides.
+          Narrower, the bar doesn't fit everything and the nav moves into the menu button. */}
+      <div className="flex items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr] xl:gap-6 h-16 pl-7 pr-6">
         {/* Logo Section */}
-        <div className="md:justify-self-start flex items-center">
+        <div className="xl:justify-self-start flex items-center">
           <a
             href={homePath}
             aria-label="Talentmon home"
@@ -105,7 +120,7 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav
           aria-label="Main"
-          className="hidden md:flex md:justify-self-center items-center gap-1.5 p-1 rounded-xl bg-[#2B3646] border border-white/[0.06]"
+          className="hidden xl:flex xl:justify-self-center items-center gap-1.5 p-1 rounded-xl bg-[#2B3646] border border-white/[0.06]"
         >
           {navigationItems?.map((item) => navLocked ? (
             <span
@@ -131,16 +146,17 @@ const Header = () => {
         </nav>
 
         {/* Right Section */}
-        <div className="md:justify-self-end flex items-center gap-2 sm:gap-4">
+        <div className="xl:justify-self-end flex items-center gap-2 sm:gap-4">
           {!navLocked && <CreditCounter />}
           <CompanyNotifications />
           <UserProfileDropdown />
 
           {/* Mobile Menu Button */}
           <button
+            ref={menuButtonRef}
             type="button"
             onClick={toggleMobileMenu}
-            className={`md:hidden flex-none inline-flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${headerTray(isMobileMenuOpen)} ${HEADER_FOCUS}`}
+            className={`xl:hidden flex-none inline-flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${headerTray(isMobileMenuOpen)} ${HEADER_FOCUS}`}
             aria-label="Toggle mobile menu"
             aria-expanded={isMobileMenuOpen}
           >
@@ -148,10 +164,10 @@ const Header = () => {
           </button>
         </div>
       </div>
-      {/* Mobile Navigation Menu */}
+      {/* Mobile Navigation Menu: a full-width strip on phones, a panel under the menu button on wider screens */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-[#0B1A2C] border-t border-[#10243A] animate-slide-up">
-          <nav aria-label="Main" className="px-6 py-4 space-y-2">
+        <div ref={menuRef} className="xl:hidden bg-[#0B1A2C] border-t border-[#10243A] animate-slide-up md:absolute md:right-6 md:top-full md:mt-2 md:w-72 md:rounded-xl md:border md:border-white/10 md:shadow-elevation-3">
+          <nav aria-label="Main" className="px-6 py-4 space-y-2 md:p-2 md:space-y-1">
             {navigationItems?.map((item) => navLocked ? (
               <span
                 key={item?.path}

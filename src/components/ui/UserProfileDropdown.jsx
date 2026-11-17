@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useClerk } from '@clerk/clerk-react';
 import Icon from '../AppIcon';
 import { useCurrentUser } from '../../lib/CurrentUserContext';
+import { HEADER_FOCUS, headerTray } from './headerStyles';
 
 const UserProfileDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -70,26 +71,27 @@ const UserProfileDropdown = () => {
     <div className="relative" ref={dropdownRef}>
       {/* Profile Button */}
       <button
+        type="button"
         onClick={handleToggle}
-        className={`flex items-center space-x-2 p-2 rounded-lg transition-all duration-200 hover:bg-white/10 ${
-          isOpen ? 'bg-white/10' : ''
-        }`}
+        className={`flex-none inline-flex items-center gap-2.5 h-[46px] pl-1.5 pr-2.5 rounded-xl transition-colors ${headerTray(isOpen)} ${HEADER_FOCUS}`}
         aria-label="User profile menu"
+        aria-expanded={isOpen}
       >
-        <div className="w-8 h-8 bg-[#E6A93C] rounded-full flex items-center justify-center">
-          <span className="text-sm font-medium text-[#0B1A2C]">
-            {companyName.charAt(0).toUpperCase()}
-          </span>
-        </div>
-        <div className="hidden lg:block text-left">
-          <div className="text-sm font-medium text-white truncate max-w-32">
-            {companyName}
-          </div>
-        </div>
+        <span aria-hidden="true" className="flex-none w-[34px] h-[34px] rounded-[9px] bg-[#E6A93C] text-[#1B2330] inline-flex items-center justify-center text-[15px] font-extrabold">
+          {companyName.charAt(0).toUpperCase()}
+        </span>
+        {/* Hidden below 1024px; a long name is cut at 200px and shown in full on hover. */}
+        <span
+          title={companyName}
+          className="hidden lg:block text-left text-sm leading-[18px] font-medium text-white truncate max-w-[200px]"
+        >
+          {companyName}
+        </span>
         <Icon
           name="ChevronDown"
           size={16}
-          className={`text-white/70 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          strokeWidth={2.2}
+          className={`flex-none transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
       {/* Dropdown Menu */}
@@ -98,8 +100,8 @@ const UserProfileDropdown = () => {
           {/* Company Info Header */}
           <div className="p-4 border-b border-border">
             <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-[#E6A93C] rounded-full flex items-center justify-center">
-                <span className="text-lg font-medium text-[#0B1A2C]">
+              <div className="w-12 h-12 bg-[#E6A93C] rounded-xl flex items-center justify-center">
+                <span className="text-lg font-bold text-[#1B2330]">
                   {companyName.charAt(0).toUpperCase()}
                 </span>
               </div>

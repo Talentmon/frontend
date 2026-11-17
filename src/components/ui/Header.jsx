@@ -5,6 +5,32 @@ import { useCurrentUser } from '../../lib/CurrentUserContext';
 import CreditCounter from './CreditCounter';
 import CompanyNotifications from './CompanyNotifications';
 import UserProfileDropdown from './UserProfileDropdown';
+import { HEADER_FOCUS, headerTray } from './headerStyles';
+
+// Two stacked coin piles (the Talentmon navbar design), drawn like a lucide icon.
+const CreditsIcon = ({ size = 16, strokeWidth = 2, className = '' }) => (
+  <svg
+    aria-hidden="true"
+    width={size}
+    height={size}
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={strokeWidth}
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className={`flex-none ${className}`}
+  >
+    <ellipse cx="9" cy="8" rx="5.5" ry="3" />
+    <path d="M3.5 8v4c0 1.7 2.5 3 5.5 3" />
+    <ellipse cx="15" cy="14" rx="5.5" ry="3" />
+    <path d="M9.5 14v3c0 1.7 2.5 3 5.5 3s5.5-1.3 5.5-3v-3" />
+  </svg>
+);
+
+const NavIcon = ({ icon }) => (typeof icon === 'string'
+  ? <Icon name={icon} size={16} strokeWidth={2.1} />
+  : React.createElement(icon, { size: 16, strokeWidth: 2.1 }));
 
 const Header = () => {
   const location = useLocation();
@@ -15,6 +41,7 @@ const Header = () => {
   const { companyProfileComplete } = useCurrentUser();
   const navLocked = !companyProfileComplete;
   const lockedTitle = 'Complete your company profile to unlock';
+  const homePath = navLocked ? '/company-profile-settings' : '/candidate-search-dashboard';
 
   const navigationItems = [
     {
@@ -35,7 +62,7 @@ const Header = () => {
     {
       name: 'Credits',
       path: '/credit-management',
-      icon: 'Coins'
+      icon: CreditsIcon
     }
   ];
 
@@ -47,79 +74,92 @@ const Header = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const navItemBase = 'h-[38px] inline-flex items-center gap-2 pl-3 pr-3.5 rounded-[9px] text-sm leading-[18px] font-semibold whitespace-nowrap';
+  const mobileItemBase = 'flex items-center gap-3 px-3 py-3 rounded-[9px] text-sm font-semibold';
+  const itemState = (active) => (active
+    ? 'bg-[#E6A93C] text-[#1B2330]'
+    : 'text-[#B9C3D1] hover:text-white hover:bg-white/[0.07]');
+
   return (
     <header className="fixed top-0 left-0 right-0 z-[1000] bg-[#0B1A2C] border-b border-[#10243A]">
-      <div className="flex items-center justify-between h-16 px-6">
+      {/* Three columns on desktop, so the nav sits in the middle of the page, not between the sides. */}
+      <div className="flex items-center justify-between md:grid md:grid-cols-[1fr_auto_1fr] md:gap-6 h-16 pl-7 pr-6">
         {/* Logo Section */}
-        <div className="flex items-center">
-          <div className="flex items-center space-x-3">
+        <div className="md:justify-self-start flex items-center">
+          <a
+            href={homePath}
+            aria-label="Talentmon home"
+            className={`flex items-center space-x-3 rounded-lg ${HEADER_FOCUS}`}
+          >
             <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
-              <img src="/assets/images/talentmon.png" alt="Talentmon" className="w-full h-full object-cover" />
+              <img src="/assets/images/talentmon.png" alt="" className="w-full h-full object-cover" />
             </div>
             <div className="hidden sm:block">
               <h1 className="text-xl font-brand font-extrabold uppercase tracking-tight text-white">
                 Talent<span className="text-[#E6A93C]">mon</span>
               </h1>
             </div>
-          </div>
+          </a>
         </div>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-8">
+        <nav
+          aria-label="Main"
+          className="hidden md:flex md:justify-self-center items-center gap-1.5 p-1 rounded-xl bg-[#2B3646] border border-white/[0.06]"
+        >
           {navigationItems?.map((item) => navLocked ? (
             <span
               key={item?.path}
               title={lockedTitle}
               aria-disabled="true"
-              className="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-white/35 cursor-not-allowed select-none"
+              className={`${navItemBase} text-white/35 cursor-not-allowed select-none`}
             >
-              <Icon name="Lock" size={16} />
+              <Icon name="Lock" size={16} strokeWidth={2.1} />
               <span>{item?.name}</span>
             </span>
           ) : (
             <a
               key={item?.path}
               href={item?.path}
-              className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 micro-hover ${
-                isActivePath(item?.path)
-                  ? 'bg-[#E6A93C] text-[#0B1A2C]'
-                  : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
+              aria-current={isActivePath(item?.path) ? 'page' : undefined}
+              className={`${navItemBase} transition-colors duration-150 ${itemState(isActivePath(item?.path))} ${HEADER_FOCUS}`}
             >
-              <Icon name={item?.icon} size={18} />
+              <NavIcon icon={item?.icon} />
               <span>{item?.name}</span>
             </a>
           ))}
         </nav>
 
         {/* Right Section */}
-        <div className="flex items-center space-x-4">
+        <div className="md:justify-self-end flex items-center gap-2 sm:gap-4">
           {!navLocked && <CreditCounter />}
           <CompanyNotifications />
           <UserProfileDropdown />
 
           {/* Mobile Menu Button */}
           <button
+            type="button"
             onClick={toggleMobileMenu}
-            className="md:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+            className={`md:hidden flex-none inline-flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${headerTray(isMobileMenuOpen)} ${HEADER_FOCUS}`}
             aria-label="Toggle mobile menu"
+            aria-expanded={isMobileMenuOpen}
           >
-            <Icon name={isMobileMenuOpen ? 'X' : 'Menu'} size={20} />
+            <Icon name={isMobileMenuOpen ? 'X' : 'Menu'} size={20} strokeWidth={1.9} />
           </button>
         </div>
       </div>
       {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-[#0B1A2C] border-t border-[#10243A] animate-slide-up">
-          <nav className="px-6 py-4 space-y-2">
+          <nav aria-label="Main" className="px-6 py-4 space-y-2">
             {navigationItems?.map((item) => navLocked ? (
               <span
                 key={item?.path}
                 title={lockedTitle}
                 aria-disabled="true"
-                className="flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium text-white/35 cursor-not-allowed select-none"
+                className={`${mobileItemBase} text-white/35 cursor-not-allowed select-none`}
               >
-                <Icon name="Lock" size={16} />
+                <Icon name="Lock" size={16} strokeWidth={2.1} />
                 <span>{item?.name}</span>
               </span>
             ) : (
@@ -127,13 +167,10 @@ const Header = () => {
                 key={item?.path}
                 href={item?.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                  isActivePath(item?.path)
-                    ? 'bg-[#E6A93C] text-[#0B1A2C]'
-                    : 'text-white/70 hover:text-white hover:bg-white/10'
-                }`}
+                aria-current={isActivePath(item?.path) ? 'page' : undefined}
+                className={`${mobileItemBase} transition-colors duration-150 ${itemState(isActivePath(item?.path))} ${HEADER_FOCUS}`}
               >
-                <Icon name={item?.icon} size={18} />
+                <NavIcon icon={item?.icon} />
                 <span>{item?.name}</span>
               </a>
             ))}
@@ -142,12 +179,10 @@ const Header = () => {
             <a
               href="/company-profile-settings"
               onClick={() => setIsMobileMenuOpen(false)}
-              className={`flex items-center space-x-3 px-3 py-3 rounded-lg text-sm font-medium transition-all duration-200 ${
-                isActivePath('/company-profile-settings')
-                  ? 'bg-[#E6A93C] text-[#0B1A2C]' : 'text-white/70 hover:text-white hover:bg-white/10'
-              }`}
+              aria-current={isActivePath('/company-profile-settings') ? 'page' : undefined}
+              className={`${mobileItemBase} transition-colors duration-150 ${itemState(isActivePath('/company-profile-settings'))} ${HEADER_FOCUS}`}
             >
-              <Icon name="Building2" size={18} />
+              <Icon name="Building2" size={16} strokeWidth={2.1} />
               <span>Company Profile</span>
             </a>
           </nav>

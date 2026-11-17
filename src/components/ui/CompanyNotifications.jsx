@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import apiClient from '../../lib/apiClient';
+import { HEADER_FOCUS, headerTray } from './headerStyles';
 
 const TYPE_ICON = {
   unlock: 'Unlock',
@@ -81,16 +82,21 @@ const CompanyNotifications = () => {
   return (
     <div className="relative" ref={ref}>
       <button
+        type="button"
         onClick={toggle}
-        className={`relative flex items-center justify-center w-10 h-10 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors ${
-          open ? 'bg-white/10 text-white' : ''
-        }`}
-        aria-label="Notifications"
+        className={`group relative flex-none inline-flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${headerTray(open)} ${HEADER_FOCUS}`}
+        aria-label={unread > 0 ? `Notifications, ${unread} unread` : 'Notifications'}
         aria-expanded={open}
       >
-        <Icon name="Bell" size={18} />
+        <Icon name="Bell" size={20} strokeWidth={1.9} />
         {unread > 0 && (
-          <span className="absolute top-0.5 right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-[#E6A93C] text-[#1a0e00] text-[10px] font-bold flex items-center justify-center leading-none border-2 border-[#0B1A2C]">
+          // The ring matches the tray behind it, also when that lightens on hover or while open.
+          <span
+            aria-hidden="true"
+            className={`absolute top-[3px] right-[3px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-[#E6A93C] text-[#1B2330] text-[10px] leading-[14px] font-extrabold text-center border-2 transition-colors ${
+              open ? 'border-[#364152]' : 'border-[#2B3646] group-hover:border-[#364152]'
+            }`}
+          >
             {unread}
           </span>
         )}

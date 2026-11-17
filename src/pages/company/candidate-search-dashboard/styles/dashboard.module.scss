@@ -396,27 +396,60 @@ $hint: #5b6573;
 // An open group is a light grey card with white fields on it, 10px wider on
 // each side than its fields, so they keep their width. Closed groups are rows
 // split by full-width lines; no line touches a card, its edge is the divider.
+// Opening and closing is one move: the card's grey, width and margins, the
+// lines, the fields, the summary and Clear all change together over $fold.
 $card: #f6f7f9;
+$fold: 0.28s;
 
 .fgroup {
-  border-top: 1px solid $line;
-  transition: background-color 0.2s $ease;
+  position: relative;
+  // A 1px slot above each group holds its line. The line is ::before, so it
+  // can fade, and the card's corners never bend it.
+  border-top: 1px solid transparent;
+  border-radius: 12px;
+  transition:
+    margin $fold $ease,
+    padding $fold $ease,
+    background-color $fold $ease;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: $line;
+    transition:
+      opacity $fold $ease,
+      left $fold $ease,
+      right $fold $ease;
+  }
 
   &:first-child {
     border-top: none;
+
+    &::before {
+      display: none;
+    }
   }
 
   &Open {
-    border-top: none;
     margin: 0 -10px;
     padding: 0 10px 4px;
-    border-radius: 12px;
     background: $card;
+
+    // Moves in with the padding, so it stays as wide as the fields.
+    &::before {
+      left: 10px;
+      right: 10px;
+    }
   }
 
-  // A closed group right under a card loses its line.
-  &Open + & {
-    border-top: none;
+  // No line touches a card: its own and the one right under it fade out.
+  &Open::before,
+  &Open + &::before {
+    opacity: 0;
   }
 
   // Two open groups in a row read as two cards.
@@ -442,19 +475,25 @@ $card: #f6f7f9;
     z-index: 5;
     margin: 0;
     background: $white;
+    transition: background-color $fold $ease;
   }
 
   &Open &Head {
     background: $card;
   }
 
+  // Hovering (or tabbing to) a title hints at the card the group opens into:
+  // the card's grey, width and corners behind it, drawn by ::before 4px off
+  // the lines, so nothing moves. On an open card it's the card's own grey, so
+  // it only shows on closed groups, and it carries straight into the card.
   &Toggle {
+    position: relative;
+    isolation: isolate;
     width: 100%;
     min-height: 48px;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 3px;
     padding: 12px 0;
     background: none;
     border: none;
@@ -462,14 +501,34 @@ $card: #f6f7f9;
     color: $hint;
     transition: color 0.18s;
 
+    &::before {
+      content: "";
+      position: absolute;
+      inset: 4px -10px;
+      z-index: -1;
+      border-radius: 10px;
+      transition:
+        background-color 0.18s,
+        box-shadow 0.18s;
+    }
+
     &:hover {
       color: $ink;
     }
 
+    &:hover::before,
+    &:focus-visible::before {
+      background: $card;
+    }
+
+    // Keyboard focus: the gold ring goes around that card hint.
     &:focus-visible {
-      outline: 2px solid $gold;
-      outline-offset: 2px;
-      border-radius: 6px;
+      outline: none;
+      color: $ink;
+    }
+
+    &:focus-visible::before {
+      box-shadow: 0 0 0 2px $gold;
     }
   }
 
@@ -508,57 +567,35 @@ $card: #f6f7f9;
     text-align: center;
   }
 
+  // Room for the absolutely placed Clear: grows in as the group opens, so the
+  // count slides over instead of jumping (the -8px cancels the row's gap).
+  // Closing waits for Clear to fade out first, so the count never runs into it.
   &ClearSpace {
     flex: none;
+    width: 0;
+    margin-left: -8px;
+    transition:
+      width $fold $ease 0.1s,
+      margin $fold $ease 0.1s;
+  }
+
+  &HeadOpen &ClearSpace {
     width: 46px;
+    margin-left: 0;
+    transition:
+      width $fold $ease,
+      margin $fold $ease;
   }
 
   &Chevron {
     flex: none;
-    transition: transform 0.2s $ease;
-  }
-
-  // Closed: hovering (or tabbing to) the title hints at the card it opens
-  // into: the card's grey, width and corners behind it, a dark title and a
-  // gold chevron. Drawn by ::before, 4px off the lines, so nothing moves.
-  &:not(.fgroupOpen) &Toggle {
-    position: relative;
-    isolation: isolate;
-
-    &::before {
-      content: "";
-      position: absolute;
-      inset: 4px -10px;
-      z-index: -1;
-      border-radius: 10px;
-      transition:
-        background-color 0.18s,
-        box-shadow 0.18s;
-    }
-
-    &:hover::before,
-    &:focus-visible::before {
-      background: $card;
-    }
-
-    // Keyboard focus: the gold ring goes around that card hint.
-    &:focus-visible {
-      outline: none;
-      color: $ink;
-    }
-
-    &:focus-visible::before {
-      box-shadow: 0 0 0 2px $gold;
-    }
-  }
-
-  // ...and its chevron turns gold and drops 2px, as if saying "open me".
-  &:not(.fgroupOpen) &Toggle &Chevron {
     transition:
-      transform 0.2s $ease,
+      transform $fold $ease,
       color 0.18s;
   }
 
+  // A closed group's chevron turns gold and drops 2px on hover, as if saying
+  // "open me".
   &:not(.fgroupOpen) &Toggle:hover &Chevron,
   &:not(.fgroupOpen) &Toggle:focus-visible &Chevron {
     color: $gold-deep;
@@ -575,9 +612,28 @@ $card: #f6f7f9;
     transform: rotate(180deg);
   }
 
-  // Collapsed with filters on: what's set, e.g. "React, TypeScript +1".
+  // Collapsed with filters on: what's set, e.g. "React, TypeScript +1". It
+  // folds away as the group opens and back as it closes.
+  &SummaryFold {
+    display: grid;
+    grid-template-rows: 1fr;
+    width: 100%;
+    margin-top: 3px;
+    transition:
+      grid-template-rows $fold $ease,
+      margin $fold $ease,
+      opacity $fold $ease;
+  }
+
+  &HeadOpen &SummaryFold {
+    grid-template-rows: 0fr;
+    margin-top: 0;
+    opacity: 0;
+  }
+
   &Summary {
     display: block;
+    min-height: 0;
     width: 100%;
     font-size: 12px;
     line-height: 16px;
@@ -600,7 +656,14 @@ $card: #f6f7f9;
     font-weight: 600;
     color: $gold-text;
     background: none;
-    transition: color 0.18s;
+    // Shown only while open. It fades out at once on closing, and on opening
+    // fades in once the count has moved out of its way.
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      color 0.18s,
+      opacity 0.1s,
+      visibility 0.1s;
 
     &:hover {
       color: $gold;
@@ -610,6 +673,40 @@ $card: #f6f7f9;
       outline: 2px solid $gold;
       outline-offset: 2px;
     }
+  }
+
+  &HeadOpen &Clear {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      color 0.18s,
+      opacity 0.18s $ease 0.14s,
+      visibility 0s 0.14s;
+  }
+
+  // The fields fold open and shut: the row grows from 0 to their height.
+  // A closed group's fields stay in the page but are inert (FilterSidebar).
+  &Fold {
+    display: grid;
+    grid-template-rows: 0fr;
+    opacity: 0;
+    transition:
+      grid-template-rows $fold $ease,
+      opacity $fold $ease;
+  }
+
+  &Open &Fold {
+    grid-template-rows: 1fr;
+    opacity: 1;
+  }
+
+  // Hides the fields while folded. 4px of room each side keeps the fields'
+  // hover / focus glow (3px) from being cut off; menus open outside it.
+  &FoldInner {
+    min-height: 0;
+    overflow: hidden;
+    margin: 0 -4px;
+    padding: 0 4px;
   }
 
   &Body {
@@ -629,6 +726,21 @@ $card: #f6f7f9;
 // Basic Search open under Your filters: the card clears the chips.
 .savedFilters + .fgroupOpen {
   margin-top: 10px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fgroup,
+  .fgroup::before,
+  .fgroupHead,
+  .fgroupFold,
+  .fgroupSummaryFold,
+  .fgroupClear,
+  .fgroupClearSpace,
+  .fgroupHeadOpen .fgroupClear,
+  .fgroupHeadOpen .fgroupClearSpace,
+  .fgroupChevron {
+    transition: none;
+  }
 }
 
 // --- Fields

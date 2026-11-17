@@ -723,7 +723,9 @@ const FilterSidebar = ({
           const isOpen = !!openGroups?.[group?.id];
           const activeCount = countActiveInGroup(group, localFilters);
           const bodyId = `filter-group-${group?.id}`;
-          const showClear = isOpen && activeCount > 0;
+          // Summary, Clear and the fields stay in the page either way and fold /
+          // fade with the group (styles: $fold); while closed, the fields are inert.
+          const hasActive = activeCount > 0;
           return (
             <div className={`${styles.fgroup} ${isOpen ? styles.fgroupOpen : ''}`} key={group?.id}>
               <h3 className={`${styles.fgroupHead} ${isOpen ? styles.fgroupHeadOpen : ''}`}>
@@ -737,18 +739,20 @@ const FilterSidebar = ({
                 >
                   <span className={styles.fgroupRow}>
                     <span className={styles.fgroupTitle}>{group?.title}</span>
-                    {activeCount > 0 && (
+                    {hasActive && (
                       <span className={styles.fgroupCount}>{activeCount}</span>
                     )}
                     {/* keeps room for the absolutely placed Clear button */}
-                    {showClear && <span className={styles.fgroupClearSpace} aria-hidden="true" />}
+                    {hasActive && <span className={styles.fgroupClearSpace} aria-hidden="true" />}
                     <Icon name="ChevronDown" size={16} strokeWidth={2.2} className={styles.fgroupChevron} />
                   </span>
-                  {!isOpen && activeCount > 0 && (
-                    <span className={styles.fgroupSummary}>{groupSummary(group?.id, localFilters, salaryView)}</span>
+                  {hasActive && (
+                    <span className={styles.fgroupSummaryFold} aria-hidden={isOpen || undefined}>
+                      <span className={styles.fgroupSummary}>{groupSummary(group?.id, localFilters, salaryView)}</span>
+                    </span>
                   )}
                 </button>
-                {showClear && (
+                {hasActive && (
                   <button
                     type="button"
                     className={styles.fgroupClear}
@@ -759,17 +763,19 @@ const FilterSidebar = ({
                   </button>
                 )}
               </h3>
-              {isOpen && (
-                <div className={styles.fgroupBody} id={bodyId}>
-                  {group?.fields?.map(renderField)}
-                  {group?.id === 'skills' && localFilters?.skills?.length >= 2 && (
-                    <SkillsMatchToggle
-                      value={localFilters?.skillsMatch}
-                      onChange={(value) => handleFilterChange('skillsMatch', value)}
-                    />
-                  )}
+              <div className={styles.fgroupFold} inert={isOpen ? undefined : ''}>
+                <div className={styles.fgroupFoldInner}>
+                  <div className={styles.fgroupBody} id={bodyId}>
+                    {group?.fields?.map(renderField)}
+                    {group?.id === 'skills' && localFilters?.skills?.length >= 2 && (
+                      <SkillsMatchToggle
+                        value={localFilters?.skillsMatch}
+                        onChange={(value) => handleFilterChange('skillsMatch', value)}
+                      />
+                    )}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}

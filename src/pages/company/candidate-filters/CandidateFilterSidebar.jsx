@@ -91,7 +91,9 @@ const CandidateFilterSidebar = ({
         {groups.map((group) => {
           const isOpen = !!openGroups[group.id];
           const bodyId = `${idPrefix}-fgroup-${group.id}`;
-          const showClear = isOpen && group.count > 0;
+          // Summary, Clear and the fields stay in the page either way and fold /
+          // fade with the group (as on Search); while closed, the fields are inert.
+          const hasActive = group.count > 0;
           return (
             <div className={`${ds.fgroup} ${isOpen ? ds.fgroupOpen : ''}`} key={group.id}>
               <h3 className={`${ds.fgroupHead} ${isOpen ? ds.fgroupHeadOpen : ''}`}>
@@ -105,14 +107,18 @@ const CandidateFilterSidebar = ({
                 >
                   <span className={ds.fgroupRow}>
                     <span className={ds.fgroupTitle}>{group.title}</span>
-                    {group.count > 0 && <span className={ds.fgroupCount}>{group.count}</span>}
+                    {hasActive && <span className={ds.fgroupCount}>{group.count}</span>}
                     {/* keeps room for the absolutely placed Clear button */}
-                    {showClear && <span className={ds.fgroupClearSpace} aria-hidden="true" />}
+                    {hasActive && <span className={ds.fgroupClearSpace} aria-hidden="true" />}
                     <Icon name="ChevronDown" size={16} strokeWidth={2.2} className={ds.fgroupChevron} />
                   </span>
-                  {!isOpen && group.count > 0 && <span className={ds.fgroupSummary}>{summaryOf(group.summary)}</span>}
+                  {hasActive && (
+                    <span className={ds.fgroupSummaryFold} aria-hidden={isOpen || undefined}>
+                      <span className={ds.fgroupSummary}>{summaryOf(group.summary)}</span>
+                    </span>
+                  )}
                 </button>
-                {showClear && (
+                {hasActive && (
                   <button
                     type="button"
                     className={ds.fgroupClear}
@@ -123,11 +129,13 @@ const CandidateFilterSidebar = ({
                   </button>
                 )}
               </h3>
-              {isOpen && (
-                <div className={ds.fgroupBody} id={bodyId}>
-                  {group.body}
+              <div className={ds.fgroupFold} inert={isOpen ? undefined : ''}>
+                <div className={ds.fgroupFoldInner}>
+                  <div className={ds.fgroupBody} id={bodyId}>
+                    {group.body}
+                  </div>
                 </div>
-              )}
+              </div>
             </div>
           );
         })}

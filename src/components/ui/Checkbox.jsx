@@ -18,15 +18,15 @@ const Checkbox = React.forwardRef(({
     // Generate unique ID if not provided
     const checkboxId = id || `checkbox-${Math.random()?.toString(36)?.substr(2, 9)}`;
 
-    // Size variants
+    // Size variants (default: the filters' 18px box with 5px corners)
     const sizeClasses = {
-        sm: "h-4 w-4",
-        default: "h-4 w-4",
-        lg: "h-5 w-5"
+        sm: "h-4 w-4 rounded-sm",
+        default: "h-[18px] w-[18px] rounded-[5px]",
+        lg: "h-5 w-5 rounded-[5px]"
     };
 
     return (
-        <div className={cn("flex space-x-2", description ? "items-start" : "items-center", className)}>
+        <div className={cn("flex space-x-2.5", description ? "items-start" : "items-center", className)}>
             <div className="relative flex items-center">
                 <input
                     type="checkbox"
@@ -42,15 +42,15 @@ const Checkbox = React.forwardRef(({
                 <label
                     htmlFor={checkboxId}
                     className={cn(
-                        "peer flex shrink-0 items-center justify-center rounded-sm border border-[#e6a93c] focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_rgba(230,169,60,0.16)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer transition-colors",
+                        "peer flex shrink-0 items-center justify-center border-[1.5px] border-[#e6a93c] focus-visible:outline-none focus-visible:shadow-[0_0_0_3px_rgba(230,169,60,0.16)] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer transition-colors",
                         sizeClasses?.[size],
                         checked || indeterminate ? "bg-[#e6a93c] border-[#e6a93c] text-white" : "bg-white",
                         error && "border-destructive",
                         disabled && "cursor-not-allowed opacity-50"
                     )}
                 >
-                    {checked && !indeterminate && <Check className="h-3 w-3 text-white" />}
-                    {indeterminate && <Minus className="h-3 w-3 text-white" />}
+                    {checked && !indeterminate && <Check className="h-3 w-3 text-white" strokeWidth={3.5} />}
+                    {indeterminate && <Minus className="h-3 w-3 text-white" strokeWidth={3.5} />}
                 </label>
             </div>
             {(label || description || error) && (

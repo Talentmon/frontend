@@ -725,7 +725,7 @@ const FilterSidebar = ({
           const bodyId = `filter-group-${group?.id}`;
           const showClear = isOpen && activeCount > 0;
           return (
-            <div className={styles.fgroup} key={group?.id}>
+            <div className={`${styles.fgroup} ${isOpen ? styles.fgroupOpen : ''}`} key={group?.id}>
               <h3 className={`${styles.fgroupHead} ${isOpen ? styles.fgroupHeadOpen : ''}`}>
                 <button
                   type="button"

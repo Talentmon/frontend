@@ -295,7 +295,7 @@ $hint: #5b6573;
   font-family: "JetBrains Mono", monospace;
   font-weight: 600;
   color: $slate-2;
-  font-size: 11px;
+  font-size: 12px;
   line-height: 16px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -393,21 +393,59 @@ $hint: #5b6573;
 }
 
 // --- Groups
+// An open group is a light grey card with white fields on it, 10px wider on
+// each side than its fields, so they keep their width. Closed groups are rows
+// split by full-width lines; no line touches a card, its edge is the divider.
+$card: #f6f7f9;
+
 .fgroup {
   border-top: 1px solid $line;
+  transition: background-color 0.2s $ease;
 
   &:first-child {
     border-top: none;
   }
 
+  &Open {
+    border-top: none;
+    margin: 0 -10px;
+    padding: 0 10px 4px;
+    border-radius: 12px;
+    background: $card;
+  }
+
+  // A closed group right under a card loses its line.
+  &Open + & {
+    border-top: none;
+  }
+
+  // Two open groups in a row read as two cards.
+  &Open + &Open {
+    margin-top: 6px;
+  }
+
+  // The first card clears the head line, the last one the Save filter line.
+  &Open:first-child {
+    margin-top: 10px;
+  }
+
+  &Open:last-child {
+    margin-bottom: 10px;
+  }
+
   // The open group's title sticks to the top while its fields scroll past;
-  // the next group's title pushes it out.
+  // the next group's title pushes it out. On a card it takes the card's grey,
+  // so there's no seam.
   &Head {
     position: sticky;
     top: 0;
     z-index: 5;
     margin: 0;
     background: $white;
+  }
+
+  &Open &Head {
+    background: $card;
   }
 
   &Toggle {
@@ -421,7 +459,7 @@ $hint: #5b6573;
     background: none;
     border: none;
     text-align: left;
-    color: $slate-2;
+    color: $hint;
     transition: color 0.18s;
 
     &:hover {
@@ -447,7 +485,11 @@ $hint: #5b6573;
     min-width: 0;
     font-family: "JetBrains Mono", monospace;
     font-weight: 600;
-    font-size: 11px;
+    // Only 400, 700 and 800 are loaded (styles/tailwind.css), so 600 alone
+    // would show as 700. The served file is variable, so this sets the real
+    // 600, for these titles only, closed, hovered or open.
+    font-variation-settings: "wght" 600;
+    font-size: 12px;
     line-height: 16px;
     letter-spacing: 0.1em;
     text-transform: uppercase;
@@ -476,13 +518,9 @@ $hint: #5b6573;
     transition: transform 0.2s $ease;
   }
 
-  // Open: dark bold title, gold chevron pointing up.
+  // Open: dark title, gold chevron pointing up.
   &HeadOpen &Toggle {
     color: $ink;
-  }
-
-  &HeadOpen &Title {
-    font-weight: 700;
   }
 
   &HeadOpen &Chevron {
@@ -533,6 +571,17 @@ $hint: #5b6573;
     gap: 14px;
     padding: 4px 0 18px;
   }
+
+  // Checkbox rows already have room under their text, so a card that ends
+  // with them is shorter at the bottom.
+  &Body:has(> .checkRow:last-child) {
+    padding-bottom: 10px;
+  }
+}
+
+// Basic Search open under Your filters: the card clears the chips.
+.savedFilters + .fgroupOpen {
+  margin-top: 10px;
 }
 
 // --- Fields
@@ -654,6 +703,11 @@ $hint: #5b6573;
   padding: 3px;
   background: #f1f3f6;
   border-radius: $r-sm;
+
+  // A darker track, so it still shows on a grey group card.
+  .fgroupOpen & {
+    background: #e6e9ee;
+  }
 }
 
 .matchOption {

@@ -69,6 +69,12 @@ $card-muted: #6b7a89;
 .sideChecks {
   display: flex;
   flex-direction: column;
+
+  // Its rows already have room under their text, so a group card that ends
+  // with the list is shorter at the bottom (as on Search).
+  &:last-child {
+    margin-bottom: -8px;
+  }
 }
 
 .sideCheck {

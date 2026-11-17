@@ -93,7 +93,7 @@ const CandidateFilterSidebar = ({
           const bodyId = `${idPrefix}-fgroup-${group.id}`;
           const showClear = isOpen && group.count > 0;
           return (
-            <div className={ds.fgroup} key={group.id}>
+            <div className={`${ds.fgroup} ${isOpen ? ds.fgroupOpen : ''}`} key={group.id}>
               <h3 className={`${ds.fgroupHead} ${isOpen ? ds.fgroupHeadOpen : ''}`}>
                 <button
                   type="button"

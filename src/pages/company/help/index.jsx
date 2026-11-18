@@ -44,7 +44,7 @@ const REQUIRED_FIELDS = [
 const FILTER_GROUPS = [
   { name: 'Basic search', text: 'Position and location' },
   { name: 'Salary', text: 'Range for the candidate’s salary minimum: net or gross, per month or per year, typed in the currency you pick' },
-  { name: 'Experience & education', text: 'Years of experience and highest education' },
+  { name: 'Experience & education', text: 'Years of experience, from – to, and one or more education levels' },
   { name: 'Skills', text: 'Skill categories and specific skills' },
   { name: 'Languages', text: 'Languages, each with a minimum level' },
   { name: 'Industry', text: 'Industry, then subindustry' },

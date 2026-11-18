@@ -18,20 +18,14 @@ import {
   filtersToFrontend,
   savedFilterView,
 } from '../candidateSearchApi';
+import { EMPTY_EXPERIENCE, experienceActive, experienceLabel } from 'utils/experienceRange';
+import ExperienceRangeFilter from './ExperienceRangeFilter';
 import LanguageLevelFilter from './LanguageLevelFilter';
 import PickedChips from './PickedChips';
 import SalaryRangeFilter from './SalaryRangeFilter';
 import SkillsMatchToggle from './SkillsMatchToggle';
 import styles from '../styles/dashboard.module.scss';
 
-const experienceOptions = [
-  { value: '', label: 'Any experience' },
-  { value: '0-1', label: '0-1 years' },
-  { value: '1-3', label: '1-3 years' },
-  { value: '3-5', label: '3-5 years' },
-  { value: '5-10', label: '5-10 years' },
-  { value: '10+', label: '10+ years' }
-];
 
 // Several can be picked; a candidate matches with any of them, exactly that level.
 const educationOptions = [
@@ -108,7 +102,7 @@ const FILTER_GROUPS = [
     id: 'experience',
     title: 'Experience & Education',
     fields: [
-      { key: 'experience', type: 'select', label: 'Experience Level', placeholder: 'Select experience', options: experienceOptions },
+      { key: 'experience', type: 'experienceRange', label: 'Years of experience' },
       {
         key: 'education',
         type: 'multiSelect',
@@ -205,6 +199,8 @@ const emptyValueForType = (type) => {
     // Its currency is part of the salary view (lib/salaryView.js).
     case 'salaryRange':
       return { min: '', max: '' };
+    case 'experienceRange':
+      return EMPTY_EXPERIENCE;
     case 'multiSelect':
     case 'comboMulti':
     case 'languageLevel':
@@ -231,6 +227,8 @@ const isFieldActive = (field, localFilters) => {
   switch (field?.type) {
     case 'salaryRange':
       return !!(value?.min || value?.max);
+    case 'experienceRange':
+      return experienceActive(value);
     case 'multiSelect':
     case 'comboMulti':
     case 'languageLevel':
@@ -248,7 +246,12 @@ const countActiveInGroup = (group, localFilters) =>
 // Saved filters come back from the API with empty values left out, so both
 // sides are filled in with the defaults before comparing.
 const normalizeFilters = (f = {}) => {
-  const merged = { ...DEFAULT_FILTERS, ...f, salary: { ...DEFAULT_FILTERS.salary, ...f?.salary } };
+  const merged = {
+    ...DEFAULT_FILTERS,
+    ...f,
+    salary: { ...DEFAULT_FILTERS.salary, ...f?.salary },
+    experience: { ...DEFAULT_FILTERS.experience, ...f?.experience }
+  };
   merged.skillsMatch = merged.skills?.length >= 2 && merged.skillsMatch === 'all' ? 'all' : 'any';
   return merged;
 };
@@ -276,7 +279,7 @@ const groupSummaryItems = (groupId, f, view) => {
       return [f.position?.trim(), f.location?.trim(), ...(f.country || [])].filter(Boolean);
     case 'experience':
       return [
-        f.experience && optionLabel(experienceOptions, f.experience),
+        experienceActive(f.experience) && experienceLabel(f.experience),
         ...(f.education || []).map((level) => optionLabel(educationOptions, level))
       ].filter(Boolean);
     case 'salary': {
@@ -605,6 +608,17 @@ const FilterSidebar = ({
           </div>
         );
       }
+
+      case 'experienceRange':
+        return (
+          <ExperienceRangeFilter
+            key={field?.key}
+            id={fieldId(field?.key)}
+            label={field?.label}
+            value={localFilters?.[field?.key]}
+            onChange={(range) => handleFilterChange(field?.key, range)}
+          />
+        );
 
       case 'salaryRange':
         return (

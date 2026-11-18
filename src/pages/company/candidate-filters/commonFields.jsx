@@ -4,6 +4,8 @@ import Combobox from 'components/ui/Combobox';
 import { Checkbox } from 'components/ui/Checkbox';
 import LanguageLevelFilter from '../candidate-search-dashboard/components/LanguageLevelFilter';
 import PickedChips from '../candidate-search-dashboard/components/PickedChips';
+import ExperienceRangeFilter from '../candidate-search-dashboard/components/ExperienceRangeFilter';
+import { EMPTY_EXPERIENCE, experienceActive, experienceLabel } from 'utils/experienceRange';
 import SalaryRangeFilter from '../candidate-search-dashboard/components/SalaryRangeFilter';
 import SkillsMatchToggle from '../candidate-search-dashboard/components/SkillsMatchToggle';
 import { MenuOption } from '../bookmarked-candidates/components/Popover';
@@ -14,7 +16,6 @@ import {
   AVAILABILITY_OPTIONS,
   CANDIDATE_STATUS_OPTIONS,
   EDUCATION_OPTIONS,
-  EXPERIENCE_OPTIONS,
   JOB_TYPE_OPTIONS,
   WORK_MODE_OPTIONS,
   optionLabel,
@@ -172,42 +173,22 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
     }
   };
 
+  // Years of experience, From – To (utils/experienceRange).
+  const experienceOn = experienceActive(f.experience);
   const experience = {
     key: 'experience',
     label: 'Experience',
     available: true,
-    count: f.experience ? 1 : 0,
-    summary: f.experience ? [optionLabel(EXPERIENCE_OPTIONS, f.experience)] : [],
-    clear: { experience: '' },
-    chips: f.experience ? [chip('exp', optionLabel(EXPERIENCE_OPTIONS, f.experience), () => set('experience', ''))] : [],
+    count: experienceOn ? 1 : 0,
+    summary: experienceOn ? [experienceLabel(f.experience)] : [],
+    clear: { experience: EMPTY_EXPERIENCE },
+    chips: experienceOn ? [chip('exp', experienceLabel(f.experience), () => set('experience', EMPTY_EXPERIENCE))] : [],
     pill: {
-      width: 240,
-      body: (
-        <RadioList
-          label="Experience"
-          anyLabel="Any experience"
-          options={EXPERIENCE_OPTIONS}
-          counts={opts.experienceCounts}
-          total={opts.total}
-          value={f.experience}
-          onPick={(value) => {
-            set('experience', value);
-            onRadioPicked('experience');
-          }}
-        />
-      )
+      width: 300,
+      padded: true,
+      body: <ExperienceRangeFilter id={fid('experience')} value={f.experience} onChange={(next) => set('experience', next)} />
     },
-    side: (hideLabel) => (
-      <SideField id={fid('experience')} label="Experience" hideLabel={hideLabel}>
-        <Select
-          id={fid('experience')}
-          options={[{ value: '', label: 'Any experience' }, ...present(EXPERIENCE_OPTIONS, opts.experienceCounts, f.experience)]}
-          value={f.experience}
-          onChange={(value) => set('experience', value)}
-          placeholder="Any experience"
-        />
-      </SideField>
-    )
+    side: () => <ExperienceRangeFilter id={fid('experience')} value={f.experience} onChange={(next) => set('experience', next)} />
   };
 
   const skillOptions = skillsInCategories(opts.skills, f.skillCategory);

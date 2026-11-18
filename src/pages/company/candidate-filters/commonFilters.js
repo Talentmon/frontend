@@ -8,15 +8,13 @@ import { getSubIndustries } from 'utils/industries';
 import { allSkillNames, makeSkillMatcher } from 'utils/skillMatch';
 import { currencySymbol } from 'utils/currencyService';
 import { DEFAULT_SALARY_VIEW, basisWord, periodWord, salaryBase } from 'lib/salaryView';
-import { EXPERIENCE_OPTIONS, inExperienceRange } from '../bookmarked-candidates/filterUtils';
-
-export { EXPERIENCE_OPTIONS };
+import { EMPTY_EXPERIENCE, experienceActive, inExperienceRange } from 'utils/experienceRange';
 
 export const COMMON_EMPTY = {
   search: '',
   industry: [],
   subIndustry: [],
-  experience: '',
+  experience: EMPTY_EXPERIENCE, // years, From – To
   skillCategory: [],
   skills: [],
   skillsMatch: 'any',
@@ -142,7 +140,7 @@ export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
   if (f.industry.length || f.subIndustry.length) {
     keep((c) => c?.industries?.some((name) => f.industry.includes(name)) || c?.subIndustries?.some((name) => f.subIndustry.includes(name)));
   }
-  if (f.experience) keep((c) => inExperienceRange(c?.experience, f.experience));
+  if (experienceActive(f.experience)) keep((c) => inExperienceRange(c?.experience, f.experience));
 
   // Match any / Match all. A skill counts in Skills, a job's skills or a job's description
   // (utils/skillMatch). A category with no skill picked counts the same way for any skill in it.
@@ -190,7 +188,7 @@ export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
 export const commonActiveCount = (f) =>
   [
     f.industry.length + f.subIndustry.length,
-    f.experience ? 1 : 0,
+    experienceActive(f.experience) ? 1 : 0,
     f.skillCategory.length + f.skills.length,
     f.salary.min || f.salary.max ? 1 : 0,
     f.languages.length,
@@ -228,9 +226,7 @@ export function commonOptions(candidates) {
       name,
       subs: getSubIndustries(name).filter((sub) => subCounts[sub]).sort()
     })),
-    experienceCounts: Object.fromEntries(
-      EXPERIENCE_OPTIONS.map(({ value }) => [value, candidates.filter((c) => inExperienceRange(c?.experience, value)).length])
-    ),
+
     skills,
     // Categories holding at least one of those skills.
     skillCategories: SKILL_CATEGORY_NAMES.filter((category) =>

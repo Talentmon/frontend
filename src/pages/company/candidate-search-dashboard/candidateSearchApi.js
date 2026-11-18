@@ -1,6 +1,7 @@
 import apiClient from 'lib/apiClient';
 import { DEFAULT_SALARY_VIEW, expectedSalaryFrom } from 'lib/salaryView';
 import { formatLocation, splitLocation } from 'utils/countries';
+import { experienceToBackend, toExperienceRange } from 'utils/experienceRange';
 
 // ---- Enum <-> dashboard filter-value maps ----
 // FilterSidebar.jsx keeps the same kebab-case values the page has always
@@ -49,7 +50,8 @@ export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
   if (filters.position) out.position = filters.position;
   if (filters.location) out.location = filters.location;
   if (filters.country?.length) out.country = filters.country;
-  if (filters.experience) out.experience = filters.experience;
+  const experience = experienceToBackend(filters.experience);
+  if (experience) out.experience = experience;
   if (filters.education?.length) out.education = filters.education.map((level) => EDUCATION_FILTER_TO_BACKEND[level]).filter(Boolean);
   if (filters.availability) out.availability = filters.availability;
   if (filters.status) out.status = STATUS_TO_BACKEND[filters.status];
@@ -85,6 +87,8 @@ export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
 // in backend enum shape) is loaded back into FilterSidebar's local state.
 export function filtersToFrontend(filters = {}) {
   const out = { ...filters };
+  // A From – To range; filters saved before that hold a bucket like "3-5".
+  if (out.experience) out.experience = toExperienceRange(out.experience);
   // A list of levels; filters saved before that hold one level as a string.
   if (out.education) out.education = [].concat(out.education).map((level) => EDUCATION_BACKEND_TO_FILTER[level]).filter(Boolean);
   if (out.jobType?.length) out.jobType = out.jobType.map((t) => JOB_TYPE_TO_FRONTEND[t]).filter(Boolean);

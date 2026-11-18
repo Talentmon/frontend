@@ -804,6 +804,50 @@ $fold: 0.28s;
   align-items: center;
   gap: 8px;
 }
+// A multi-select's picks as removable pills under it (PickedChips.jsx), the
+// same look as the Skills field's chips.
+.pickedChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pickedChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 26px;
+  padding: 0 2px 0 8px;
+  border-radius: 6px;
+  background: $gold-soft;
+  color: $gold-text;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.pickedChipX {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: inherit;
+
+  &:hover {
+    background: #f6e3be;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #e6a93c;
+    outline-offset: 1px;
+  }
+}
+
 
 .salaryField {
   position: relative;

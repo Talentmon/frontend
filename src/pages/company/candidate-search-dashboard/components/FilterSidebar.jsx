@@ -19,6 +19,7 @@ import {
   savedFilterView,
 } from '../candidateSearchApi';
 import LanguageLevelFilter from './LanguageLevelFilter';
+import PickedChips from './PickedChips';
 import SalaryRangeFilter from './SalaryRangeFilter';
 import SkillsMatchToggle from './SkillsMatchToggle';
 import styles from '../styles/dashboard.module.scss';
@@ -32,8 +33,8 @@ const experienceOptions = [
   { value: '10+', label: '10+ years' }
 ];
 
+// Several can be picked; a candidate matches with any of them, exactly that level.
 const educationOptions = [
-  { value: '', label: 'Any education' },
   { value: 'high-school', label: 'High School' },
   { value: 'associate-degree', label: 'Associate Degree' },
   { value: 'bachelors-degree', label: "Bachelor's Degree" },
@@ -108,7 +109,16 @@ const FILTER_GROUPS = [
     title: 'Experience & Education',
     fields: [
       { key: 'experience', type: 'select', label: 'Experience Level', placeholder: 'Select experience', options: experienceOptions },
-      { key: 'education', type: 'select', label: 'Education', placeholder: 'Select education', options: educationOptions }
+      {
+        key: 'education',
+        type: 'multiSelect',
+        label: 'Education',
+        placeholder: 'Select education',
+        options: educationOptions,
+        multipleLabel: (count) => `${count} levels selected`,
+        // The picks as pills under the field.
+        chips: true
+      }
     ]
   },
   {
@@ -267,7 +277,7 @@ const groupSummaryItems = (groupId, f, view) => {
     case 'experience':
       return [
         f.experience && optionLabel(experienceOptions, f.experience),
-        f.education && optionLabel(educationOptions, f.education)
+        ...(f.education || []).map((level) => optionLabel(educationOptions, level))
       ].filter(Boolean);
     case 'salary': {
       const { min, max } = f.salary || {};
@@ -551,9 +561,17 @@ const FilterSidebar = ({
               onChange={(value) => handleMultiChange(field?.key, value)}
               placeholder={isDisabled ? (field?.disabledPlaceholder || field?.placeholder) : field?.placeholder}
               multiple
+              multipleLabel={field?.multipleLabel}
               searchable={!!field?.searchable}
               disabled={isDisabled}
             />
+            {field?.chips && (
+              <PickedChips
+                label={`Selected ${field?.label?.toLowerCase()}`}
+                items={(localFilters?.[field?.key] || []).map((value) => ({ value, label: optionLabel(options, value) }))}
+                onRemove={(value) => handleMultiChange(field?.key, (localFilters?.[field?.key] || []).filter((v) => v !== value))}
+              />
+            )}
           </div>
         );
       }

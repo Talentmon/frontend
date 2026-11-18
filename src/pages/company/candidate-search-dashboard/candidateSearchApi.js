@@ -50,7 +50,7 @@ export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
   if (filters.location) out.location = filters.location;
   if (filters.country?.length) out.country = filters.country;
   if (filters.experience) out.experience = filters.experience;
-  if (filters.education) out.education = EDUCATION_FILTER_TO_BACKEND[filters.education];
+  if (filters.education?.length) out.education = filters.education.map((level) => EDUCATION_FILTER_TO_BACKEND[level]).filter(Boolean);
   if (filters.availability) out.availability = filters.availability;
   if (filters.status) out.status = STATUS_TO_BACKEND[filters.status];
   if (filters.skills?.length) out.skills = filters.skills;
@@ -85,7 +85,8 @@ export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
 // in backend enum shape) is loaded back into FilterSidebar's local state.
 export function filtersToFrontend(filters = {}) {
   const out = { ...filters };
-  if (out.education) out.education = EDUCATION_BACKEND_TO_FILTER[out.education] || '';
+  // A list of levels; filters saved before that hold one level as a string.
+  if (out.education) out.education = [].concat(out.education).map((level) => EDUCATION_BACKEND_TO_FILTER[level]).filter(Boolean);
   if (out.jobType?.length) out.jobType = out.jobType.map((t) => JOB_TYPE_TO_FRONTEND[t]).filter(Boolean);
   if (out.workMode?.length) out.workMode = out.workMode.map((m) => WORK_MODE_BACKEND_TO_FILTER[m]).filter(Boolean);
   if (out.status) out.status = STATUS_TO_FRONTEND[out.status] || '';

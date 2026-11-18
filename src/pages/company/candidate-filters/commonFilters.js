@@ -25,7 +25,7 @@ export const COMMON_EMPTY = {
   languages: [],
   country: [],
   location: [], // cities
-  education: '',
+  education: [], // levels; any of them, each exactly
   certificates: [],
   candidateStatus: '',
   availability: '',
@@ -118,12 +118,12 @@ const countNames = (candidates, namesOf) => {
 
 // ===== Matching (one candidate against one filter) =====
 // Filters picked as a list (the rest are one value).
-const LIST_FILTERS = new Set(['jobType', 'workMode']);
+const LIST_FILTERS = new Set(['education', 'jobType', 'workMode']);
 
 const matchers = {
   country: (c, countries) => countries.some((name) => lower(name) === lower(c?.country)),
   location: (c, places) => places.some((place) => lower(place) === lower(c?.location)),
-  education: (c, level) => !!c?.educationLevels?.includes(level),
+  education: (c, levels) => levels.some((level) => !!c?.educationLevels?.includes(level)),
   availability: (c, bucket) => typeof c?.noticeDays === 'number' && c.noticeDays <= AVAILABILITY_DAYS[bucket],
   jobType: (c, types) => !!c?.jobType?.some((type) => types.includes(type)),
   workMode: (c, modes) => modes.includes(c?.workMode),
@@ -174,7 +174,7 @@ export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
 
   if (f.country.length) keep((c) => matchers.country(c, f.country));
   if (f.location.length) keep((c) => matchers.location(c, f.location));
-  if (f.education) keep((c) => matchers.education(c, f.education));
+  if (f.education.length) keep((c) => matchers.education(c, f.education));
   if (f.certificates.length) keep((c) => matchers.certificates(c, f.certificates));
   if (f.candidateStatus) keep((c) => matchers.candidateStatus(c, f.candidateStatus));
   if (f.availability) keep((c) => matchers.availability(c, f.availability));
@@ -196,7 +196,7 @@ export const commonActiveCount = (f) =>
     f.languages.length,
     f.country.length,
     f.location.length,
-    f.education ? 1 : 0,
+    f.education.length,
     f.certificates.length,
     f.candidateStatus ? 1 : 0,
     f.availability ? 1 : 0,

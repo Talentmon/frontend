@@ -3,6 +3,7 @@ import Select from 'components/ui/Select';
 import Combobox from 'components/ui/Combobox';
 import { Checkbox } from 'components/ui/Checkbox';
 import LanguageLevelFilter from '../candidate-search-dashboard/components/LanguageLevelFilter';
+import PickedChips from '../candidate-search-dashboard/components/PickedChips';
 import SalaryRangeFilter from '../candidate-search-dashboard/components/SalaryRangeFilter';
 import SkillsMatchToggle from '../candidate-search-dashboard/components/SkillsMatchToggle';
 import { MenuOption } from '../bookmarked-candidates/components/Popover';
@@ -415,29 +416,25 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
     )
   };
 
+  // Several levels can be picked; a candidate matches with any of them, each exactly.
+  const educationOptions = present(EDUCATION_OPTIONS, opts.educationCounts, f.education);
+  const educationLabel = (level) => optionLabel(EDUCATION_OPTIONS, level);
   const education = {
     key: 'education',
     label: 'Education',
-    available: EDUCATION_OPTIONS.some(({ value }) => opts.educationCounts[value]) || !!f.education,
-    count: f.education ? 1 : 0,
-    summary: f.education ? [optionLabel(EDUCATION_OPTIONS, f.education)] : [],
-    clear: { education: '' },
-    chips: f.education ? [chip('edu', optionLabel(EDUCATION_OPTIONS, f.education), () => set('education', ''))] : [],
+    available: educationOptions.length > 0,
+    count: f.education.length,
+    summary: f.education.map(educationLabel),
+    clear: { education: [] },
+    chips: f.education.map((level) => chip(`edu-${level}`, educationLabel(level), () => set('education', toggleIn(f.education, level)))),
     pill: {
       width: 240,
       body: (
-        <RadioList
+        <CheckList
           label="Education"
-          anyLabel="Any education"
-          options={EDUCATION_OPTIONS}
-          counts={opts.educationCounts}
-          total={opts.total}
-          value={f.education}
-          hideEmpty
-          onPick={(value) => {
-            set('education', value);
-            onRadioPicked('education');
-          }}
+          items={educationOptions.map((option) => ({ ...option, count: opts.educationCounts[option.value] }))}
+          picked={f.education}
+          onToggle={(level) => set('education', toggleIn(f.education, level))}
         />
       )
     },
@@ -445,10 +442,17 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
       <SideField id={fid('education')} label="Education" hideLabel={hideLabel}>
         <Select
           id={fid('education')}
-          options={[{ value: '', label: 'Any education' }, ...present(EDUCATION_OPTIONS, opts.educationCounts, f.education)]}
+          options={educationOptions}
           value={f.education}
           onChange={(value) => set('education', value)}
-          placeholder="Any education"
+          placeholder="Select education"
+          multipleLabel={(count) => `${count} levels selected`}
+          multiple
+        />
+        <PickedChips
+          label="Selected education"
+          items={f.education.map((level) => ({ value: level, label: educationLabel(level) }))}
+          onRemove={(level) => set('education', toggleIn(f.education, level))}
         />
       </SideField>
     )

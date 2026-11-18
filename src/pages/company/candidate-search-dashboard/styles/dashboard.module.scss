@@ -804,6 +804,50 @@ $fold: 0.28s;
   gap: 6px;
 }
 
+// A multi-select's picks as removable pills under it (PickedChips.jsx), the
+// same look as the Skills field's chips.
+.pickedChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pickedChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  height: 26px;
+  padding: 0 2px 0 8px;
+  border-radius: 6px;
+  background: $gold-soft;
+  color: $gold-text;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+}
+
+.pickedChipX {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  color: inherit;
+
+  &:hover {
+    background: #f6e3be;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #e6a93c;
+    outline-offset: 1px;
+  }
+}
+
 .fieldLabel {
   display: block;
   font-size: 13px;
@@ -859,50 +903,6 @@ $fold: 0.28s;
   align-items: center;
   gap: 8px;
 }
-// A multi-select's picks as removable pills under it (PickedChips.jsx), the
-// same look as the Skills field's chips.
-.pickedChips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin: 2px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.pickedChip {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  height: 26px;
-  padding: 0 2px 0 8px;
-  border-radius: 6px;
-  background: $gold-soft;
-  color: $gold-text;
-  font-size: 13px;
-  font-weight: 600;
-  line-height: 18px;
-}
-
-.pickedChipX {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 4px;
-  color: inherit;
-
-  &:hover {
-    background: #f6e3be;
-  }
-
-  &:focus-visible {
-    outline: 2px solid #e6a93c;
-    outline-offset: 1px;
-  }
-}
-
 
 .salaryField {
   position: relative;
@@ -945,12 +945,6 @@ $fold: 0.28s;
   flex-direction: column;
   gap: 6px;
   margin-top: -6px;
-}
-
-// Salary view: Net / Gross over Per month / Per year (SalaryRangeFilter).
-.salaryView {
-  display: grid;
-  gap: 6px;
 }
 
 .matchToggle {
@@ -1160,7 +1154,12 @@ $fold: 0.28s;
   font-weight: 700;
 }
 
-// ===== Search toolbar =====
+// ===== Search toolbar: "9 candidates found" | Salaries ▾ ... Sort by ▾ [grid|list] =====
+$bar-bg: #f1f3f6; // segmented tracks, icon tiles
+$bar-hover-border: #c5cbd3;
+$bar-glow: 0 0 0 3px rgba(230, 169, 60, 0.18);
+$pop-shadow: 0 18px 40px -16px rgba(11, 26, 44, 0.3);
+
 .toolbar {
   display: flex;
   flex-direction: column;
@@ -1168,44 +1167,200 @@ $fold: 0.28s;
   margin-bottom: 4px;
 }
 
-
 .toolbarRow {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 12px 16px;
   flex-wrap: wrap;
 }
 
 .resultsInfo {
+  min-width: 0;
   display: flex;
   align-items: center;
   gap: 14px;
-  flex-wrap: wrap;
-}
 
-.resultsCount {
-  font-size: 0.9rem;
-  color: $slate;
+  // On a phone the Salaries button goes under the count.
+  @media (max-width: 639px) {
+    flex-wrap: wrap;
+    row-gap: 10px;
 
-  b {
-    color: $ink;
-    font-weight: 700;
+    .resultsDivider {
+      display: none;
+    }
   }
 }
 
-// " · Salaries: net per month" after the count — small and grey, and it wraps as one piece.
-.resultsSalary {
-  font-size: 0.82rem;
-  color: $slate-2;
+// "9 candidates found": the number large, the words quieter.
+.resultsCount {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 15px;
+  line-height: 20px;
+  color: $label;
   white-space: nowrap;
+
+  strong {
+    font-size: 20px;
+    line-height: 24px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: $ink;
+    font-variant-numeric: tabular-nums;
+  }
 }
 
+.resultsDivider {
+  flex: none;
+  width: 1px;
+  height: 22px;
+  background: #dde2e8;
+}
+
+// --- Salaries ▾ (how salaries are shown; the popover's two switches)
+.menuRoot {
+  position: relative;
+}
+
+.salaryChip {
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 8px;
+  border: 1px solid $line;
+  border-radius: 999px;
+  background: $white;
+  font-size: 13.5px;
+  line-height: 18px;
+  white-space: nowrap;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  &[aria-expanded="false"]:hover {
+    border-color: $bar-hover-border;
+  }
+
+  &[aria-expanded="true"] {
+    border-color: $gold;
+    box-shadow: $bar-glow;
+  }
+}
+
+.salaryChipIcon {
+  width: 24px;
+  height: 24px;
+  flex: none;
+  border-radius: 50%;
+  background: $gold-soft;
+  color: $gold-text;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.barMuted {
+  color: $hint;
+}
+
+.barValue {
+  font-weight: 700;
+  color: $ink;
+}
+
+.barChevron {
+  flex: none;
+  color: $slate-2;
+  transition: transform 0.2s ease;
+
+  [aria-expanded="true"] > & {
+    transform: rotate(180deg);
+  }
+}
+
+.salaryPop {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  top: calc(100% + 8px);
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+  padding: 16px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 14px;
+  box-shadow: $pop-shadow;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.salaryPopTitle {
+  margin: 0;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 700;
+  color: $ink;
+}
+
+.barSeg {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: $bar-bg;
+  border-radius: 11px;
+
+  button {
+    flex: 1;
+    height: 34px;
+    padding: 0 12px;
+    border-radius: 8px;
+    color: $hint;
+    font-size: 13.5px;
+    line-height: 18px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition:
+      background-color 0.12s,
+      color 0.12s;
+
+    &:hover:not([aria-checked="true"]) {
+      color: $ink;
+    }
+
+    &[aria-checked="true"] {
+      background: $white;
+      color: $ink;
+      box-shadow: 0 1px 2px rgba(11, 26, 44, 0.14);
+    }
+  }
+}
+
+.salaryPopNote {
+  margin: 2px 0 0;
+  display: flex;
+  gap: 8px;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: $hint;
+
+  svg {
+    flex: none;
+    margin-top: 1px;
+    color: $slate-2;
+  }
+}
 
 .toolbarControls {
+  flex: none;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .filtersToggleBtn {
@@ -1213,21 +1368,21 @@ $fold: 0.28s;
   align-items: center;
   gap: 0.5em;
   height: 40px;
-  border: 1.5px solid $line;
+  border: 1px solid $line;
   background: $white;
-  border-radius: $r-sm;
+  border-radius: 10px;
   padding: 0 0.9em;
   font-size: 0.85rem;
   font-weight: 600;
   color: $ink;
-  transition: border-color 0.2s;
+  transition: border-color 0.15s;
 
   svg {
     color: $gold-deep;
   }
 
   &:hover {
-    border-color: $gold;
+    border-color: $bar-hover-border;
   }
 
   @media (max-width: 1023px) {
@@ -1235,44 +1390,177 @@ $fold: 0.28s;
   }
 }
 
-.sortDesktop {
-  display: none;
-
-  @media (min-width: 640px) {
-    display: block;
-  }
-}
-
-.sortMobileBtn {
-  display: block;
-
-  @media (min-width: 640px) {
-    display: none;
-  }
-}
-
-.viewToggle {
-  display: flex;
+// --- Sort by ▾
+.sortTrigger {
+  height: 40px;
+  min-width: 240px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid $line;
+  border-radius: 10px;
   background: $white;
-  border: 1.5px solid $line;
-  border-radius: $r-sm;
+  font-size: 14px;
+  line-height: 18px;
+  text-align: left;
+  white-space: nowrap;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+
+  > svg:first-child {
+    flex: none;
+    color: $slate-2;
+  }
+
+  &[aria-expanded="false"]:hover {
+    border-color: $bar-hover-border;
+  }
+
+  &[aria-expanded="true"] {
+    border-color: $gold;
+    box-shadow: $bar-glow;
+  }
+
+  // On a phone the label goes and the box only fits its value.
+  @media (max-width: 639px) {
+    min-width: 0;
+
+    .barMuted {
+      display: none;
+    }
+  }
+}
+
+.sortValue {
+  flex: 1;
+  font-weight: 700;
+  color: $ink;
+}
+
+.sortList {
+  position: absolute;
+  z-index: 30;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 260px;
+  max-width: calc(100vw - 32px);
+  box-sizing: border-box;
+
+  // On a phone the Sort button sits at the left, so the list opens to the right of it.
+  @media (max-width: 639px) {
+    right: auto;
+    left: 0;
+  }
+  padding: 6px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 14px;
+  box-shadow: $pop-shadow;
+}
+
+.sortSep {
+  height: 1px;
+  margin: 5px 8px;
+  background: #eef0f3;
+}
+
+.sortOption {
+  width: 100%;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 9px;
+  color: $ink;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 500;
+  text-align: left;
+  transition: background-color 0.12s ease;
+
+  &[aria-selected="true"] {
+    background: #f6f7f9;
+    font-weight: 700;
+  }
+
+  // The pointer or the arrow keys are on it.
+  &:hover,
+  &.sortOptionActive {
+    background: $gold-soft;
+    color: $gold-text;
+  }
+}
+
+.sortOptionIcon {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: $bar-bg;
+  color: $hint;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  [aria-selected="true"] > & {
+    background: $gold-soft;
+    color: $gold-text;
+  }
+}
+
+.sortOptionLabel {
+  flex: 1;
+  min-width: 0;
+}
+
+.sortOptionCheck {
+  display: inline-flex;
+  color: $gold-deep;
+  opacity: 0;
+
+  [aria-selected="true"] > & {
+    opacity: 1;
+  }
+}
+
+// --- Cards / list (ink with a gold icon when on)
+.viewToggle {
+  display: inline-flex;
+  gap: 2px;
   padding: 3px;
+  background: $white;
+  border: 1px solid $line;
+  border-radius: 11px;
 }
 
 .viewToggleBtn {
-  padding: 0.5em 0.6em;
-  border-radius: 7px;
-  color: $slate-2;
-  display: grid;
-  place-items: center;
-  transition: 0.2s;
+  width: 34px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: $hint;
+  transition:
+    background-color 0.15s,
+    color 0.15s;
 
-  &.on {
+  &[aria-pressed="false"]:hover {
+    background: $bar-bg;
+    color: $ink;
+  }
+
+  &[aria-pressed="true"] {
     background: $ink;
     color: $gold;
   }
 }
 
+// List rows need room: below 1000px only the cards are offered.
 .viewToggleListBtn {
   @media (max-width: 1000px) {
     display: none;

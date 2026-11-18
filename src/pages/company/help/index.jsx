@@ -43,7 +43,7 @@ const REQUIRED_FIELDS = [
 
 const FILTER_GROUPS = [
   { name: 'Basic search', text: 'Position and location' },
-  { name: 'Salary', text: 'Range for the candidate’s salary minimum: net or gross, per month or per year, typed in the currency you pick' },
+  { name: 'Salary', text: 'Range for the candidate’s salary minimum, typed in the currency you pick, in the net or gross, per month or per year that salaries are shown in' },
   { name: 'Experience & education', text: 'Years of experience, from – to, and one or more education levels' },
   { name: 'Skills', text: 'Skill categories and specific skills' },
   { name: 'Languages', text: 'Languages, each with a minimum level' },
@@ -487,21 +487,22 @@ const CompanyHelp = () => {
               <div className={styles.prose}>
                 <p>
                   Candidates give their salary minimum both net and gross. Your team sees it the way your company set
-                  under <b>Salary view</b> in Company information, for example net per month, and the line above the
-                  results says which: “Found 24 candidates · Salaries: net per month”. Cards and CVs always show the
-                  amount in the candidate's own currency.
+                  under <b>Salary view</b> in Company information, for example net per month, and the{' '}
+                  <b>Salaries</b> button next to the number of candidates found says which. Cards and CVs always show
+                  the amount in the candidate's own currency.
                 </p>
                 <ul className={styles.bullets}>
                   <li>
-                    Switch between net and gross, or per month and per year, in the <b>Salary</b> filter. The switch
-                    holds on Search, Bookmarked and Purchased until you close the tab or sign out, then your company's
-                    setting applies again.
+                    Switch between net and gross, or per month and per year, with the <b>Salaries</b> button on
+                    Search, Bookmarked and Purchased. The switch holds on all three until you close the tab or sign
+                    out, then your company's setting applies again.
                   </li>
                   <li>
-                    The filter's range is typed in the currency you pick there and compared with each candidate's
-                    salary at today's exchange rate, updated daily.
+                    The Salary filter's range is typed in the currency you pick there and compared with each
+                    candidate's salary at today's exchange rate, updated daily. It keeps the net or gross and month or
+                    year it was typed in, so switching how salaries are shown doesn't change who matches.
                   </li>
-                  <li>Sorting by salary follows the same view.</li>
+                  <li>Sorting by salary follows the way salaries are shown.</li>
                 </ul>
               </div>
 

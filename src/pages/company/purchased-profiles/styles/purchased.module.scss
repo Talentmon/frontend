@@ -2279,37 +2279,7 @@ $kpi-tones: (
   }
 }
 
-// ===== Cards / Table switch in the results bar =====
-.viewSeg {
-  display: inline-flex;
-  gap: 2px;
-  padding: 3px;
-  background: $white;
-  border: 1px solid $line;
-  border-radius: 10px;
-
-  button {
-    width: 32px;
-    height: 30px;
-    display: grid;
-    place-items: center;
-    border-radius: 7px;
-    color: $card-muted;
-    transition:
-      background-color 0.15s,
-      color 0.15s;
-
-    &:hover {
-      background: #eef0f3;
-      color: $ink;
-    }
-
-    &.on {
-      background: $ink;
-      color: $white;
-    }
-  }
-}
+// (The Cards / Table switch is Search's ViewToggle.)
 
 // ===== Nothing matches the filters =====
 .noMatch {

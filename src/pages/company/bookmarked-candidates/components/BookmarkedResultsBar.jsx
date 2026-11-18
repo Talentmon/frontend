@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import Icon from 'components/AppIcon';
-import { salaryViewLabel, useSalaryView } from 'lib/salaryView';
+import SalaryViewMenu from '../../candidate-search-dashboard/components/SalaryViewMenu';
+import ds from '../../candidate-search-dashboard/styles/dashboard.module.scss';
 import Popover from './Popover';
 import styles from '../styles/bookmarked.module.scss';
 
@@ -16,7 +17,7 @@ const SORT_OPTIONS = [
 ];
 
 /**
- * "Showing 4 of 10 candidates" with Sort, Reorder and Select multiple, right above the cards.
+ * "Showing 4 of 10 candidates" and how salaries are shown, with Sort, Reorder and Select multiple, right above the cards.
  * `compact` (beside an open CV): Sort shows just its name, Reorder and Select multiple just their icons.
  */
 const BookmarkedResultsBar = ({
@@ -34,8 +35,6 @@ const BookmarkedResultsBar = ({
 }) => {
   const [sortOpen, setSortOpen] = useState(false);
   const closeSort = useCallback(() => setSortOpen(false), []);
-  // The cards show bare amounts; this says once how they're shown (follows the Salary filter).
-  const [salaryView] = useSalaryView();
   const sortLabel = SORT_OPTIONS.find((option) => option.value === sortBy)?.label || SORT_OPTIONS[0].label;
 
   const reorderLabel = !reorderMode ? 'Reorder' : hasReordered ? 'Save order' : 'Cancel reorder';
@@ -43,10 +42,14 @@ const BookmarkedResultsBar = ({
 
   return (
     <div className={styles.resultsBar}>
-      <p role="status" className={styles.resultsCount}>
-        Showing <strong>{shown}</strong> of {total} candidate{total === 1 ? '' : 's'}
-        <span className={styles.resultsSalary}> · Salaries: {salaryViewLabel(salaryView)}</span>
-      </p>
+      {/* The count, then how salaries are shown (the cards show bare amounts). */}
+      <div className={ds.resultsInfo}>
+        <p role="status" className={styles.resultsCount}>
+          Showing <strong>{shown}</strong> of {total} candidate{total === 1 ? '' : 's'}
+        </p>
+        <span className={ds.resultsDivider} aria-hidden="true" />
+        <SalaryViewMenu compact={compact} />
+      </div>
 
       <div className={styles.resultsTools}>
         {/* Sorting is pinned to the drag order while reordering. */}

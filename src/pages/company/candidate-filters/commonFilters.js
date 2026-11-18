@@ -7,7 +7,7 @@ import { CATEGORY_NAMES as SKILL_CATEGORY_NAMES, getSkillNamesFor } from 'utils/
 import { getSubIndustries } from 'utils/industries';
 import { allSkillNames, makeSkillMatcher } from 'utils/skillMatch';
 import { currencySymbol } from 'utils/currencyService';
-import { DEFAULT_SALARY_VIEW, basisWord, periodWord, salaryBase } from 'lib/salaryView';
+import { DEFAULT_SALARY_VIEW, basisWord, periodWord, rangeView, salaryBase } from 'lib/salaryView';
 import { EMPTY_EXPERIENCE, experienceActive, inExperienceRange } from 'utils/experienceRange';
 
 export const COMMON_EMPTY = {
@@ -79,13 +79,16 @@ export const toggleIn = (list = [], value) => (list.includes(value) ? list.filte
 export const optionLabel = (options, value) => options.find((option) => option.value === value)?.label || value;
 
 /** "From €2,000 net / mo" — the range in the salary view (and currency) it's typed in. */
-export const salaryChipLabel = ({ min, max }, view = DEFAULT_SALARY_VIEW) => {
-  const symbol = currencySymbol(view.currency || 'EUR');
+export const salaryChipLabel = (salary, view = DEFAULT_SALARY_VIEW) => {
+  const { min, max } = salary || {};
+  // In the range's own net/gross and month/year (lib/salaryView rangeView).
+  const terms = rangeView(salary, view);
+  const symbol = currencySymbol(terms.currency);
   const prefix = symbol.length > 1 ? `${symbol} ` : symbol;
   const from = min ? `${prefix}${Number(min).toLocaleString('en-US')}` : '';
   const to = max ? `${prefix}${Number(max).toLocaleString('en-US')}` : '';
   const range = from && to ? `${from} – ${to}` : from ? `From ${from}` : `Up to ${to}`;
-  return `${range} ${basisWord(view.basis)} / ${periodWord(view.period)}`;
+  return `${range} ${basisWord(terms.basis)} / ${periodWord(terms.period)}`;
 };
 
 const countBy = (candidates, valuesOf) => {
@@ -156,9 +159,11 @@ export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
   }
 
   if (f.salary.min || f.salary.max) {
-    // Today's rate, the same one the candidates' EUR salaries are at (utils/exchangeRateService).
-    const range = buildBaseSalaryRange({ min: f.salary.min, max: f.salary.max, currency: view.currency || 'EUR' });
-    out = filterByBaseSalary(out, range, (c) => salaryBase(c?.expectedSalary, view));
+    // The range's own net/gross and month/year, in the view's currency, at today's
+    // rate, the same one the candidates' EUR salaries are at (utils/exchangeRateService).
+    const terms = rangeView(f.salary, view);
+    const range = buildBaseSalaryRange({ min: f.salary.min, max: f.salary.max, currency: terms.currency });
+    out = filterByBaseSalary(out, range, (c) => salaryBase(c?.expectedSalary, terms));
   }
 
   // Any picked language, at one of its picked levels (none picked = any level).
@@ -226,7 +231,6 @@ export function commonOptions(candidates) {
       name,
       subs: getSubIndustries(name).filter((sub) => subCounts[sub]).sort()
     })),
-
     skills,
     // Categories holding at least one of those skills.
     skillCategories: SKILL_CATEGORY_NAMES.filter((category) =>

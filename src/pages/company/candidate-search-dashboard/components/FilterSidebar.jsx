@@ -9,7 +9,7 @@ import { ISSUER_NAMES, FAMILY_NAMES, getCertificationNamesFor } from 'utils/cert
 import { CATEGORY_NAMES as SKILL_CATEGORY_NAMES, getSkillNamesFor } from 'utils/skills';
 import { currencySymbol } from 'utils/currencyService';
 import { COUNTRY_OPTIONS } from 'utils/countries';
-import { basisWord, periodWord, useSalaryView } from 'lib/salaryView';
+import { basisWord, periodWord, rangeView, useSalaryView } from 'lib/salaryView';
 import {
   listSavedFilters,
   createSavedFilter,
@@ -25,7 +25,6 @@ import PickedChips from './PickedChips';
 import SalaryRangeFilter from './SalaryRangeFilter';
 import SkillsMatchToggle from './SkillsMatchToggle';
 import styles from '../styles/dashboard.module.scss';
-
 
 // Several can be picked; a candidate matches with any of them, exactly that level.
 const educationOptions = [
@@ -285,11 +284,13 @@ const groupSummaryItems = (groupId, f, view) => {
     case 'salary': {
       const { min, max } = f.salary || {};
       if (!min && !max) return [];
-      const symbol = currencySymbol(view?.currency || 'EUR');
+      // In the range's own terms (net/gross, month/year), the view's currency.
+      const terms = rangeView(f.salary, view);
+      const symbol = currencySymbol(terms.currency);
       const prefix = symbol.length > 1 ? `${symbol} ` : symbol;
       const from = min ? `${prefix}${formatAmount(min)}` : '';
       const to = max ? `${prefix}${formatAmount(max)}` : '';
-      const per = `${basisWord(view?.basis)} / ${periodWord(view?.period || 'MONTH')}`;
+      const per = `${basisWord(terms.basis)} / ${periodWord(terms.period)}`;
       if (from && to) return [`${from} – ${to} ${per}`];
       return [`${from ? `From ${from}` : `Up to ${to}`} ${per}`];
     }
@@ -332,8 +333,6 @@ const fieldId = (key) => `filter-${key}`;
 
 // Filter inputs are white with the same 9px corners as the dropdowns.
 const INPUT_CLASS = 'bg-white rounded-[9px]';
-
-const sameSalaryView = (a, b) => a?.basis === b?.basis && a?.period === b?.period && a?.currency === b?.currency;
 
 /**
  * The fields are a draft: nothing is searched until Apply filters (or Enter in
@@ -382,10 +381,11 @@ const FilterSidebar = ({
   };
 
   // Something in the fields isn't searched yet: a field differs, or a salary
-  // range is now meant in another view (net/gross, month/year, currency).
+  // range is now typed in another currency. (Its net/gross and month/year ride
+  // on the range itself, so showing salaries another way changes nothing here.)
   const salaryRangeOn = !!(localFilters?.salary?.min || localFilters?.salary?.max);
   const hasChanges =
-    !sameFilters(localFilters, appliedFilters) || (salaryRangeOn && !sameSalaryView(salaryView, appliedView));
+    !sameFilters(localFilters, appliedFilters) || (salaryRangeOn && salaryView.currency !== appliedView?.currency);
 
   const handleApply = () => {
     if (!hasChanges) return;
@@ -449,9 +449,8 @@ const FilterSidebar = ({
   const handleClearGroup = (group) => {
     const cleared = { ...localFilters };
     group?.fields?.forEach((field) => {
-      cleared[field.key] = field.type === 'salaryRange'
-        ? { ...localFilters?.salary, min: '', max: '' }
-        : emptyValueForType(field.type);
+      // An emptied salary range drops its terms too (the currency is the view's and stays).
+      cleared[field.key] = emptyValueForType(field.type);
     });
     if (group?.id === 'skills') cleared.skillsMatch = 'any';
     updateDraft(cleared);
@@ -462,11 +461,8 @@ const FilterSidebar = ({
     return ALL_FIELDS?.filter((field) => isFieldActive(field, localFilters))?.length;
   };
 
-  const sameView = (entry) =>
-    !entry?.view ||
-    (entry.view.basis === salaryView.basis &&
-      entry.view.period === salaryView.period &&
-      entry.view.currency === salaryView.currency);
+  // A saved range's net/gross and month/year are in its filters; only the currency is the view's.
+  const sameView = (entry) => !entry?.view || entry.view.currency === salaryView.currency;
   const isSavedFilterCurrent = (entry) =>
     entry?.id === activeSavedFilterId && sameFilters(entry?.filters, localFilters) && sameView(entry);
 
@@ -478,8 +474,8 @@ const FilterSidebar = ({
   // something in, so what's switched on is visible; open groups stay open.
   const handleApplySavedFilter = (entry) => {
     const nextFilters = { ...DEFAULT_FILTERS, ...entry?.filters };
-    // Its salary range only means something in the view it was typed in.
-    if (entry?.view) setSalaryView(entry.view);
+    // Its salary range carries its own net/gross and month/year; it's typed in its currency.
+    if (entry?.view && entry.view.currency !== salaryView.currency) setSalaryView({ ...salaryView, currency: entry.view.currency });
     setLocalFilters(nextFilters);
     setActiveSavedFilterId(entry?.id);
     setIsNamingFilter(false);

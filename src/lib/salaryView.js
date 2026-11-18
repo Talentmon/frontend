@@ -174,12 +174,6 @@ export function salaryForView(expectedSalary, view = DEFAULT_SALARY_VIEW) {
 /** "€1,500" — the amount only, in the candidate's own currency. */
 export const formatSalaryAmount = (salary) => (salary ? formatMoney(salary.amount, salary.currency) : '');
 
-/**
- * "net per month", "gross per year": how every salary on a list is shown. The
- * cards print the bare amount, so the results line says this once per page.
- */
-export const salaryViewLabel = (view = DEFAULT_SALARY_VIEW) => `${basisWord(view?.basis)} per ${periodWord(view?.period, 'long') || 'month'}`;
-
 /** The EUR value a view filters and sorts on. */
 export const salaryBase = (expectedSalary, view = DEFAULT_SALARY_VIEW) => expectedSalary?.base?.[salaryKey(view)] ?? null;
 
@@ -196,10 +190,14 @@ export function salaryClauseAmounts(expectedSalary, view = DEFAULT_SALARY_VIEW) 
   return other != null ? `${part(main.amount, main.basis)} (${part(other, otherBasis(main.basis))})` : part(main.amount, main.basis);
 }
 
-/** A filter range moved to another period: ×12 to a year, ÷12 to a month (rounded), so the numbers stay meaningful. */
-export function rangeForPeriod(range, fromPeriod, toPeriod) {
-  if (fromPeriod === toPeriod) return range;
-  const factor = toPeriod === 'YEAR' ? 12 : 1 / 12;
-  const move = (value) => (value === '' || value == null ? value : String(Math.round(Number(value) * factor)));
-  return { ...range, min: move(range?.min), max: move(range?.max) };
-}
+/**
+ * What a salary filter range means: the net/gross and month/year it was typed
+ * in (kept on the range as `basis` / `period`, so showing salaries another way
+ * doesn't change who matches), in `view`'s currency. A range without them yet
+ * (empty, or from before they were kept) means the view's.
+ */
+export const rangeView = (range, view = DEFAULT_SALARY_VIEW) => ({
+  basis: range?.basis || view?.basis || DEFAULT_SALARY_VIEW.basis,
+  period: range?.period || view?.period || DEFAULT_SALARY_VIEW.period,
+  currency: view?.currency || DEFAULT_SALARY_VIEW.currency
+});

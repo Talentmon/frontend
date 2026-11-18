@@ -270,8 +270,8 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
     count: salaryActive ? 1 : 0,
     summary: salaryActive ? [salaryChipLabel(f.salary, salaryView)] : [],
     // The currency is part of the salary view, so clearing leaves it as picked.
-    clear: { salary: { ...f.salary, min: '', max: '' } },
-    chips: salaryActive ? [chip('salary', salaryChipLabel(f.salary, salaryView), () => set('salary', { ...f.salary, min: '', max: '' }))] : [],
+    clear: { salary: { min: '', max: '' } },
+    chips: salaryActive ? [chip('salary', salaryChipLabel(f.salary, salaryView), () => set('salary', { min: '', max: '' }))] : [],
     pill: {
       width: 320,
       padded: true,

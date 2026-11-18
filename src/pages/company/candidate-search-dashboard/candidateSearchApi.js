@@ -1,5 +1,5 @@
 import apiClient from 'lib/apiClient';
-import { DEFAULT_SALARY_VIEW, expectedSalaryFrom } from 'lib/salaryView';
+import { DEFAULT_SALARY_VIEW, expectedSalaryFrom, rangeView } from 'lib/salaryView';
 import { formatLocation, splitLocation } from 'utils/countries';
 import { experienceToBackend, toExperienceRange } from 'utils/experienceRange';
 
@@ -72,12 +72,14 @@ export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
   if (filters.relocationReady) out.relocationReady = true;
   if (filters.travelReady) out.travelReady = true;
   if (filters.salary?.min || filters.salary?.max) {
+    // The range's own net/gross and month/year (see lib/salaryView rangeView), in the view's currency.
+    const terms = rangeView(filters.salary, view);
     out.salary = {
       ...(filters.salary.min ? { min: String(filters.salary.min) } : {}),
       ...(filters.salary.max ? { max: String(filters.salary.max) } : {}),
-      currency: view.currency || 'EUR',
-      basis: view.basis,
-      period: view.period,
+      currency: terms.currency,
+      basis: terms.basis,
+      period: terms.period,
     };
   }
   return out;
@@ -94,9 +96,11 @@ export function filtersToFrontend(filters = {}) {
   if (out.jobType?.length) out.jobType = out.jobType.map((t) => JOB_TYPE_TO_FRONTEND[t]).filter(Boolean);
   if (out.workMode?.length) out.workMode = out.workMode.map((m) => WORK_MODE_BACKEND_TO_FILTER[m]).filter(Boolean);
   if (out.status) out.status = STATUS_TO_FRONTEND[out.status] || '';
+  // The range keeps the net/gross and month/year it was saved in (net per month
+  // for filters saved before views existed); the currency goes to savedFilterView.
   if (out.salary) {
-    const { basis, period, currency, ...range } = out.salary;
-    out.salary = range;
+    const { basis, period, min = '', max = '' } = out.salary;
+    out.salary = min || max ? { min, max, basis: basis || 'NET', period: period || 'MONTH' } : { min: '', max: '' };
   }
   return out;
 }
@@ -120,7 +124,6 @@ export function savedFilterView(filters = {}) {
 export function searchCandidates({ filters, sort, offset = 0, limit = 20, filterView = DEFAULT_SALARY_VIEW, sortView = filterView } = {}) {
   const backendFilters = filtersToBackend(filters, filterView);
   const params = { offset, limit, salaryBasis: sortView.basis, salaryPeriod: sortView.period };
-
   if (sort) params.sort = sort;
   if (Object.keys(backendFilters).length) params.filters = JSON.stringify(backendFilters);
   return apiClient.get('/candidates/search', { params }).then((r) => r.data);

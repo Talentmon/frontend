@@ -2,9 +2,10 @@ import React, { useCallback, useState } from 'react';
 import Icon from 'components/AppIcon';
 import Popover from '../../bookmarked-candidates/components/Popover';
 import bm from '../../bookmarked-candidates/styles/bookmarked.module.scss';
-import { salaryViewLabel, useSalaryView } from 'lib/salaryView';
+import SalaryViewMenu from '../../candidate-search-dashboard/components/SalaryViewMenu';
+import ViewToggle from '../../candidate-search-dashboard/components/ViewToggle';
+import ds from '../../candidate-search-dashboard/styles/dashboard.module.scss';
 import { SORT_OPTIONS, sortLabel } from '../purchasedFilters';
-import styles from '../styles/purchased.module.scss';
 
 /** Sort (the cards and the table share it). */
 // `compact` (beside an open CV): just the sort's name on the button, as Search's Sort shows it.
@@ -49,50 +50,30 @@ export const SortMenu = ({ sortBy, onSortChange, compact = false }) => {
   );
 };
 
-/** Cards / Table. */
-export const ViewToggle = ({ viewMode, onViewModeChange }) => (
-  <div className={styles.viewSeg} role="group" aria-label="View">
-    <button
-      type="button"
-      className={viewMode === 'cards' ? styles.on : ''}
-      onClick={() => onViewModeChange('cards')}
-      aria-label="Cards"
-      aria-pressed={viewMode === 'cards'}
-      title="Cards"
-    >
-      <Icon name="LayoutGrid" size={16} />
-    </button>
-    <button
-      type="button"
-      className={viewMode === 'table' ? styles.on : ''}
-      onClick={() => onViewModeChange('table')}
-      aria-label="Table"
-      aria-pressed={viewMode === 'table'}
-      title="Table"
-    >
-      <Icon name="List" size={16} />
-    </button>
+// Cards / Table, the same switch as Search's.
+const VIEW_OPTIONS = [
+  { value: 'cards', label: 'Cards', icon: 'LayoutGrid' },
+  { value: 'table', label: 'Table', icon: 'List' }
+];
+
+/** "Showing 3 of 5 candidates", then how salaries are shown (the cards show bare amounts). */
+export const ResultsCount = ({ shown, total, className = bm.resultsCount, compact = false }) => (
+  <div className={ds.resultsInfo}>
+    <p role="status" className={className}>
+      Showing <strong>{shown}</strong> of {total} candidate{total === 1 ? '' : 's'}
+    </p>
+    <span className={ds.resultsDivider} aria-hidden="true" />
+    <SalaryViewMenu compact={compact} />
   </div>
 );
 
-/** "Showing 3 of 5 candidates · Salaries: net per month" — the cards show bare amounts. */
-export const ResultsCount = ({ shown, total, className = bm.resultsCount }) => {
-  const [salaryView] = useSalaryView();
-  return (
-    <p role="status" className={className}>
-      Showing <strong>{shown}</strong> of {total} candidate{total === 1 ? '' : 's'}
-      <span className={bm.resultsSalary}> · Salaries: {salaryViewLabel(salaryView)}</span>
-    </p>
-  );
-};
-
-/** The wide page's bar above the cards: the count, then Sort and Cards / Table. */
+/** The wide page's bar above the cards: the count and how salaries are shown, then Sort and Cards / Table. */
 const PurchasedResultsBar = ({ shown, total, sortBy, onSortChange, viewMode, onViewModeChange, compact = false }) => (
   <div className={bm.resultsBar}>
-    <ResultsCount shown={shown} total={total} />
+    <ResultsCount shown={shown} total={total} compact={compact} />
     <div className={bm.resultsTools}>
       <SortMenu sortBy={sortBy} onSortChange={onSortChange} compact={compact} />
-      <ViewToggle viewMode={viewMode} onViewModeChange={onViewModeChange} />
+      <ViewToggle value={viewMode} onChange={onViewModeChange} options={VIEW_OPTIONS} />
     </div>
   </div>
 );

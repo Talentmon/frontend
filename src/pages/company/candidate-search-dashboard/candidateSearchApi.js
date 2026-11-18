@@ -258,8 +258,9 @@ export function unlockCandidate(candidateId, positionContext, view) {
 }
 
 // ---- Bookmarks ----
-export function listBookmarks() {
-  return apiClient.get('/companies/me/bookmarks').then((r) => r.data);
+/** `[{ id, candidateId }]`: only which candidates are bookmarked, for the cards' bookmark buttons (not the CVs and notes Bookmarked loads). */
+export function listBookmarkIds() {
+  return apiClient.get('/companies/me/bookmarks/ids').then((r) => r.data);
 }
 export function createBookmark(candidateId) {
   return apiClient.post('/companies/me/bookmarks', { candidateId }).then((r) => r.data);

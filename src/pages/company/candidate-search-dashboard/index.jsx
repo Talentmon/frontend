@@ -18,7 +18,7 @@ import {
   candidateToFrontend,
   revealedToFrontend,
   unlockCandidate,
-  listBookmarks,
+  listBookmarkIds,
   createBookmark,
   removeBookmark,
   listCreditPackages,
@@ -97,8 +97,9 @@ const CandidateSearchDashboard = () => {
 
   const bookmarkedCandidates = Object.keys(bookmarksById);
 
+  // Which candidates are bookmarked (and each bookmark's id, to remove it): ids only, no CVs.
   useEffect(() => {
-    listBookmarks()
+    listBookmarkIds()
       .then((rows) => {
         const map = {};
         rows.forEach((b) => { map[b.candidateId] = b.id; });

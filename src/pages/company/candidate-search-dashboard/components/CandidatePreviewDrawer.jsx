@@ -10,6 +10,13 @@ import {
 import { basisWord, formatSalaryAmount, periodWord, salaryForView, useSalaryView } from 'lib/salaryView';
 import styles from '../styles/drawer.module.scss';
 
+// "Apr 2021" — dates are stored as the 1st of the month at UTC midnight.
+const monthYear = (iso) =>
+  iso ? new Date(iso).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' }) : '';
+
+// Rich text with any words in it (an emptied editor leaves "<p><br></p>").
+const hasText = (html) => /\S/.test(String(html || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' '));
+
 const CandidatePreviewDrawer = ({
   candidates = [],
   activeId = null,
@@ -113,8 +120,6 @@ const CandidatePreviewDrawer = ({
 
   if (!candidate) return null;
 
-  const currentYear = new Date()?.getFullYear();
-  const startYear = currentYear - (candidate?.experience || 0);
   // Purchased profiles already carry a formatted work arrangement/notice
   // string (workArrangement/notice) instead of the search dashboard's raw
   // jobType/availability codes — prefer those when present.
@@ -231,24 +236,35 @@ const CandidatePreviewDrawer = ({
               </div>
             )}
 
-            <div className={styles.sec}>
-              <div className={styles.secHead}><b>Experience</b></div>
-              <div className={styles.xp}>
-                <span className={styles.xpRole}>{candidate?.position}</span>
-                <span className={styles.xpDate}>{startYear} — Present</span>
-                <div className={styles.xpCo}>
-                  <span className={styles.priv}>{candidate?.company}</span>
-                  {candidate?.location ? ` · ${candidate?.location}` : ''}
-                </div>
-                {candidate?.skills?.length > 0 && (
-                  <div className={styles.xpTags}>
-                    {candidate?.skills?.slice(0, 4)?.map((skill) => (
-                      <span key={skill} className={styles.tag}>{skill}</span>
-                    ))}
+            {candidate?.experiences?.length > 0 && (
+              <div className={styles.sec}>
+                <div className={styles.secHead}><b>Experience</b></div>
+                {candidate.experiences.map((job) => (
+                  <div className={styles.xp} key={job.id}>
+                    <span className={styles.xpRole}>{job.role}</span>
+                    <span className={styles.xpDate}>
+                      {[monthYear(job.startDate), job.endDate ? monthYear(job.endDate) : 'Present'].filter(Boolean).join(' — ')}
+                    </span>
+                    <div className={styles.xpCo}>
+                      {/* Striped bar until unlocked, the employer's name after. */}
+                      <span className={styles.priv}>{isRevealed ? job.company : ''}</span>
+                      {job.location ? ` · ${job.location}` : ''}
+                    </div>
+                    {hasText(job.description) && (
+                      // Sanitized rich text (the backend's sanitizeRichText on save).
+                      <div className={styles.xpDesc} dangerouslySetInnerHTML={{ __html: job.description }} />
+                    )}
+                    {job.tags?.length > 0 && (
+                      <div className={styles.xpTags}>
+                        {job.tags.map((tag) => (
+                          <span key={tag} className={styles.tag}>{tag}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                )}
+                ))}
               </div>
-            </div>
+            )}
 
             {candidate?.education && (
               <div className={styles.sec}>

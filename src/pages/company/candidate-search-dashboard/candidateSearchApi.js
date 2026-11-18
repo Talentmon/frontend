@@ -153,6 +153,24 @@ function summaryFrom(customSections = []) {
   return customSections.find((s) => s.type === 'summary')?.textContent || '';
 }
 
+/**
+ * The CV's jobs, newest first as the candidate ordered them. `company` is only
+ * there after an unlock (the anonymized row strips it); `description` is the
+ * candidate's rich text, sanitized by the backend on save.
+ */
+function experiencesFrom(experiences = []) {
+  return experiences.map((exp) => ({
+    id: exp.id,
+    role: exp.role || '',
+    company: exp.company || undefined,
+    startDate: exp.startDate || null,
+    endDate: exp.endDate || null,
+    location: exp.location || '',
+    description: exp.description || '',
+    tags: exp.tags || []
+  }));
+}
+
 /** Anonymized search-result row -> the shape CandidateCard/CandidatePreviewDrawer expect. No name/photo/contact — those only exist post-unlock (see revealedToFrontend). */
 export function candidateToFrontend(raw) {
   const prefs = raw.preferences;
@@ -173,6 +191,8 @@ export function candidateToFrontend(raw) {
     searchStatus: STATUS_TO_FRONTEND[raw.status] || 'active',
     description: summaryFrom(raw.customSections),
     skills: (raw.skills || []).map((s) => s.name),
+    // Every job with its description and skills: the CV shows them, and the Skills filter reads them.
+    experiences: experiencesFrom(raw.experiences),
     languages: (raw.languages || []).map((l) => ({ name: l.name, level: l.level, note: l.note })),
     education: highestEducation(raw.education),
     // Every level they have, and the notice in days: Bookmarked and Purchased
@@ -201,6 +221,8 @@ export function revealedToFrontend(snapshot = {}) {
     phone: snapshot.phone || undefined,
     linkedin: snapshot.linkedin || undefined,
     company: snapshot.currentEmployerName || undefined,
+    // The same jobs, now with the employers' names.
+    ...(snapshot.experiences ? { experiences: experiencesFrom(snapshot.experiences) } : {}),
   };
 }
 

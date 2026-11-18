@@ -469,6 +469,43 @@ $header-h: 64px;
   user-select: none;
 }
 
+// What they did there — the candidate's rich text (paragraphs, lists, bold).
+.xpDesc {
+  grid-column: 1 / -1;
+  margin-top: 8px;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #33424f;
+  overflow-wrap: anywhere;
+
+  p {
+    margin: 0 0 0.5em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  ul,
+  ol {
+    margin: 0.3em 0 0.5em;
+    padding-left: 1.25em;
+  }
+
+  ul {
+    list-style: disc;
+  }
+
+  ol {
+    list-style: decimal;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: underline;
+  }
+}
+
 .xpTags {
   grid-column: 1 / -1;
   display: flex;

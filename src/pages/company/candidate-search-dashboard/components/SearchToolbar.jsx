@@ -6,58 +6,30 @@ import Button from 'components/ui/Button';
 import { salaryViewLabel, useSalaryView } from 'lib/salaryView';
 import styles from '../styles/dashboard.module.scss';
 
+// Newest first by default. (No "Relevance": it only meant a more complete profile first.)
+export const SORT_OPTIONS = [
+  { value: 'newest', label: 'Newest' },
+  { value: 'experience', label: 'Experience (descending)' },
+  { value: 'experience_asc', label: 'Experience (ascending)' },
+  { value: 'salary', label: 'Salary (descending)' },
+  { value: 'salary_asc', label: 'Salary (ascending)' }
+];
+
+/** Above the results: how many were found (counted once per search), sort, grid / list. Everything else is in the filters. */
 const SearchToolbar = ({
-  searchQuery = '',
-  onSearchChange = () => {},
-  sortBy = 'relevance',
+  sortBy = 'newest',
   onSortChange = () => {},
   viewMode = 'grid',
   onViewModeChange = () => {},
   resultsCount = 0,
-  onClearSearch = () => {},
   isFilterCollapsed = false,
   onToggleFilters = () => {}
 }) => {
   // The cards show bare amounts; this says once how they're shown (follows the Salary filter).
   const [salaryView] = useSalaryView();
-  const sortOptions = [
-    { value: 'relevance', label: 'Relevance' },
-    { value: 'experience', label: 'Experience (descending)' },
-    { value: 'experience_asc', label: 'Experience (ascending)' },
-    { value: 'salary', label: 'Salary (descending)' },
-    { value: 'salary_asc', label: 'Salary (ascending)' },
-    { value: 'newest', label: 'Newest' }
-  ];
-
-  const handleSearchSubmit = (e) => {
-    e?.preventDefault();
-  };
 
   return (
     <div className={styles.toolbar}>
-      {/* Search Bar */}
-      <form onSubmit={handleSearchSubmit}>
-        <div className={styles.searchbar}>
-          <Icon name="Search" size={20} />
-          <input
-            type="text"
-            placeholder="Search candidates by position, skills, location..."
-            value={searchQuery}
-            onChange={(e) => onSearchChange(e?.target?.value)}
-          />
-          {searchQuery && (
-            <button
-              type="button"
-              onClick={onClearSearch}
-              className={styles.searchClear}
-              aria-label="Clear search"
-            >
-              <Icon name="X" size={16} />
-            </button>
-          )}
-        </div>
-      </form>
-      {/* Toolbar */}
       <div className={styles.toolbarRow}>
         {/* Results Count */}
         <div className={styles.resultsInfo}>
@@ -65,18 +37,6 @@ const SearchToolbar = ({
             Found <b>{resultsCount}</b> candidates
             <span className={styles.resultsSalary}> · Salaries: {salaryViewLabel(salaryView)}</span>
           </div>
-
-          {searchQuery && (
-            <div className={styles.queryPill}>
-              <span>for: "{searchQuery}"</span>
-              <button
-                onClick={onClearSearch}
-                aria-label="Remove filter"
-              >
-                <Icon name="X" size={12} />
-              </button>
-            </div>
-          )}
         </div>
 
         {/* Controls */}
@@ -94,10 +54,11 @@ const SearchToolbar = ({
           {/* Sort Dropdown */}
           <div className={styles.sortDesktop}>
             <Select
-              options={sortOptions}
+              options={SORT_OPTIONS}
               value={sortBy}
               onChange={onSortChange}
               placeholder="Sort by"
+              aria-label="Sort by"
               className="min-w-48"
             />
           </div>

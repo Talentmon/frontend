@@ -448,9 +448,10 @@ const CompanyHelp = () => {
               />
               <div className={styles.prose}>
                 <p>
-                  Search is where you'll spend most of your time. Type a position, skill or city into the search bar,
-                  then narrow the results with the filters on the left. The list updates as you go, and the number of
-                  matching candidates is shown above it.
+                  Search is where you'll spend most of your time. Set the filters on the left, such as position, city,
+                  skills or salary, and click <b>Apply filters</b> (or press Enter in a field you typed in). The number
+                  of matching candidates is shown above the results; <b>Load more candidates</b> at the bottom adds
+                  the next 20.
                 </p>
               </div>
               <Figure
@@ -473,12 +474,12 @@ const CompanyHelp = () => {
               <Callout tone="tip" icon="Save" title="Save your filters">
                 Found a combination that works? Click <b>Save filter</b> at the bottom of the filters and give it a
                 name. It appears under <b>Your filters</b> at the top, and one click runs it again. Adjust it and click{' '}
-                <b>Update saved filter</b>, or remove it with the bin icon.
+                <b>Update filter</b>, or remove it with the bin icon.
               </Callout>
               <div className={styles.prose}>
                 <p>
-                  Use <b>Sort</b> to order results by relevance, experience, salary or newest, and switch between grid
-                  and list view with the buttons next to it.
+                  Use <b>Sort</b> to order results by newest, experience or salary, and switch between grid and list
+                  view with the buttons next to it.
                 </p>
               </div>
 

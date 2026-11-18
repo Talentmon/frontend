@@ -114,13 +114,13 @@ export function savedFilterView(filters = {}) {
 /**
  * One batch of cards: `offset` 0 is a new search (it comes with `total`), Load
  * more sends how many cards are already shown (`total` is null then).
- * `filterView`: the salary view the salary range is typed in;
+ * `filterView`: the salary view the applied salary range was typed in;
  * `sortView`: the one the cards are shown in, what sorting by salary uses.
  */
-export function searchCandidates({ q, filters, sort, offset = 0, limit = 20, filterView = DEFAULT_SALARY_VIEW, sortView = filterView } = {}) {
+export function searchCandidates({ filters, sort, offset = 0, limit = 20, filterView = DEFAULT_SALARY_VIEW, sortView = filterView } = {}) {
   const backendFilters = filtersToBackend(filters, filterView);
   const params = { offset, limit, salaryBasis: sortView.basis, salaryPeriod: sortView.period };
-  if (q) params.q = q;
+
   if (sort) params.sort = sort;
   if (Object.keys(backendFilters).length) params.filters = JSON.stringify(backendFilters);
   return apiClient.get('/candidates/search', { params }).then((r) => r.data);

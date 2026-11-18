@@ -333,9 +333,18 @@ const fieldId = (key) => `filter-${key}`;
 // Filter inputs are white with the same 9px corners as the dropdowns.
 const INPUT_CLASS = 'bg-white rounded-[9px]';
 
+const sameSalaryView = (a, b) => a?.basis === b?.basis && a?.period === b?.period && a?.currency === b?.currency;
+
+/**
+ * The fields are a draft: nothing is searched until Apply filters (or Enter in
+ * a text field). Clear all and picking a saved filter search right away.
+ * `appliedFilters` / `appliedView`: what the results show now (the view the
+ * applied salary range was typed in). `onApply(filters, view?)`: search with these.
+ */
 const FilterSidebar = ({
-  filters = {},
-  onFiltersChange = () => {},
+  appliedFilters = {},
+  appliedView = null,
+  onApply = () => {},
   onClearFilters = () => {},
   isCollapsed = false,
   onToggleCollapse = () => {},
@@ -343,7 +352,7 @@ const FilterSidebar = ({
 }) => {
   const [localFilters, setLocalFilters] = useState({
     ...DEFAULT_FILTERS,
-    ...filters
+    ...appliedFilters
   });
 
   const [savedFilters, setSavedFilters] = useState([]);
@@ -363,13 +372,36 @@ const FilterSidebar = ({
       .catch(() => {});
   }, []);
 
-  const applyFilters = (updatedFilters) => {
+  // Every field edits the draft only.
+  const updateDraft = (updatedFilters) => {
     setLocalFilters(updatedFilters);
-    onFiltersChange(updatedFilters);
   };
 
   const handleFilterChange = (key, value) => {
-    applyFilters({ ...localFilters, [key]: value });
+    updateDraft({ ...localFilters, [key]: value });
+  };
+
+  // Something in the fields isn't searched yet: a field differs, or a salary
+  // range is now meant in another view (net/gross, month/year, currency).
+  const salaryRangeOn = !!(localFilters?.salary?.min || localFilters?.salary?.max);
+  const hasChanges =
+    !sameFilters(localFilters, appliedFilters) || (salaryRangeOn && !sameSalaryView(salaryView, appliedView));
+
+  const handleApply = () => {
+    if (!hasChanges) return;
+    onApply(localFilters);
+    // Below 1024px the filters cover the results; close them to show what was found.
+    if (!isCollapsed && window.matchMedia?.('(max-width: 1023px)')?.matches) onToggleCollapse();
+  };
+
+  // Enter in a typed field (Position, City, the salary amounts) applies, like a
+  // form. Dropdowns and the Skills box use Enter themselves, so they're left alone.
+  const handleBodyKeyDown = (e) => {
+    const target = e?.target;
+    if (e?.key !== 'Enter' || e.defaultPrevented || target?.tagName !== 'INPUT') return;
+    if (target.getAttribute('role') === 'combobox' || target.closest('[role="listbox"]')) return;
+    e.preventDefault();
+    handleApply();
   };
 
   // Multi-selects that narrow another field also drop what no longer fits
@@ -397,7 +429,7 @@ const FilterSidebar = ({
       next.certName = (localFilters?.certName || []).filter((name) => validNames.has(name) || !CATALOG_CERT_NAMES.has(name));
     }
 
-    applyFilters(next);
+    updateDraft(next);
   };
 
   const handleBooleanToggle = (key) => {
@@ -422,7 +454,7 @@ const FilterSidebar = ({
         : emptyValueForType(field.type);
     });
     if (group?.id === 'skills') cleared.skillsMatch = 'any';
-    applyFilters(cleared);
+    updateDraft(cleared);
     document.getElementById(`filter-group-toggle-${group?.id}`)?.focus();
   };
 
@@ -442,8 +474,8 @@ const FilterSidebar = ({
     setOpenGroups((prev) => ({ ...prev, [id]: !prev?.[id] }));
   };
 
-  // Applying a saved filter also expands every group it sets something in,
-  // so what's switched on is visible right away; open groups stay open.
+  // A saved filter searches right away, and expands every group it sets
+  // something in, so what's switched on is visible; open groups stay open.
   const handleApplySavedFilter = (entry) => {
     const nextFilters = { ...DEFAULT_FILTERS, ...entry?.filters };
     // Its salary range only means something in the view it was typed in.
@@ -458,7 +490,7 @@ const FilterSidebar = ({
       });
       return next;
     });
-    onFiltersChange(nextFilters);
+    onApply(nextFilters, entry?.view || undefined);
   };
 
   const handleDeleteSavedFilter = async (id) => {
@@ -699,7 +731,7 @@ const FilterSidebar = ({
         </div>
       </div>
       {/* Scrollable middle: saved filters + collapsible groups */}
-      <div className={styles.filtersBody}>
+      <div className={styles.filtersBody} onKeyDown={handleBodyKeyDown}>
         {savedFilters?.length > 0 && (
           <div className={styles.savedFilters}>
             <h4 className={styles.savedFiltersTitle}>Your filters</h4>
@@ -812,7 +844,7 @@ const FilterSidebar = ({
           );
         })}
       </div>
-      {/* Pinned footer: save / name the current filter */}
+      {/* Pinned footer: Apply filters and Save filter side by side; naming a new filter takes the row */}
       <div className={styles.filtersFoot}>
         {isNamingFilter ? (
           <div className={styles.saveFilterRow}>
@@ -848,15 +880,28 @@ const FilterSidebar = ({
             </button>
           </div>
         ) : (
-          <button
-            type="button"
-            className={styles.saveFilterBtn}
-            onClick={handleSaveFilter}
-            disabled={getActiveFiltersCount() === 0}
-          >
-            <Icon name="Save" size={17} />
-            {activeSavedFilterId ? 'Update saved filter' : 'Save filter'}
-          </button>
+          <div className={styles.footActions}>
+            <button
+              type="button"
+              className={styles.applyFiltersBtn}
+              onClick={handleApply}
+              disabled={!hasChanges}
+              title={hasChanges ? undefined : 'The results already show these filters'}
+            >
+              <Icon name="Search" size={16} strokeWidth={2.4} />
+              Apply filters
+            </button>
+            <button
+              type="button"
+              className={styles.saveFilterBtn}
+              onClick={handleSaveFilter}
+              disabled={getActiveFiltersCount() === 0}
+              title={activeSavedFilterId ? 'Update the saved filter with these fields' : undefined}
+            >
+              <Icon name="Save" size={16} />
+              {activeSavedFilterId ? 'Update filter' : 'Save filter'}
+            </button>
+          </div>
         )}
       </div>
     </div>

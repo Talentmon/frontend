@@ -26,25 +26,24 @@ import {
 
 const UNLOCK_COST = 1;
 const PAGE_SIZE = 20;
-const SEARCH_DEBOUNCE_MS = 350;
 
 const CandidateSearchDashboard = () => {
   const [candidates, setCandidates] = useState([]);
-  // Counted once per search; "Load more" doesn't count again.
+  // Counted once per search (Apply); "Load more" doesn't count again.
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [sortBy, setSortBy] = useState('relevance');
+  const [sortBy, setSortBy] = useState('newest');
   const [viewMode, setViewMode] = useState('grid');
-  const [filters, setFilters] = useState({});
-  // Net or gross, per month or per year: what the cards show, the salary
-  // filter's range is typed in, and sorting by salary orders by. Its
-  // currency is the one the range is typed in.
+  // Net or gross, per month or per year: what the cards show and sorting by
+  // salary orders by. Its currency is the one a salary range is typed in.
   const [salaryView] = useSalaryView();
+  // What the results show: the filters as last applied, with the salary view
+  // their salary range was typed in (the sidebar's fields are a draft until Apply).
+  const [applied, setApplied] = useState({ filters: {}, view: null });
+  const appliedView = applied.view || salaryView;
   const [isFilterCollapsed, setIsFilterCollapsed] = useState(
     () => typeof window !== 'undefined' && window.innerWidth < 1024
   );
@@ -98,12 +97,6 @@ const CandidateSearchDashboard = () => {
 
   const bookmarkedCandidates = Object.keys(bookmarksById);
 
-  // Debounce free-text search so every keystroke doesn't trigger a request.
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedQuery(searchQuery.trim()), SEARCH_DEBOUNCE_MS);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
   useEffect(() => {
     listBookmarks()
       .then((rows) => {
@@ -114,10 +107,9 @@ const CandidateSearchDashboard = () => {
       .catch(() => {});
   }, []);
 
-  // A new search counts the total and starts a new generation, and only the
-  // latest may touch the results: typing "3000" fires 3, 30, 300, 3000, and a
-  // slow reply for "3" must not land after the one for "3000". A "Load more"
-  // still in flight from the previous search is dropped the same way.
+  // A new search (Apply, a sort, a saved filter) counts the total and starts
+  // a new generation: only the latest may touch the results, so a slow reply
+  // to an earlier search, or its "Load more", never lands over a newer one.
   // "Load more" asks for the next 20 after the cards already shown, without a count.
   const runSearch = ({ append = false } = {}) => {
     if (!append) {
@@ -129,12 +121,11 @@ const CandidateSearchDashboard = () => {
 
     append ? setLoadingMore(true) : setLoading(true);
     return searchCandidates({
-      q: debouncedQuery || undefined,
-      filters,
+      filters: applied.filters,
       sort: sortBy,
       offset: append ? candidates.length : 0,
       limit: PAGE_SIZE,
-      filterView: salaryView,
+      filterView: appliedView,
       sortView: salaryView
     })
       .then((data) => {
@@ -158,16 +149,21 @@ const CandidateSearchDashboard = () => {
       });
   };
 
-  // Another currency only changes the results when a salary range is typed in it.
-  const rangeCurrency = filters?.salary?.min || filters?.salary?.max ? salaryView.currency : '';
+  // Sorting by salary orders by the salary view the cards are in, so another view re-sorts.
+  const salarySort = sortBy === 'salary' || sortBy === 'salary_asc';
   useEffect(() => {
     runSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedQuery, filters, sortBy, salaryView.basis, salaryView.period, rangeCurrency]);
+  }, [applied, sortBy, salarySort ? salaryView.basis : '', salarySort ? salaryView.period : '']);
 
   const handleLoadMore = () => {
     if (loadingMore || !hasMore) return;
     runSearch({ append: true });
+  };
+
+  // From the sidebar: Apply filters, or a saved filter (with the view its range was typed in).
+  const handleApplyFilters = (filters, view) => {
+    setApplied({ filters, view: view || salaryView });
   };
 
   // List view doesn't make sense below 1000px — fall back to grid.
@@ -273,12 +269,9 @@ const CandidateSearchDashboard = () => {
     }
   };
 
-  const handleClearSearch = () => {
-    setSearchQuery('');
-  };
-
+  // Clear all in the sidebar searches right away, with no filters.
   const handleClearFilters = () => {
-    setFilters({});
+    setApplied({ filters: {}, view: salaryView });
   };
 
   const handlePreviewCandidate = (candidateId) => {
@@ -307,8 +300,9 @@ const CandidateSearchDashboard = () => {
         <div className={`${styles.body} ${previewId !== null ? styles.previewOpen : ''}`}>
           {/* Filter Sidebar */}
           <FilterSidebar
-            filters={filters}
-            onFiltersChange={setFilters}
+            appliedFilters={applied.filters}
+            appliedView={appliedView}
+            onApply={handleApplyFilters}
             onClearFilters={handleClearFilters}
             isCollapsed={isFilterCollapsed}
             onToggleCollapse={() => setIsFilterCollapsed(!isFilterCollapsed)}
@@ -319,14 +313,11 @@ const CandidateSearchDashboard = () => {
           <div className={`${styles.main} ${previewId !== null ? styles.previewOpen : ''}`}>
             {/* Search Toolbar */}
             <SearchToolbar
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
               sortBy={sortBy}
               onSortChange={setSortBy}
               viewMode={viewMode}
               onViewModeChange={setViewMode}
               resultsCount={total}
-              onClearSearch={handleClearSearch}
               isFilterCollapsed={isFilterCollapsed}
               onToggleFilters={() => setIsFilterCollapsed(!isFilterCollapsed)}
             />

@@ -5,6 +5,7 @@
 import { buildBaseSalaryRange, filterByBaseSalary } from 'utils/salaryFilterService';
 import { CATEGORY_NAMES as SKILL_CATEGORY_NAMES, getSkillNamesFor } from 'utils/skills';
 import { getSubIndustries } from 'utils/industries';
+import { allSkillNames, makeSkillMatcher } from 'utils/skillMatch';
 import { currencySymbol } from 'utils/currencyService';
 import { DEFAULT_SALARY_VIEW, basisWord, periodWord, salaryBase } from 'lib/salaryView';
 import { EXPERIENCE_OPTIONS, inExperienceRange } from '../bookmarked-candidates/filterUtils';
@@ -143,16 +144,17 @@ export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
   }
   if (f.experience) keep((c) => inExperienceRange(c?.experience, f.experience));
 
-  // Whole skill names, Match any / Match all; a category with no skill picked matches any skill in it.
+  // Match any / Match all. A skill counts in Skills, a job's skills or a job's description
+  // (utils/skillMatch). A category with no skill picked counts the same way for any skill in it.
   if (f.skills.length) {
-    const names = f.skills.map(lower);
-    keep((c) => {
-      const has = new Set(c?.skills?.map(lower));
-      return f.skillsMatch === 'all' ? names.every((name) => has.has(name)) : names.some((name) => has.has(name));
-    });
+    if (f.skillsMatch === 'all') {
+      const each = f.skills.map((name) => makeSkillMatcher([name]));
+      keep((c) => each.every((matches) => matches(c)));
+    } else {
+      keep(makeSkillMatcher(f.skills));
+    }
   } else if (f.skillCategory.length) {
-    const names = new Set(getSkillNamesFor({ categories: f.skillCategory }).map(lower));
-    keep((c) => c?.skills?.some((skill) => names.has(lower(skill))));
+    keep(makeSkillMatcher(getSkillNamesFor({ categories: f.skillCategory })));
   }
 
   if (f.salary.min || f.salary.max) {
@@ -209,7 +211,8 @@ export const commonActiveCount = (f) =>
 export function commonOptions(candidates) {
   const industryCounts = countBy(candidates, (c) => c?.industries || []);
   const subCounts = countBy(candidates, (c) => c?.subIndustries || []);
-  const skills = uniqueNames(candidates.flatMap((c) => c?.skills || []));
+  // From the Skills section and the jobs' skills.
+  const skills = uniqueNames(candidates.flatMap(allSkillNames));
   const skillKeys = new Set(skills.map(lower));
   const countMatching = (options, key) =>
     Object.fromEntries(options.map(({ value }) => [value, candidates.filter((c) => matchers[key](c, LIST_FILTERS.has(key) ? [value] : value)).length]));

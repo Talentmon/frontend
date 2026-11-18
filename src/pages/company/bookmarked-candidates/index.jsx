@@ -14,6 +14,7 @@ import CandidatePreviewDrawer from '../candidate-search-dashboard/components/Can
 import Icon from 'components/AppIcon';
 import { ListSearch } from '../candidate-filters/CandidateFilterBar';
 import { COMMON_EMPTY, applyCommonFilters, commonOptions } from '../candidate-filters/commonFilters';
+import { makeTextMatcher } from 'utils/skillMatch';
 import { CV_PUSH_BREAKPOINT, useMinWidth } from '../candidate-filters/cvLayout';
 import cf from '../candidate-filters/candidateFilters.module.scss';
 import { setCreditBalance, useCreditBalance } from 'lib/creditBalance';
@@ -111,15 +112,16 @@ const BookmarkedCandidatesPage = () => {
       filtered = filtered.filter((candidate) => filters.savedBy.includes(candidate?.bookmarkedById));
     }
 
-    // Search: position, skills and location. (Bookmarked candidates are never
-    // unlocked - those move to Purchased - so there's no name to search.)
-    if (filters?.search) {
-      const searchTerm = filters?.search?.toLowerCase();
+    // Search, as on the Search page: city and country by any part of the name; positions
+    // (headline and jobs), skills, job descriptions and summary by whole words (utils/skillMatch).
+    // (Bookmarked candidates are never unlocked - those move to Purchased - so there's no name to search.)
+    if (filters?.search?.trim()) {
+      const searchTerm = filters.search.trim().toLowerCase();
+      const matchesText = makeTextMatcher(filters.search);
       filtered = filtered?.filter(candidate =>
-        candidate?.position?.toLowerCase()?.includes(searchTerm) ||
         candidate?.location?.toLowerCase()?.includes(searchTerm) ||
         candidate?.country?.toLowerCase()?.includes(searchTerm) ||
-        candidate?.skills?.some(skill => skill?.toLowerCase()?.includes(searchTerm))
+        matchesText(candidate)
       );
     }
 

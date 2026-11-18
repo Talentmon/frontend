@@ -6,6 +6,7 @@ import {
   uniqueNames
 } from '../candidate-filters/commonFilters';
 import { salaryBase } from 'lib/salaryView';
+import { makeTextMatcher } from 'utils/skillMatch';
 import { OPEN_STATUSES, daysInStage, needsAttention } from './purchasesApi';
 
 // Search's filters (shared with Bookmarked) plus Purchased's own.
@@ -76,21 +77,30 @@ const digits = (value = '') => value.replace(/\D/g, '');
 
 // Name, position, current employer, city, country, skills, "Hiring for", email,
 // phone (by its digits, whatever the spacing) and the text of the notes.
-const matchesSearch = (profile, term) => {
-  const needle = term.trim().toLowerCase();
-  if (!needle) return true;
-  const fields = [profile?.name, profile?.position, profile?.company, profile?.location, profile?.country, profile?.hiringFor, profile?.email];
-  if (fields.some((value) => value?.toLowerCase()?.includes(needle))) return true;
-  if (profile?.skills?.some((skill) => skill?.toLowerCase()?.includes(needle))) return true;
-  if (profile?.notes?.some((note) => note?.text?.toLowerCase()?.includes(needle))) return true;
+/**
+ * The search box. Positions, skills, job descriptions and summary by whole words, as on
+ * the Search page (utils/skillMatch); name, employers (current and past), city, email, "Hiring for" and notes
+ * by any part; phone by its digits.
+ */
+const makeSearchMatcher = (term) => {
+  const needle = String(term || '').trim().toLowerCase();
+  if (!needle) return () => true;
+  const matchesText = makeTextMatcher(term);
   const needleDigits = digits(needle);
-  return needleDigits.length >= 3 && digits(profile?.phone).includes(needleDigits);
+  return (profile) => {
+    const employers = (profile?.experiences || []).map((job) => job?.company);
+    const fields = [profile?.name, profile?.company, ...employers, profile?.location, profile?.country, profile?.hiringFor, profile?.email];
+    if (fields.some((value) => value?.toLowerCase()?.includes(needle))) return true;
+    if (matchesText(profile)) return true;
+    if (profile?.notes?.some((note) => note?.text?.toLowerCase()?.includes(needle))) return true;
+    return needleDigits.length >= 3 && digits(profile?.phone).includes(needleDigits);
+  };
 };
 
 /** `view`: the salary view (net/gross, month/year) the salary filter is typed in. */
 export function applyFilters(profiles, filters, view) {
   const now = Date.now();
-  let list = profiles.filter((p) => matchesSearch(p, filters.search));
+  let list = profiles.filter(makeSearchMatcher(filters.search));
 
   if (filters.statuses.length) list = list.filter((p) => filters.statuses.includes(p?.recruitmentStatus));
   if (filters.attention) list = list.filter((p) => needsAttention(p, now));

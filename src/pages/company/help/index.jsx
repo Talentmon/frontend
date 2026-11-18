@@ -94,10 +94,33 @@ const SectionHead = ({ num, eyebrow, title, subtitle, icon }) => (
   </header>
 );
 
+// Pixel size of each screenshot in public/help. The browser reserves the space before a
+// lazy image loads, so nothing shifts while you read or jump from "On this page" (without
+// it, images loading during the jump pushed the target down and it stopped short).
+// Update the numbers when a screenshot is replaced.
+const SHOT_SIZE = {
+  '/help/bookmarks-notes.webp': [672, 1242],
+  '/help/bookmarks-overview.webp': [2160, 1350],
+  '/help/bookmarks-select.webp': [2160, 1350],
+  '/help/credits-alert.webp': [1704, 939],
+  '/help/credits-packages.webp': [1752, 990],
+  '/help/credits-payment-methods.webp': [1704, 1098],
+  '/help/profile-required.webp': [1752, 1522],
+  '/help/purchased-card.webp': [672, 1178],
+  '/help/purchased-feedback.webp': [840, 1104],
+  '/help/purchased-overview.webp': [2160, 1350],
+  '/help/reputation.webp': [1278, 1046],
+  '/help/search-card.webp': [674, 701],
+  '/help/search-overview.webp': [2160, 1350],
+  '/help/search-preview.webp': [2160, 1350],
+  '/help/team.webp': [1278, 846],
+  '/help/unlock-modal.webp': [675, 750],
+};
+
 const Figure = ({ src, alt, caption, onZoom, narrow = false }) => (
   <figure className={`${styles.figure} ${narrow ? styles.figureNarrow : ''}`}>
     <button type="button" className={styles.shot} onClick={() => onZoom({ src, alt })} aria-label={`Enlarge: ${alt}`}>
-      <img src={src} alt={alt} loading="lazy" />
+      <img src={src} alt={alt} loading="lazy" width={SHOT_SIZE[src]?.[0]} height={SHOT_SIZE[src]?.[1]} />
       <span className={styles.zoomHint}><Icon name="ZoomIn" size={15} /></span>
     </button>
     {caption && <figcaption>{caption}</figcaption>}

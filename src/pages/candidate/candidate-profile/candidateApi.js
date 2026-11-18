@@ -187,6 +187,8 @@ export function experienceToFrontend(exp) {
     location: exp.location || '',
     desc: exp.description || '',
     tags: exp.tags || [],
+    // Skills found in the description that the candidate said aren't skills here.
+    dismissedSkills: exp.dismissedSkills || [],
     visible: exp.visible !== false,
   };
 }
@@ -202,6 +204,7 @@ function experienceToPayload(entry) {
     location: entry.location || undefined,
     description: entry.desc || undefined,
     tags: entry.tags || [],
+    dismissedSkills: entry.dismissedSkills || [],
     visible: entry.visible !== false,
   };
 }

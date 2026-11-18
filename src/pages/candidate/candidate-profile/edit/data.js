@@ -444,6 +444,7 @@ export const SCHEMAS = {
       location: '',
       desc: '',
       tags: [],
+      dismissedSkills: [],
       visible: true,
     }),
     summary: (e) => ({
@@ -461,7 +462,8 @@ export const SCHEMAS = {
       { k: 'end', label: 'End', t: 'text', ph: 'MM/YYYY or Present', half: 1, required: true },
       { k: 'location', label: 'Location', t: 'text', ph: 'City, country', full: 1, required: true },
       { k: 'desc', label: 'Description', t: 'textarea', ph: 'What you did, outcomes, numbers…', full: 1 },
-      { k: 'tags', label: 'Skills / tools', t: 'tags', full: 1 },
+      // Skills found in the description are offered under this field (see ListSection's SkillSuggestions).
+      { k: 'tags', label: 'Skills / tools', t: 'tags', full: 1, suggestFrom: 'desc' },
     ],
   },
   education: {

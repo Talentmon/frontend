@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from 'components/AppIcon';
+import { catalogSkillName, skillSuggestions } from 'utils/skillMatch';
 import SectionShell from './SectionShell';
 import RichTextEditor from './RichTextEditor';
 import TagEditor from './TagEditor';
@@ -9,6 +10,73 @@ import IconPicker from './IconPicker';
 import { I } from './icons';
 
 const hasValue = (v) => (Array.isArray(v) ? v.length > 0 : !!(v && String(v).trim()));
+
+const skillKey = (name) => String(catalogSkillName(name) ?? name ?? '').trim().toLowerCase();
+
+/** dismissedSkills without the ones that are now among the job's skills (adding one means it is a skill). */
+const withoutTagged = (dismissed = [], tags = []) => {
+  const tagged = new Set(tags.map(skillKey));
+  return dismissed.filter((name) => !tagged.has(skillKey(name)));
+};
+
+/**
+ * Skills found in a job's description that aren't among its "Skills / tools" yet.
+ * Adding one makes it a confirmed skill of the job. "Not a skill here" (e.g. Less
+ * in "more-or-less") goes to the job's dismissedSkills, and the companies' search
+ * stops reading that skill from this description; it can be suggested again.
+ */
+const SkillSuggestions = ({ suggested, dismissed, onAdd, onDismiss, onRestore }) => {
+  if (!suggested.length && !dismissed.length) return null;
+  return (
+    <div className="skill-suggest">
+      {suggested.length > 0 && (
+        <>
+          <div className="ss-head">
+            <Icon name="Sparkles" size={14} />
+            <span>
+              <b>Found in your description.</b> Add them so companies find you by these skills.
+            </span>
+            {suggested.length > 1 && (
+              <button type="button" className="ss-all" onClick={() => onAdd(suggested)}>
+                Add all
+              </button>
+            )}
+          </div>
+          <div className="ss-list">
+            {suggested.map((name) => (
+              <span className="ss-chip" key={name}>
+                <button type="button" className="ss-add" onClick={() => onAdd([name])} title={`Add ${name} to this job's skills`}>
+                  <I name="plus" strokeWidth={2.4} />
+                  {name}
+                </button>
+                <button
+                  type="button"
+                  className="ss-no"
+                  onClick={() => onDismiss(name)}
+                  aria-label={`${name} is not a skill here`}
+                  title="Not a skill here"
+                >
+                  <I name="x" />
+                </button>
+              </span>
+            ))}
+          </div>
+        </>
+      )}
+      {dismissed.length > 0 && (
+        <div className="ss-dismissed">
+          <span>Not skills here:</span>
+          {dismissed.map((name) => (
+            <button type="button" key={name} onClick={() => onRestore(name)} title="Suggest it again">
+              {name}
+              <Icon name="Undo2" size={12} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // Groups several long-text sub-fields (e.g. Projects' Short Description /
 // Challenge / Solution / Impact) behind tabs instead of stacking them, so the
@@ -49,6 +117,32 @@ const EntryRow = ({ sec, schema, entry, editingId, setEditingId, onUpdateEntry, 
 
   const isValid = schema.fields.every((fl) => !fl.required || hasValue(entry[fl.k]));
 
+  // Experience: skills found in the description (see SkillSuggestions).
+  const suggestField = schema.fields.find((fl) => fl.suggestFrom);
+  const suggestText = suggestField ? entry[suggestField.suggestFrom] : '';
+  const suggestTags = suggestField ? entry[suggestField.k] : undefined;
+  const { suggested, dismissed } = useMemo(
+    () =>
+      suggestField
+        ? skillSuggestions({ description: suggestText, tags: suggestTags || [], dismissed: entry.dismissedSkills || [] })
+        : { suggested: [], dismissed: [] },
+    [suggestField, suggestText, suggestTags, entry.dismissedSkills]
+  );
+  const addSkills = (names) =>
+    onUpdateEntry(entry.id, (en) => {
+      const have = new Set((en[suggestField.k] || []).map(skillKey));
+      en[suggestField.k] = [...(en[suggestField.k] || []), ...names.filter((name) => !have.has(skillKey(name)))];
+      en.dismissedSkills = withoutTagged(en.dismissedSkills, en[suggestField.k]);
+    });
+  const dismissSkill = (name) =>
+    onUpdateEntry(entry.id, (en) => {
+      en.dismissedSkills = [...(en.dismissedSkills || []), name];
+    });
+  const restoreSkill = (name) =>
+    onUpdateEntry(entry.id, (en) => {
+      en.dismissedSkills = (en.dismissedSkills || []).filter((d) => skillKey(d) !== skillKey(name));
+    });
+
   const requestClose = () => {
     if (isValid) setEditingId(null);
     else setAttemptedSave(true);
@@ -76,6 +170,12 @@ const EntryRow = ({ sec, schema, entry, editingId, setEditingId, onUpdateEntry, 
             {sm.companyText && <span className="co"> · {sm.companyText}</span>}
           </div>
           {sm.sub && <div className="ee-sub">{sm.sub}</div>}
+          {!isEditing && suggested.length > 0 && (
+            <button type="button" className="ee-suggest" onClick={() => setEditingId(entry.id)}>
+              <Icon name="Sparkles" size={13} />
+              {suggested.length} {suggested.length === 1 ? 'skill' : 'skills'} found in the description
+            </button>
+          )}
         </div>
         <div className="ee-acts">
           <button
@@ -152,7 +252,28 @@ const EntryRow = ({ sec, schema, entry, editingId, setEditingId, onUpdateEntry, 
                       {fl.label}
                     </label>
                   )}
-                  {fl.t === 'tags' && <TagEditor tags={entry[fl.k]} onChange={(tags) => applyChange(fl.k, tags)} />}
+                  {fl.t === 'tags' && (
+                    <TagEditor
+                      tags={entry[fl.k]}
+                      onChange={(tags) =>
+                        fl.suggestFrom
+                          ? onUpdateEntry(entry.id, (en) => {
+                              en[fl.k] = tags;
+                              en.dismissedSkills = withoutTagged(en.dismissedSkills, tags);
+                            })
+                          : applyChange(fl.k, tags)
+                      }
+                    />
+                  )}
+                  {fl.t === 'tags' && fl.suggestFrom && (
+                    <SkillSuggestions
+                      suggested={suggested}
+                      dismissed={dismissed}
+                      onAdd={addSkills}
+                      onDismiss={dismissSkill}
+                      onRestore={restoreSkill}
+                    />
+                  )}
                   {fl.t === 'link' && (
                     <div className="input-icon">
                       <span className="ii">

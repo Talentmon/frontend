@@ -167,7 +167,9 @@ function experiencesFrom(experiences = []) {
     endDate: exp.endDate || null,
     location: exp.location || '',
     description: exp.description || '',
-    tags: exp.tags || []
+    tags: exp.tags || [],
+    // Skills the candidate said aren't skills in this job: the filters don't read them from the description.
+    dismissedSkills: exp.dismissedSkills || []
   }));
 }
 

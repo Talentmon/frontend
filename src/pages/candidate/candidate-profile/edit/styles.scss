@@ -484,6 +484,23 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  // "3 skills found in the description" on a closed job: opens it.
+  .ee-suggest {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    font-size: 0.74rem;
+    font-weight: 600;
+    color: var(--cpe-gold-deep);
+    background: var(--cpe-amber-bg);
+    border: 1px solid var(--cpe-amber-bd);
+    border-radius: 999px;
+    padding: 0.12em 0.6em 0.12em 0.5em;
+    &:hover {
+      background: rgba(230, 169, 60, 0.24);
+    }
+  }
   .ee-acts {
     display: flex;
     align-items: center;
@@ -905,6 +922,126 @@
       min-width: 90px;
       font-size: 0.86rem;
       padding: 0.2em;
+    }
+  }
+
+  /* skills found in a job's description (ListSection's SkillSuggestions) */
+  .skill-suggest {
+    margin-top: 10px;
+    padding: 10px 12px 12px;
+    border: 1px dashed var(--cpe-amber-bd);
+    border-radius: var(--cpe-r-sm);
+    background: var(--cpe-amber-bg);
+    .ss-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: var(--cpe-slate);
+      svg {
+        flex: none;
+        margin-top: 2px;
+        color: var(--cpe-gold-deep);
+      }
+      b {
+        color: var(--cpe-ink);
+        font-weight: 600;
+      }
+      span {
+        flex: 1;
+      }
+    }
+    .ss-all {
+      flex: none;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--cpe-gold-deep);
+      padding: 0.1em 0.4em;
+      border-radius: 6px;
+      &:hover {
+        background: rgba(230, 169, 60, 0.18);
+      }
+    }
+    .ss-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .ss-chip {
+      display: inline-flex;
+      align-items: stretch;
+      background: var(--cpe-white);
+      border: 1px solid var(--cpe-amber-bd);
+      border-radius: 7px;
+      overflow: hidden;
+      button {
+        display: inline-flex;
+        align-items: center;
+        color: #33424f;
+        transition: background-color 0.15s var(--cpe-ease), color 0.15s var(--cpe-ease);
+      }
+      .ss-add {
+        gap: 0.3em;
+        font-size: 0.78rem;
+        font-weight: 500;
+        padding: 0.26em 0.5em 0.26em 0.45em;
+        svg {
+          width: 12px;
+          height: 12px;
+          color: var(--cpe-gold-deep);
+        }
+        &:hover {
+          background: rgba(230, 169, 60, 0.16);
+          color: var(--cpe-ink);
+        }
+      }
+      .ss-no {
+        justify-content: center;
+        width: 24px;
+        border-left: 1px solid var(--cpe-line);
+        color: var(--cpe-slate-2);
+        svg {
+          width: 12px;
+          height: 12px;
+        }
+        &:hover {
+          background: var(--cpe-red-bg);
+          color: var(--cpe-red);
+        }
+      }
+    }
+    .ss-dismissed {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 4px 8px;
+      margin-top: 10px;
+      font-size: 0.76rem;
+      color: var(--cpe-slate-2);
+      button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3em;
+        color: var(--cpe-slate);
+        text-decoration: line-through;
+        text-decoration-color: var(--cpe-slate-2);
+        border-radius: 5px;
+        padding: 0 0.25em;
+        svg {
+          color: var(--cpe-slate-2);
+        }
+        &:hover {
+          text-decoration: none;
+          color: var(--cpe-ink);
+          background: var(--cpe-mist);
+        }
+      }
+    }
+    // Only spaced off the suggestions; on its own it sits at the top of the box.
+    .ss-dismissed:first-child {
+      margin-top: 0;
     }
   }
 

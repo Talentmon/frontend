@@ -45,7 +45,12 @@ const CandidatePreviewDrawer = ({
   // Viewport width (px) above which the host page pushes its content aside
   // instead of overlaying it with the scrim — must match that page's own
   // push breakpoint so the scrim doesn't stay dimmed after the push kicks in.
-  pushBreakpoint = 1520
+  pushBreakpoint = 1520,
+  // Search: the card's own data shows at once; the rest of the CV (jobs,
+  // education, languages) is still on its way ('loading'), or didn't come
+  // ('failed', with `onRetry`). Other pages have the whole CV already.
+  cvStatus = 'ready',
+  onRetry = () => {}
 }) => {
   const bodyRef = useRef(null);
   const [displayCandidate, setDisplayCandidate] = useState(null);
@@ -233,6 +238,24 @@ const CandidatePreviewDrawer = ({
               <div className={styles.sec}>
                 <div className={styles.secHead}><b>Summary</b></div>
                 <p className={styles.about}>{candidate?.description}</p>
+              </div>
+            )}
+
+            {cvStatus === 'loading' && (
+              <div className={styles.sec} role="status">
+                <div className={styles.cvLoading}>
+                  <span className={styles.cvSpinner} aria-hidden="true" />
+                  Loading experience, education and languages…
+                </div>
+              </div>
+            )}
+
+            {cvStatus === 'failed' && (
+              <div className={styles.sec} role="alert">
+                <div className={styles.cvLoading}>
+                  Couldn't load the rest of this CV.
+                  <button type="button" className={styles.cvRetry} onClick={onRetry}>Try again</button>
+                </div>
               </div>
             )}
 

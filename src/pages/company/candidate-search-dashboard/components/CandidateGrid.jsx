@@ -16,6 +16,7 @@ const CandidateGrid = ({
   onBookmarkCandidate = () => {},
   onUnlockCandidate = () => {},
   onPreviewCandidate = () => {},
+  onPrefetchCandidate = null,
   activePreviewId = null,
   isPreviewOpen = false,
   loading = false,
@@ -95,6 +96,7 @@ const CandidateGrid = ({
             onBookmark={onBookmarkCandidate}
             onUnlock={onUnlockCandidate}
             onPreview={handlePreview}
+            onPrefetch={onPrefetchCandidate}
           />
         ))}
       </div>

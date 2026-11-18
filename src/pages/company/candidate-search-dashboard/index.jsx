@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import FilterSidebar from './components/FilterSidebar';
 import SearchToolbar from './components/SearchToolbar';
@@ -14,6 +14,7 @@ import { setCreditBalance, useCreditBalance } from 'lib/creditBalance';
 import { useSalaryView } from 'lib/salaryView';
 import {
   searchCandidates,
+  getSearchCandidate,
   candidateToFrontend,
   revealedToFrontend,
   unlockCandidate,
@@ -29,9 +30,9 @@ const SEARCH_DEBOUNCE_MS = 350;
 
 const CandidateSearchDashboard = () => {
   const [candidates, setCandidates] = useState([]);
+  // Counted once per search; "Load more" doesn't count again.
   const [total, setTotal] = useState(0);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
@@ -56,9 +57,44 @@ const CandidateSearchDashboard = () => {
   const [isBuyOpen, setIsBuyOpen] = useState(false);
   const [toastMsg, setToastMsg] = useState('');
   const toastTimer = useRef(null);
-  // Bumped by every new search; see fetchPage.
+  // Bumped by every new search; see runSearch.
   const searchGeneration = useRef(0);
   const [previewId, setPreviewId] = useState(null);
+
+  // The cards carry only what they show; a CV's jobs, education and languages
+  // load when its preview opens, or ahead of that while the pointer rests on
+  // its card. Each CV is asked for once and kept while the page is open.
+  const [cvById, setCvById] = useState({});
+  const [cvFailed, setCvFailed] = useState({});
+  const cvRequests = useRef({});
+
+  const loadCv = useCallback((id) => {
+    if (!id || cvRequests.current[id]) return;
+    setCvFailed((prev) => {
+      if (!prev[id]) return prev;
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+    cvRequests.current[id] = getSearchCandidate(id)
+      .then((raw) => setCvById((prev) => ({ ...prev, [id]: candidateToFrontend(raw) })))
+      .catch(() => {
+        // Asked again on Try again, the next hover or the next Preview.
+        delete cvRequests.current[id];
+        setCvFailed((prev) => ({ ...prev, [id]: true }));
+      });
+  }, []);
+
+  useEffect(() => {
+    if (previewId) loadCv(previewId);
+  }, [previewId, loadCv]);
+
+  // The drawer gets each card with its whole CV once that's here.
+  const previewCandidates = useMemo(
+    () => candidates.map((c) => (cvById[c.id] ? { ...c, ...cvById[c.id] } : c)),
+    [candidates, cvById]
+  );
+  const cvStatus = !previewId || cvById[previewId] ? 'ready' : cvFailed[previewId] ? 'failed' : 'loading';
 
   const bookmarkedCandidates = Object.keys(bookmarksById);
 
@@ -78,11 +114,12 @@ const CandidateSearchDashboard = () => {
       .catch(() => {});
   }, []);
 
-  const fetchPage = (pageNum, { append = false } = {}) => {
-    // Every new search (page 1) starts a new generation, and only the latest
-    // one may touch the results: typing "3000" fires 3, 30, 300, 3000, and
-    // a slow reply for "3" must not land after the one for "3000". A "Load
-    // more" still in flight from the previous search is dropped the same way.
+  // A new search counts the total and starts a new generation, and only the
+  // latest may touch the results: typing "3000" fires 3, 30, 300, 3000, and a
+  // slow reply for "3" must not land after the one for "3000". A "Load more"
+  // still in flight from the previous search is dropped the same way.
+  // "Load more" asks for the next 20 after the cards already shown, without a count.
+  const runSearch = ({ append = false } = {}) => {
     if (!append) {
       searchGeneration.current += 1;
       setLoadingMore(false);
@@ -91,20 +128,28 @@ const CandidateSearchDashboard = () => {
     const isLatest = () => generation === searchGeneration.current;
 
     append ? setLoadingMore(true) : setLoading(true);
-    return searchCandidates({ q: debouncedQuery || undefined, filters, sort: sortBy, page: pageNum, limit: PAGE_SIZE, view: salaryView })
+    return searchCandidates({
+      q: debouncedQuery || undefined,
+      filters,
+      sort: sortBy,
+      offset: append ? candidates.length : 0,
+      limit: PAGE_SIZE,
+      filterView: salaryView,
+      sortView: salaryView
+    })
       .then((data) => {
         if (!isLatest()) return;
         const mapped = (data.items || []).map(candidateToFrontend);
-        setCandidates((prev) => (append ? [...prev, ...mapped] : mapped));
-        setPage(data.page);
-        setTotalPages(data.totalPages);
-        setTotal(data.total);
+        // A candidate who joined in between can push one already shown into the next batch; it's shown once.
+        setCandidates((prev) => (append ? [...prev, ...mapped.filter((c) => !prev.some((p) => p.id === c.id))] : mapped));
+        if (typeof data.total === 'number') setTotal(data.total);
+        setHasMore(!!data.hasMore);
       })
       .catch(() => {
         if (!append && isLatest()) {
           setCandidates([]);
           setTotal(0);
-          setTotalPages(1);
+          setHasMore(false);
         }
       })
       .finally(() => {
@@ -116,13 +161,13 @@ const CandidateSearchDashboard = () => {
   // Another currency only changes the results when a salary range is typed in it.
   const rangeCurrency = filters?.salary?.min || filters?.salary?.max ? salaryView.currency : '';
   useEffect(() => {
-    fetchPage(1, { append: false });
+    runSearch();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedQuery, filters, sortBy, salaryView.basis, salaryView.period, rangeCurrency]);
 
   const handleLoadMore = () => {
-    if (loadingMore || page >= totalPages) return;
-    fetchPage(page + 1, { append: true });
+    if (loadingMore || !hasMore) return;
+    runSearch({ append: true });
   };
 
   // List view doesn't make sense below 1000px — fall back to grid.
@@ -295,11 +340,12 @@ const CandidateSearchDashboard = () => {
                 onBookmarkCandidate={handleBookmarkCandidate}
                 onUnlockCandidate={handleRequestUnlock}
                 onPreviewCandidate={handlePreviewCandidate}
+                onPrefetchCandidate={loadCv}
                 activePreviewId={previewId}
                 isPreviewOpen={previewId !== null}
                 loading={loading}
                 isFilterCollapsed={isFilterCollapsed}
-                hasMore={page < totalPages}
+                hasMore={hasMore}
                 loadingMore={loadingMore}
                 onLoadMore={handleLoadMore}
               />
@@ -309,8 +355,10 @@ const CandidateSearchDashboard = () => {
 
         {/* Anonymous CV preview drawer */}
         <CandidatePreviewDrawer
-          candidates={candidates}
+          candidates={previewCandidates}
           activeId={previewId}
+          cvStatus={cvStatus}
+          onRetry={() => loadCv(previewId)}
           onClose={handleClosePreview}
           bookmarkedCandidates={bookmarkedCandidates}
           onBookmark={handleBookmarkCandidate}

@@ -111,13 +111,24 @@ export function savedFilterView(filters = {}) {
   };
 }
 
-export function searchCandidates({ q, filters, sort, page = 1, limit = 20, view = DEFAULT_SALARY_VIEW } = {}) {
-  const backendFilters = filtersToBackend(filters, view);
-  const params = { page, limit, salaryBasis: view.basis, salaryPeriod: view.period };
+/**
+ * One batch of cards: `offset` 0 is a new search (it comes with `total`), Load
+ * more sends how many cards are already shown (`total` is null then).
+ * `filterView`: the salary view the salary range is typed in;
+ * `sortView`: the one the cards are shown in, what sorting by salary uses.
+ */
+export function searchCandidates({ q, filters, sort, offset = 0, limit = 20, filterView = DEFAULT_SALARY_VIEW, sortView = filterView } = {}) {
+  const backendFilters = filtersToBackend(filters, filterView);
+  const params = { offset, limit, salaryBasis: sortView.basis, salaryPeriod: sortView.period };
   if (q) params.q = q;
   if (sort) params.sort = sort;
   if (Object.keys(backendFilters).length) params.filters = JSON.stringify(backendFilters);
   return apiClient.get('/candidates/search', { params }).then((r) => r.data);
+}
+
+/** One candidate's whole anonymized CV, for the preview (the cards carry only what they show). */
+export function getSearchCandidate(id) {
+  return apiClient.get(`/candidates/search/${id}`).then((r) => r.data);
 }
 
 // Deterministic seeded "match" placeholder — the backend intentionally does

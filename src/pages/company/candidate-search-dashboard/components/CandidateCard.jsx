@@ -1,7 +1,10 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useEffect, useRef } from 'react';
 import Icon from 'components/AppIcon';
 import { CardAvatar, CardIdentity, CardStats, MatchRing, SkillsRow, StatusBadge } from './CandidateCardParts';
 import styles from '../styles/dashboard.module.scss';
+
+// Resting the pointer this long on a card starts loading its CV, so Preview opens on it at once.
+const PREFETCH_HOVER_MS = 200;
 
 const CandidateCard = forwardRef(({
   candidate,
@@ -9,10 +12,26 @@ const CandidateCard = forwardRef(({
   onBookmark,
   onUnlock,
   onPreview = () => {},
+  // Starts loading the whole CV ahead of Preview (Search; the cards carry only what they show).
+  onPrefetch = null,
   isBookmarked = false,
   isPurchased = false,
   isActive = false
 }, ref) => {
+  const prefetchTimer = useRef(null);
+  useEffect(() => () => clearTimeout(prefetchTimer.current), []);
+  const prefetchProps = onPrefetch
+    ? {
+        onMouseEnter: () => {
+          clearTimeout(prefetchTimer.current);
+          prefetchTimer.current = setTimeout(() => onPrefetch(candidate?.id), PREFETCH_HOVER_MS);
+        },
+        onMouseLeave: () => clearTimeout(prefetchTimer.current),
+        // Tabbing into the card (its buttons) counts too.
+        onFocus: () => onPrefetch(candidate?.id)
+      }
+    : {};
+
   const handleBookmarkClick = (e) => {
     e?.stopPropagation();
     onBookmark(candidate?.id);
@@ -55,7 +74,7 @@ const CandidateCard = forwardRef(({
 
   if (isList) {
     return (
-      <div ref={ref} className={`${styles.card} ${styles.scCard} ${styles.scListCard} ${isPurchased ? styles.unlocked : ''} ${isActive ? styles.active : ''}`}>
+      <div ref={ref} {...prefetchProps} className={`${styles.card} ${styles.scCard} ${styles.scListCard} ${isPurchased ? styles.unlocked : ''} ${isActive ? styles.active : ''}`}>
         {/* Main: avatar/identity + stats, skills, description */}
         <div className={styles.scListMain}>
           <div className={styles.scListTop}>
@@ -99,7 +118,7 @@ const CandidateCard = forwardRef(({
 
   // Grid view
   return (
-    <div ref={ref} className={`${styles.card} ${styles.scCard} ${isPurchased ? styles.unlocked : ''} ${isActive ? styles.active : ''}`}>
+    <div ref={ref} {...prefetchProps} className={`${styles.card} ${styles.scCard} ${isPurchased ? styles.unlocked : ''} ${isActive ? styles.active : ''}`}>
       {/* Header: avatar, name/role/meta/status, match ring */}
       <div className={styles.scHead}>
         {avatar}

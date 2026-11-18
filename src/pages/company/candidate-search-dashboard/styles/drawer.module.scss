@@ -343,6 +343,50 @@ $header-h: 64px;
   white-space: pre-line;
 }
 
+// Search: the rest of the CV (jobs, education, languages) on its way, or not loaded.
+.cvLoading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px dashed $line;
+  border-radius: $r-sm;
+  font-size: 0.88rem;
+  color: $slate;
+}
+
+.cvSpinner {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  border-radius: 50%;
+  border: 2px solid $amber-bg;
+  border-top-color: $gold;
+  animation: cvSpin 0.8s linear infinite;
+
+  @media (prefers-reduced-motion: reduce) {
+    animation-duration: 2.4s;
+  }
+}
+
+@keyframes cvSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.cvRetry {
+  font-weight: 700;
+  color: $gold-deep;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+
+  &:hover {
+    color: $ink;
+  }
+}
+
 // ----- Contact strip — hidden entirely until unlocked, matching
 // candidate-profile's .cv-contact-strip (not redacted placeholders). -----
 .contactStrip {

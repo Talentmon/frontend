@@ -48,10 +48,6 @@ const CompanyNotifications = () => {
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
-
-  useEffect(() => {
     const onOutside = (e) => {
       if (ref?.current && !ref?.current?.contains(e?.target)) setOpen(false);
     };
@@ -59,7 +55,12 @@ const CompanyNotifications = () => {
     return () => document.removeEventListener('mousedown', onOutside);
   }, []);
 
-  useEffect(() => { setOpen(false); }, [location.pathname]);
+  // The header stays mounted between company pages (CompanyLayout): each page
+  // change closes the list and re-reads the feed, as a fresh page load used to.
+  useEffect(() => {
+    setOpen(false);
+    load();
+  }, [location.pathname, load]);
 
   const toggle = () => {
     if (!open) load();

@@ -4,6 +4,7 @@ import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
 import RequireAuth from "components/auth/RequireAuth";
+import CompanyLayout from "components/ui/CompanyLayout";
 
 // Landing / public
 import LandingPage from './pages/landing/landing-page';
@@ -62,15 +63,18 @@ const Routes = () => {
         <Route path="/admin/companies" element={<RequireAuth roles={['ADMIN']}><AdminCompanies /></RequireAuth>} />
         <Route path="/admin/suggestions" element={<RequireAuth roles={['ADMIN']}><AdminSuggestions /></RequireAuth>} />
 
-        {/* Company-facing */}
-        <Route path="/bookmarked-candidates" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><BookmarkedCandidatesPage /></RequireAuth>} />
-        <Route path="/credit-management" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CreditManagement /></RequireAuth>} />
-        <Route path="/candidate-search-dashboard" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CandidateSearchDashboard /></RequireAuth>} />
-        <Route path="/purchased-profiles" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><PurchasedProfiles /></RequireAuth>} />
-        <Route path="/company-profile-settings" element={<RequireAuth roles={['COMPANY']}><CompanyProfileSettings /></RequireAuth>} />
-        {/* No requireCompleteProfile: the guide is most useful while the profile is still being filled in */}
-        <Route path="/help" element={<RequireAuth roles={['COMPANY']}><CompanyHelp /></RequireAuth>} />
-        <Route path="/suggestions" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><Suggestions /></RequireAuth>} />
+        {/* Company-facing: one shell (header + the scroll area under it) that stays
+            mounted while you move between these pages; only the page inside changes. */}
+        <Route element={<RequireAuth roles={['COMPANY']}><CompanyLayout /></RequireAuth>}>
+          <Route path="/bookmarked-candidates" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><BookmarkedCandidatesPage /></RequireAuth>} />
+          <Route path="/credit-management" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CreditManagement /></RequireAuth>} />
+          <Route path="/candidate-search-dashboard" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CandidateSearchDashboard /></RequireAuth>} />
+          <Route path="/purchased-profiles" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><PurchasedProfiles /></RequireAuth>} />
+          <Route path="/company-profile-settings" element={<RequireAuth roles={['COMPANY']}><CompanyProfileSettings /></RequireAuth>} />
+          {/* No requireCompleteProfile: the guide is most useful while the profile is still being filled in */}
+          <Route path="/help" element={<RequireAuth roles={['COMPANY']}><CompanyHelp /></RequireAuth>} />
+          <Route path="/suggestions" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><Suggestions /></RequireAuth>} />
+        </Route>
 
         {/* Candidate-facing */}
         <Route path="/candidate-profile" element={<RequireAuth roles={['CANDIDATE']}><CandidateProfile /></RequireAuth>} />

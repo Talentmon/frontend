@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Helmet } from 'react-helmet';
-import Header from 'components/ui/Header';
 import FilterSidebar from './components/FilterSidebar';
 import SearchToolbar from './components/SearchToolbar';
 import CandidateGrid from './components/CandidateGrid';
@@ -252,7 +251,6 @@ const CandidateSearchDashboard = () => {
         <meta name="description" content="Find the ideal candidates for your positions using advanced search filters" />
       </Helmet>
       <div className={`${styles.page} ${viewMode === 'list' ? styles.listMode : ''} ${previewId !== null ? styles.previewOpen : ''}`}>
-        <Header />
 
         {!isFilterCollapsed && (
           <div

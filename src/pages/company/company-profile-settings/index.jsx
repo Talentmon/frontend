@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClerk } from '@clerk/clerk-react';
-import Header from 'components/ui/Header';
 import Icon from 'components/AppIcon';
 import { useCurrentUser } from 'lib/CurrentUserContext';
 import { clearSalaryView } from 'lib/salaryView';
@@ -273,8 +272,7 @@ const CompanyProfileSettings = () => {
   if (loading) {
     return (
       <div className={styles.page}>
-        <Header />
-        <main className="pt-16 max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '70px' }}>
+        <main className="max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '70px' }}>
           <p style={{ color: '#566776', padding: '40px 0' }}>Loading your company profile…</p>
         </main>
       </div>
@@ -283,8 +281,7 @@ const CompanyProfileSettings = () => {
 
   return (
     <div className={styles.page}>
-      <Header />
-      <main className="pt-16 max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '70px' }}>
+      <main className="max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '70px' }}>
         {/* Page Header — stays put on desktop while the cards scroll under it */}
         <div className={styles.head} ref={headRef}>
           <div>

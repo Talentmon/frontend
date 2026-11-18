@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import Header from 'components/ui/Header';
+import { Link, useLocation } from 'react-router-dom';
 import Icon from 'components/AppIcon';
 import styles from './styles/help.module.scss';
 
@@ -191,8 +190,7 @@ const CompanyHelp = () => {
 
   return (
     <div className={styles.page}>
-      <Header />
-      <main className="pt-16 max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '80px' }}>
+      <main className="max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '80px' }}>
         {/* ===== Hero ===== */}
         <section className={styles.hero}>
           <span className={styles.heroEyebrow}>
@@ -855,7 +853,7 @@ const CompanyHelp = () => {
                   back to you.
                 </p>
                 <p>
-                  Have an idea for Talentmon? Post it on <a href="/suggestions">Your suggestions</a> in the profile
+                  Have an idea for Talentmon? Post it on <Link to="/suggestions">Your suggestions</Link> in the profile
                   menu, where other companies can vote on it.
                 </p>
                 <div className={styles.legal}>

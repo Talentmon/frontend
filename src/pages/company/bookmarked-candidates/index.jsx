@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from 'components/ui/Header';
 import BookmarkedCandidatesHeader from './components/BookmarkedCandidatesHeader';
 import BookmarkedCandidatesFilters from './components/BookmarkedCandidatesFilters';
 import BookmarkedFilterSidebar from './components/BookmarkedFilterSidebar';
@@ -482,8 +481,7 @@ const BookmarkedCandidatesPage = () => {
 
   return (
     <div className={`${styles.page} ${previewId !== null ? styles.previewOpen : ''}`}>
-      <Header />
-      <main className={`pt-16 max-w-[1420px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
+      <main className={`max-w-[1420px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
         {/* Title, the slots strip and Search candidates (just the title beside an open CV) */}
         {isCompact ? (
           <header className={cf.cvTitle}>

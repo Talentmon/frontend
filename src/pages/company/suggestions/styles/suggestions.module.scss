@@ -32,7 +32,8 @@ $sh-card: 0 1px 2px rgba(11, 26, 44, .04), 0 18px 40px -30px rgba(11, 26, 44, .4
 $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, .5);
 $display: 'Bricolage Grotesque', sans-serif;
 
-$site-header-h: 64px;
+// Sticky tops and scroll margins count from the top of the scroll area under the
+// site header (components/ui/CompanyLayout), so the header itself is not in them.
 $two-col-from: 981px;
 
 .page {
@@ -41,7 +42,7 @@ $two-col-from: 981px;
     radial-gradient(900px 480px at 8% 4%, rgba(33, 64, 94, .06), transparent 58%),
     $paper;
   background-attachment: fixed;
-  min-height: 100vh;
+  min-height: 100%; // fills the scroll area under the header (CompanyLayout)
   color: $ink;
 }
 
@@ -262,7 +263,7 @@ $two-col-from: 981px;
   // it fits under the header, so Declined is never cut off.
   @media (min-width: $two-col-from) and (min-height: 960px) {
     position: sticky;
-    top: $site-header-h + 22px;
+    top: 22px;
   }
 }
 
@@ -900,7 +901,7 @@ $two-col-from: 981px;
   gap: 18px;
   padding: 20px 6px;
   border-bottom: 1px solid $line;
-  scroll-margin-top: $site-header-h + 30px;
+  scroll-margin-top: 30px;
   border-radius: $r-md;
   transition: background .6s, box-shadow .6s;
 

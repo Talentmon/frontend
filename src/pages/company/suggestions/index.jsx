@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import Header from 'components/ui/Header';
 import Icon from 'components/AppIcon';
 import { relativeTime } from 'utils/formatDate';
 import {
@@ -481,8 +480,7 @@ const Suggestions = () => {
 
   return (
     <div className={styles.page}>
-      <Header />
-      <main className="pt-16 max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '80px' }}>
+      <main className="max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '80px' }}>
         {/* ===== Hero ===== */}
         <section className={styles.hero}>
           <span className={styles.heroEyebrow}>

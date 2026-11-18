@@ -48,6 +48,9 @@ const UserProfileDropdown = () => {
     };
   }, []);
 
+  // The header stays mounted between company pages, so a page change closes the menu.
+  useEffect(() => { setIsOpen(false); }, [location.pathname]);
+
   const handleToggle = () => {
     setIsOpen(!isOpen);
   };

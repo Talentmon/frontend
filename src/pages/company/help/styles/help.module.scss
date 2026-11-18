@@ -30,7 +30,8 @@ $sh-card: 0 1px 2px rgba(11, 26, 44, .04), 0 18px 40px -30px rgba(11, 26, 44, .4
 $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, .5);
 $display: 'Bricolage Grotesque', sans-serif;
 
-$site-header-h: 64px;
+// Sticky tops and scroll margins count from the top of the scroll area under the
+// site header (components/ui/CompanyLayout), so the header itself is not in them.
 $two-col-from: 981px;
 
 @mixin page-bg {
@@ -43,7 +44,7 @@ $two-col-from: 981px;
 
 .page {
   @include page-bg;
-  min-height: 100vh;
+  min-height: 100%; // fills the scroll area under the header (CompanyLayout)
   color: $ink;
 }
 
@@ -272,7 +273,7 @@ $two-col-from: 981px;
 
 .toc {
   position: sticky;
-  top: $site-header-h + 22px;
+  top: 22px;
   padding: 16px 12px;
   background: $white;
   border: 1px solid $line;
@@ -377,7 +378,7 @@ $two-col-from: 981px;
 
 // ===== Sections =====
 .section {
-  scroll-margin-top: $site-header-h + 20px;
+  scroll-margin-top: 20px;
   display: grid;
   gap: 20px;
   padding: 30px;
@@ -1016,7 +1017,7 @@ $two-col-from: 981px;
     radial-gradient(480px 220px at 100% 0%, rgba(230, 169, 60, .22), transparent 62%),
     linear-gradient(140deg, $ink, $ink-2);
   box-shadow: 0 24px 50px -34px rgba(11, 26, 44, .8);
-  scroll-margin-top: $site-header-h + 20px;
+  scroll-margin-top: 20px;
 
   h2 {
     font-family: $display;

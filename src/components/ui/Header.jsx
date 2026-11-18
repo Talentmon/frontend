@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import Icon from '../AppIcon';
 import { useCurrentUser } from '../../lib/CurrentUserContext';
 import CreditCounter from './CreditCounter';
@@ -49,6 +49,11 @@ const Header = () => {
     document.addEventListener('mousedown', onOutside);
     return () => document.removeEventListener('mousedown', onOutside);
   }, [isMobileMenuOpen]);
+
+  // The header stays mounted between company pages (CompanyLayout), so a page
+  // change, from anywhere, closes the menu.
+  useEffect(() => { setIsMobileMenuOpen(false); }, [location.pathname]);
+
   // Until the company profile is complete, every page except profile
   // settings is locked (RequireAuth + backend gate) — the nav shows that
   // instead of linking somewhere that would just bounce back.
@@ -95,14 +100,14 @@ const Header = () => {
     : 'text-[#B9C3D1] hover:text-white hover:bg-white/[0.07]');
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-[1000] bg-[#0B1A2C] border-b border-[#10243A]">
+    <header className="relative flex-none z-[1000] bg-[#0B1A2C] border-b border-[#10243A]">
       {/* Three columns from 1280px, so the nav sits in the middle of the page, not between the sides.
           Narrower, the bar doesn't fit everything and the nav moves into the menu button. */}
       <div className="flex items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr] xl:gap-6 h-16 pl-7 pr-6">
         {/* Logo Section */}
         <div className="xl:justify-self-start flex items-center">
-          <a
-            href={homePath}
+          <Link
+            to={homePath}
             aria-label="Talentmon home"
             className={`flex items-center space-x-3 rounded-lg ${HEADER_FOCUS}`}
           >
@@ -114,7 +119,7 @@ const Header = () => {
                 Talent<span className="text-[#E6A93C]">mon</span>
               </h1>
             </div>
-          </a>
+          </Link>
         </div>
 
         {/* Desktop Navigation */}
@@ -133,15 +138,15 @@ const Header = () => {
               <span>{item?.name}</span>
             </span>
           ) : (
-            <a
+            <Link
               key={item?.path}
-              href={item?.path}
+              to={item?.path}
               aria-current={isActivePath(item?.path) ? 'page' : undefined}
               className={`${navItemBase} transition-colors duration-150 ${itemState(isActivePath(item?.path))} ${HEADER_FOCUS}`}
             >
               <NavIcon icon={item?.icon} />
               <span>{item?.name}</span>
-            </a>
+            </Link>
           ))}
         </nav>
 
@@ -179,28 +184,28 @@ const Header = () => {
                 <span>{item?.name}</span>
               </span>
             ) : (
-              <a
+              <Link
                 key={item?.path}
-                href={item?.path}
+                to={item?.path}
                 onClick={() => setIsMobileMenuOpen(false)}
                 aria-current={isActivePath(item?.path) ? 'page' : undefined}
                 className={`${mobileItemBase} transition-colors duration-150 ${itemState(isActivePath(item?.path))} ${HEADER_FOCUS}`}
               >
                 <NavIcon icon={item?.icon} />
                 <span>{item?.name}</span>
-              </a>
+              </Link>
             ))}
 
             {/* Mobile Company Profile Link */}
-            <a
-              href="/company-profile-settings"
+            <Link
+              to="/company-profile-settings"
               onClick={() => setIsMobileMenuOpen(false)}
               aria-current={isActivePath('/company-profile-settings') ? 'page' : undefined}
               className={`${mobileItemBase} transition-colors duration-150 ${itemState(isActivePath('/company-profile-settings'))} ${HEADER_FOCUS}`}
             >
               <Icon name="Building2" size={16} strokeWidth={2.1} />
               <span>Company Profile</span>
-            </a>
+            </Link>
           </nav>
         </div>
       )}

@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import Header from 'components/ui/Header';
 import CreditBalance from './components/CreditBalance';
 import CreditPackages from './components/CreditPackages';
 import TransactionHistory from './components/TransactionHistory';
@@ -238,8 +237,7 @@ const CreditManagement = () => {
 
   return (
     <div className={styles.page}>
-      <Header />
-      <main className="pt-16 max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '32px' }}>
+      <main className="max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '32px' }}>
         {/* Page Header */}
         <div className={styles.head}>
           <div>

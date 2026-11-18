@@ -29,7 +29,8 @@ $sh-card: 0 1px 2px rgba(11, 26, 44, .04), 0 18px 40px -30px rgba(11, 26, 44, .4
 $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, .5);
 
 // ===== Page shell =====
-$site-header-h: 64px; // the fixed top bar (components/ui/Header, h-16)
+// Sticky tops and scroll margins count from the top of the scroll area under the
+// site header (components/ui/CompanyLayout), so the header itself is not in them.
 $sticky-from: 921px;  // the two-column layout; below it everything scrolls
 
 @mixin page-bg {
@@ -42,7 +43,7 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
 
 .page {
   @include page-bg;
-  min-height: 100vh;
+  min-height: 100%; // fills the scroll area under the header (CompanyLayout)
 }
 .head {
   display: flex;
@@ -60,7 +61,7 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   @media (min-width: $sticky-from) {
     @include page-bg;
     position: sticky;
-    top: $site-header-h;
+    top: 0;
     z-index: 20;
     // Reaches into the page gutter (main's 22px padding) so the shadows of the
     // cards passing underneath don't peek out at the sides.
@@ -247,7 +248,7 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   padding: 10px;
   position: sticky;
   // Right under the sticky page header (its height is measured in index.jsx).
-  top: calc(#{$site-header-h} + var(--settings-head-h, 0px));
+  top: var(--settings-head-h, 0px);
   box-shadow: 0 16px 40px -34px rgba(11, 26, 44, .4);
 
   @media (max-width: 920px) {

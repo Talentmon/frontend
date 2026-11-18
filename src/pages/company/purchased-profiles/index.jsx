@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import { useSearchParams } from 'react-router-dom';
-import Header from 'components/ui/Header';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Icon from 'components/AppIcon';
 import PurchasedProfileCard from './components/PurchasedProfileCard';
 import PurchasedProfilesTable from './components/PurchasedProfilesTable';
@@ -42,6 +41,7 @@ import styles from './styles/purchased.module.scss';
 const LAYOUT_SETTLE_MS = 360;
 
 const PurchasedProfiles = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState('cards');
   // ?status=new — the Analytics tab's "still at New" notice links straight to that filter.
@@ -335,7 +335,7 @@ const PurchasedProfiles = () => {
           <Icon name="Search" size={48} />
           <h3>No unlocked profiles</h3>
           <p>Unlocked profiles will appear here after purchase</p>
-          <button className={styles.textBtn} onClick={() => window.location.href = '/candidate-search-dashboard'}>
+          <button className={styles.textBtn} onClick={() => navigate('/candidate-search-dashboard')}>
             <Icon name="Search" size={14} />Search candidates
           </button>
         </div>
@@ -362,9 +362,8 @@ const PurchasedProfiles = () => {
         <meta name="description" content="Access all your unlocked candidates and manage the recruitment process" />
       </Helmet>
       <div className={`${styles.page} ${isCardsPreviewOpen ? styles.previewOpen : ''}`}>
-        <Header />
 
-        <main className={`pt-16 max-w-[1420px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
+        <main className={`max-w-[1420px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
           {isCompact ? (
             <header className={cf.cvTitle}>
               <h1>Purchased Profiles</h1>

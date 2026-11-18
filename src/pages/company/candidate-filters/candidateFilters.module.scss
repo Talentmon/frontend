@@ -126,12 +126,15 @@ main.cvMain {
 
 // The page's bottom padding (.page in bookmarked/purchased.module.scss).
 $page-bottom: 70px;
+// The site header (components/ui/Header). The page scrolls in the area under it
+// (CompanyLayout), so that area is 100dvh minus this tall.
+$site-header-h: 64px;
 
 // The filters column takes what's left (up to Search's 320px) beside the card.
-// --side-top: where the filters stick, under the site header (as on Search).
+// --side-top: where the filters stick, from the top of the scroll area (as on Search).
 // --side-gap: what's left under the filters card, above the window's bottom edge.
 .cvLayout {
-  --side-top: 84px;
+  --side-top: 20px;
   --side-gap: 20px;
   display: grid;
   grid-template-columns: minmax(0, 320px) 448px;
@@ -140,7 +143,7 @@ $page-bottom: 70px;
   column-gap: 22px;
   // As tall as the stuck filters at least, so their growing (CvSide) never
   // changes how far the page scrolls.
-  min-height: calc(100dvh - var(--side-top) - var(--side-gap));
+  min-height: calc(100dvh - #{$site-header-h} - var(--side-top) - var(--side-gap));
   // The page's bottom padding moves inside, under the cards (.cvResults): with
   // only --side-gap left below, the end of the page never pushes the stuck
   // filters up under the header.
@@ -152,7 +155,7 @@ $page-bottom: 70px;
 .cvSide {
   position: sticky;
   top: var(--side-top);
-  max-height: calc(100dvh - var(--side-top) - var(--side-gap));
+  max-height: calc(100dvh - #{$site-header-h} - var(--side-top) - var(--side-gap));
   min-width: 0;
   display: flex;
   flex-direction: column;

@@ -637,9 +637,9 @@ const CompanyHelp = () => {
                   </Callout>
                   <div className={styles.subTitle}>After you unlock</div>
                   <ul className={styles.checks}>
-                    <li><Icon name="Check" size={15} />The name, photo, contact details and employers are revealed.</li>
-                    <li><Icon name="Check" size={15} />The candidate moves to <b>Purchased</b>, where your whole team can see them. Their notes come along.</li>
-                    <li><Icon name="Check" size={15} />The profile stays unlocked. You never pay for the same candidate twice.</li>
+                    <li><Icon name="Check" size={15} /><span>The name, photo, contact details and employers are revealed.</span></li>
+                    <li><Icon name="Check" size={15} /><span>The candidate moves to <b>Purchased</b>, where your whole team can see them. Their notes come along.</span></li>
+                    <li><Icon name="Check" size={15} /><span>The profile stays unlocked. You never pay for the same candidate twice.</span></li>
                   </ul>
                 </div>
                 <Figure

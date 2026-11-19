@@ -42,6 +42,7 @@ $two-col-from: 981px;
     radial-gradient(900px 480px at 8% 4%, rgba(33, 64, 94, .06), transparent 58%),
     $paper;
   background-attachment: fixed;
+  display: flow-root; // keeps the hero's top margin inside, so the page starts right under the header
   min-height: 100%; // fills the scroll area under the header (CompanyLayout)
   color: $ink;
 }

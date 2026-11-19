@@ -44,6 +44,7 @@ $two-col-from: 981px;
 
 .page {
   @include page-bg;
+  display: flow-root; // keeps the hero's top margin inside, so the page starts right under the header
   min-height: 100%; // fills the scroll area under the header (CompanyLayout)
   color: $ink;
 }

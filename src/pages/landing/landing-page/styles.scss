@@ -1,3 +1,5 @@
+@use '../../../styles/desktopShell' as *;
+
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 /* ============================ TOKENS ============================ */
@@ -340,6 +342,7 @@
       border-color: rgba(230, 169, 60, .4); background: linear-gradient(180deg, #15293F, #102338);
       box-shadow: 0 0 0 1px rgba(230, 169, 60, .1), 0 30px 70px -40px rgba(230, 169, 60, .4);
       position: sticky; top: 96px;
+      @include area-under-nav { top: 24px; } // where the page area starts under the nav
       .ba-head { background: rgba(230, 169, 60, .06); border-bottom-color: rgba(230, 169, 60, .18); }
       .ba-tag { color: var(--lp-gold); }
       .ba-price { color: #241704; background: var(--lp-gold); border-color: transparent; font-weight: 600; }
@@ -407,7 +410,7 @@
   }
 
   /* middle */
-  .ba-mid { display: grid; place-items: center; padding: 0 26px; position: sticky; top: 417px; }
+  .ba-mid { display: grid; place-items: center; padding: 0 26px; position: sticky; top: 417px; @include area-under-nav { top: 345px; } }
   .ba-arrow { width: 64px; height: 64px; border-radius: 50%; background: var(--lp-gold); display: grid; place-items: center; color: #241704; box-shadow: 0 16px 36px -14px rgba(230, 169, 60, .8); svg { width: 26px; height: 26px; } }
   .ba-cost { font-family: 'JetBrains Mono', monospace; font-size: .72rem; color: var(--lp-gold); margin-top: 12px; text-align: center; letter-spacing: .04em; white-space: nowrap; }
 
@@ -486,7 +489,7 @@
   /* ============================ MATCH SCORE ============================ */
   .match-sec { background: var(--lp-paper); }
   .match-grid { display: grid; grid-template-columns: 300px 1fr; gap: 26px; align-items: start; max-width: 940px; margin: 0 auto; }
-  .match-filters { background: var(--lp-ink); color: var(--lp-text-light); border-radius: var(--lp-r-lg); padding: 24px; box-shadow: 0 28px 60px -36px rgba(11, 26, 44, .55); position: sticky; top: 96px; }
+  .match-filters { background: var(--lp-ink); color: var(--lp-text-light); border-radius: var(--lp-r-lg); padding: 24px; box-shadow: 0 28px 60px -36px rgba(11, 26, 44, .55); position: sticky; top: 96px; @include area-under-nav { top: 24px; } }
   .mf-head { font-family: 'JetBrains Mono', monospace; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--lp-gold); margin-bottom: 18px; display: flex; align-items: center; gap: .5em; svg { width: 15px; height: 15px; } }
   .mf-group { margin-bottom: 15px; }
   .mf-lab { display: block; font-size: .72rem; color: var(--lp-text-dim); margin-bottom: 7px; font-family: 'JetBrains Mono', monospace; letter-spacing: .04em; }

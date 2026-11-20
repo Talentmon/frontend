@@ -1,3 +1,5 @@
+@use '../../../styles/desktopShell' as *;
+
 // Public legal pages (Terms, Privacy, Refund) — same ink/gold look and fonts
 // as the landing pages, scoped through CSS Modules.
 $ink: #0B1A2C;
@@ -265,6 +267,7 @@ $two-col-from: 981px;
 .side {
   position: sticky;
   top: $nav-h + 28px;
+  @include area-under-nav { top: 28px; } // where the page area starts under the nav
 
   @media (max-width: #{$two-col-from - 1px}) { display: none; }
 }
@@ -454,6 +457,7 @@ $two-col-from: 981px;
     letter-spacing: -.01em;
     line-height: 1.25;
     color: $ink;
+    @include area-under-nav { scroll-margin-top: 24px; } // where the page area starts under the nav
   }
 
   ul {
@@ -507,6 +511,7 @@ $two-col-from: 981px;
   background:
     radial-gradient(420px 200px at 100% 0%, rgba(230, 169, 60, .2), transparent 62%),
     linear-gradient(140deg, $ink, $ink-2);
+  @include area-under-nav { scroll-margin-top: 24px; }
 }
 
 .contactIcon {

@@ -1,0 +1,82 @@
+// The public page's root gets .public-shell, and everything under its nav sits
+// in .public-scroll (components/ui/PublicScroll). On a computer the root fills
+// the screen and only .public-scroll scrolls, with its scrollbar starting under
+// the nav. Elsewhere both are plain blocks and the window scrolls as before.
+@media (hover: hover) and (pointer: fine) {
+  // By default the scroll area starts under the nav. Firefox stays with this,
+  // since it can't move its scrollbar down (pages set their sticky tops for it
+  // with @include area-under-nav).
+  .public-shell {
+    height: 100dvh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .public-shell > * {
+    flex: none;
+  }
+  .public-shell > .public-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden; // the pages clipped sideways overflow on their root before
+  }
+
+  // Chrome, Edge, Safari: the scroll area runs the full height and the nav sits
+  // on top of it, so the page still slides under the see-through nav. A thin
+  // scrollbar in the site's gold, its track starting under the nav.
+  // --public-nav-h is the nav's height, kept by PublicScroll.
+  @supports selector(::-webkit-scrollbar) {
+    .public-shell {
+      display: grid;
+      grid-template: 100% / 100%;
+    }
+    .public-shell > * {
+      grid-area: 1 / 1;
+    }
+    .public-shell > :not(.public-scroll) {
+      align-self: start;
+      z-index: 60;
+    }
+    .public-shell > .public-scroll {
+      height: 100%;
+
+      // Room for the nav above the page. A block, not padding: sticky parts
+      // would count padding in and sit a nav lower than they did.
+      &::before {
+        content: '';
+        display: block;
+        height: var(--public-nav-h, 72px);
+      }
+      &::-webkit-scrollbar {
+        width: 10px;
+      }
+      &::-webkit-scrollbar-track {
+        background: transparent;
+        margin-top: var(--public-nav-h, 72px);
+      }
+      &::-webkit-scrollbar-thumb {
+        background: rgba(230, 169, 60, .7) padding-box;
+        border: 2px solid transparent;
+        border-radius: 99px;
+      }
+      &::-webkit-scrollbar-thumb:hover {
+        background-color: #E6A93C;
+      }
+      &::-webkit-scrollbar-thumb:active {
+        background-color: #C98A1F;
+      }
+    }
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    .public-shell > .public-scroll {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(230, 169, 60, .7) transparent;
+    }
+  }
+}
+
+.public-scroll {
+  outline: none;
+}

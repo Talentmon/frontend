@@ -1,0 +1,11 @@
+// Public pages on a computer scroll in an area of their own (components/ui/PublicScroll).
+// In Chrome, Edge and Safari that area runs under the nav, like the window did, so
+// sticky tops and scroll margins keep their usual values. In Firefox the area
+// starts under the nav, so pages set those values again inside this mixin.
+@mixin area-under-nav {
+  @media (hover: hover) and (pointer: fine) {
+    @supports not selector(::-webkit-scrollbar) {
+      @content;
+    }
+  }
+}

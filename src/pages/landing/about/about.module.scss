@@ -1,3 +1,5 @@
+@use '../../../styles/desktopShell' as *;
+
 // About page: the landing/legal ink-and-gold look. Nav, footer and the page
 // shell come from legal.module.scss (SiteChrome).
 $ink: #0B1A2C;
@@ -178,7 +180,7 @@ $mono: 'JetBrains Mono', monospace;
   @media (max-width: 900px) { grid-template-columns: 1fr; gap: 24px; }
 }
 
-.storyHead { position: sticky; top: 100px; @media (max-width: 900px) { position: static; } }
+.storyHead { position: sticky; top: 100px; @include area-under-nav { top: 32px; } @media (max-width: 900px) { position: static; } }
 
 .storyBody {
   p {

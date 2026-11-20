@@ -242,6 +242,8 @@ const isFieldActive = (field, localFilters) => {
 const countActiveInGroup = (group, localFilters) =>
   group?.fields?.filter((field) => isFieldActive(field, localFilters))?.length;
 
+const hasActiveFilters = (f) => ALL_FIELDS.some((field) => isFieldActive(field, f));
+
 // Saved filters come back from the API with empty values left out, so both
 // sides are filled in with the defaults before comparing.
 const normalizeFilters = (f = {}) => {
@@ -336,7 +338,8 @@ const INPUT_CLASS = 'bg-white rounded-[9px]';
 
 /**
  * The fields are a draft: nothing is searched until Apply filters (or Enter in
- * a text field). Clear all and picking a saved filter search right away.
+ * a text field). Clear all, taking off the last filter and picking a saved
+ * filter search right away.
  * `appliedFilters` / `appliedView`: what the results show now (the view the
  * applied salary range was typed in). `onApply(filters, view?)`: search with these.
  */
@@ -371,8 +374,14 @@ const FilterSidebar = ({
       .catch(() => {});
   }, []);
 
-  // Every field edits the draft only.
+  // Every field edits the draft only - except taking off the last filter while
+  // the results still show some: that's Clear all, so it searches right away
+  // instead of waiting for Apply.
   const updateDraft = (updatedFilters) => {
+    if (!hasActiveFilters(updatedFilters) && hasActiveFilters(appliedFilters)) {
+      handleClearAll();
+      return;
+    }
     setLocalFilters(updatedFilters);
   };
 
@@ -840,7 +849,7 @@ const FilterSidebar = ({
           );
         })}
       </div>
-      {/* Pinned footer: Apply filters and Save filter side by side; naming a new filter takes the row */}
+      {/* Pinned footer: Save filter left, Apply filters right; naming a new filter takes the row */}
       <div className={styles.filtersFoot}>
         {isNamingFilter ? (
           <div className={styles.saveFilterRow}>
@@ -879,16 +888,6 @@ const FilterSidebar = ({
           <div className={styles.footActions}>
             <button
               type="button"
-              className={styles.applyFiltersBtn}
-              onClick={handleApply}
-              disabled={!hasChanges}
-              title={hasChanges ? undefined : 'The results already show these filters'}
-            >
-              <Icon name="Search" size={16} strokeWidth={2.4} />
-              Apply filters
-            </button>
-            <button
-              type="button"
               className={styles.saveFilterBtn}
               onClick={handleSaveFilter}
               disabled={getActiveFiltersCount() === 0}
@@ -896,6 +895,16 @@ const FilterSidebar = ({
             >
               <Icon name="Save" size={16} />
               {activeSavedFilterId ? 'Update filter' : 'Save filter'}
+            </button>
+            <button
+              type="button"
+              className={styles.applyFiltersBtn}
+              onClick={handleApply}
+              disabled={!hasChanges}
+              title={hasChanges ? undefined : 'The results already show these filters'}
+            >
+              <Icon name="Search" size={16} strokeWidth={2.4} />
+              Apply filters
             </button>
           </div>
         )}

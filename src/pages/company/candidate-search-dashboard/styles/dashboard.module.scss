@@ -1680,8 +1680,10 @@ $pop-shadow: 0 18px 40px -16px rgba(11, 26, 44, 0.3);
   // min-content, and the skill tags (nowrap) then push the card past its
   // column — SkillsRow sees the wider row and shows every tag, which keeps it
   // that wide.
+  // List rows sit closer than the cards: half the grid's 36px.
   &.list {
     grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
   }
 
   // Wide screens with the CV drawer open: collapse to a single column so the

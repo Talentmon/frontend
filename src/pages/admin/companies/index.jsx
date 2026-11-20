@@ -1,8 +1,7 @@
 import React, { Fragment, useCallback, useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import AdminAppBar from '../components/AdminAppBar';
+import { useAdminBar } from '../components/AdminLayout';
 import {
-  getMe,
   getCompanyDirectory,
   getCompanyMatches,
   confirmCompanyMatch,
@@ -260,7 +259,6 @@ const MatchCard = ({ match, busy, onConfirm, onReject }) => {
 };
 
 const AdminCompanies = () => {
-  const [me, setMe] = useState(null);
   const [tab, setTab] = useState('active');
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -272,9 +270,7 @@ const AdminCompanies = () => {
   const [flash, setFlash] = useState(null);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    getMe().then(setMe).catch(() => {});
-  }, []);
+  useAdminBar({ pendingMatches: counts?.pendingMatches });
 
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
@@ -360,12 +356,6 @@ const AdminCompanies = () => {
       <Helmet>
         <title>Companies · Talentmon Admin</title>
       </Helmet>
-
-      <AdminAppBar
-        name={me?.name || undefined}
-        email={me?.email}
-        pendingMatches={counts?.pendingMatches}
-      />
 
       <main className="page">
         <div className="wrap">

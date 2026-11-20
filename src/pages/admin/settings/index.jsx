@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
 import Select from 'components/ui/Select';
-import AdminAppBar from '../components/AdminAppBar';
+import { useAdminBar } from '../components/AdminLayout';
 import {
   getMe,
   updateMe,
@@ -147,6 +147,9 @@ const AdminSettings = () => {
 
   const isOwner = me?.role === 'OWNER';
 
+  // The bar shows the name as it's typed here.
+  useAdminBar({ name: profile.name || undefined });
+
   const showToast = (message) => {
     setToastMsg(message);
     clearTimeout(toastTimer?.current);
@@ -275,8 +278,6 @@ const AdminSettings = () => {
       <Helmet>
         <title>Owner settings · Talentmon Admin</title>
       </Helmet>
-
-      <AdminAppBar name={profile.name || undefined} email={me?.email} />
 
       <main className="page">
         <div className="wrap">

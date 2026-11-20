@@ -1,31 +1,32 @@
 import React, { useEffect, useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import AdminUserMenu from './AdminUserMenu';
-import { getNewSuggestionCount, getPendingMatchCount } from '../adminApi';
+import { getMe, getNewSuggestionCount, getPendingMatchCount } from '../adminApi';
 
-// Shared top bar of every admin page. The Companies link carries the number
-// of "returning company" suggestions waiting for a yes/no; the Suggestions
-// link the number of product suggestions still marked New.
-const AdminAppBar = ({ name, email, pendingMatches, newSuggestions }) => {
+// Top bar of every admin page (AdminLayout keeps it mounted between them). The
+// Companies link carries the number of "returning company" suggestions waiting
+// for a yes/no; the Suggestions link the number of product suggestions still
+// marked New. A page that has fresher values passes them in (useAdminBar).
+const AdminAppBar = ({ name, pendingMatches, newSuggestions }) => {
+  const { pathname } = useLocation();
+  const [me, setMe] = useState(null);
   const [fetchedPending, setFetchedPending] = useState(0);
   const [fetchedNew, setFetchedNew] = useState(0);
 
+  // Re-read the name and counts on every page change, as a fresh page load used
+  // to (so a name saved in Settings shows on the next page).
   useEffect(() => {
-    if (pendingMatches !== undefined) return;
+    getMe().then(setMe).catch(() => {});
     getPendingMatchCount().then(setFetchedPending).catch(() => {});
-  }, [pendingMatches]);
-
-  useEffect(() => {
-    if (newSuggestions !== undefined) return;
     getNewSuggestionCount().then(setFetchedNew).catch(() => {});
-  }, [newSuggestions]);
+  }, [pathname]);
 
   const pending = pendingMatches ?? fetchedPending;
   const fresh = newSuggestions ?? fetchedNew;
 
   return (
-    <header className="appbar">
-      <div className="wrap appbar-in">
+    <header className="admin-bar">
+      <div className="appbar-in">
         <Link to="/admin" className="brand">
           <span className="mk">
             <img src="/assets/images/talentmon.png" alt="Talentmon" />
@@ -45,7 +46,7 @@ const AdminAppBar = ({ name, email, pendingMatches, newSuggestions }) => {
           </NavLink>
         </nav>
         <div className="appbar-right">
-          <AdminUserMenu name={name} email={email} />
+          <AdminUserMenu name={name || me?.name || undefined} email={me?.email} />
         </div>
       </div>
     </header>

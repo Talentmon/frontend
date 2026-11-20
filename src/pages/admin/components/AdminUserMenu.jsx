@@ -41,6 +41,9 @@ const AdminUserMenu = ({ name, email }) => {
     navigate('/login');
   };
 
+  // The bar stays mounted between admin pages (AdminLayout), so a page change closes the menu.
+  useEffect(() => { setOpen(false); }, [location.pathname]);
+
   useEffect(() => {
     if (!open) return undefined;
     const onDocClick = (e) => {

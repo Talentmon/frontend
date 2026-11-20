@@ -1,8 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import AdminAppBar from '../components/AdminAppBar';
+import { useAdminBar } from '../components/AdminLayout';
 import {
-  getMe,
   getSuggestions,
   updateSuggestionAdmin,
   deleteSuggestionAdmin,
@@ -141,14 +140,12 @@ const SuggestionAdminCard = ({ suggestion, onChanged, onDeleted }) => {
 };
 
 const AdminSuggestions = () => {
-  const [me, setMe] = useState(null);
   const [items, setItems] = useState(null);
   const [tab, setTab] = useState('new');
   const [sort, setSort] = useState('top');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    getMe().then(setMe).catch(() => {});
     getSuggestions()
       .then(setItems)
       .catch(() => setError('Could not load suggestions — please refresh.'));
@@ -162,6 +159,8 @@ const AdminSuggestions = () => {
       hidden: list.filter((s) => s.hidden).length,
     };
   }, [items]);
+
+  useAdminBar({ newSuggestions: items ? counts.new : undefined });
 
   const visible = useMemo(() => {
     const list = (items || []).filter((s) => {
@@ -187,8 +186,6 @@ const AdminSuggestions = () => {
       <Helmet>
         <title>Suggestions · Talentmon Admin</title>
       </Helmet>
-
-      <AdminAppBar name={me?.name || undefined} email={me?.email} newSuggestions={items ? counts.new : undefined} />
 
       <main className="page">
         <div className="wrap">

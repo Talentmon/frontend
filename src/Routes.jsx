@@ -7,6 +7,7 @@ import RequireAuth from "components/auth/RequireAuth";
 import AppLayout from "components/ui/AppLayout";
 import Header from "components/ui/Header";
 import CandidateHeader from "components/ui/CandidateHeader";
+import AdminLayout from "./pages/admin/components/AdminLayout";
 
 // Landing / public
 import LandingPage from './pages/landing/landing-page';
@@ -64,10 +65,12 @@ const Routes = () => {
             pages; only the page inside changes. */}
 
         {/* Admin */}
-        <Route path="/admin" element={<RequireAuth roles={['ADMIN']}><AdminPanel /></RequireAuth>} />
-        <Route path="/admin/settings" element={<RequireAuth roles={['ADMIN']}><AdminSettings /></RequireAuth>} />
-        <Route path="/admin/companies" element={<RequireAuth roles={['ADMIN']}><AdminCompanies /></RequireAuth>} />
-        <Route path="/admin/suggestions" element={<RequireAuth roles={['ADMIN']}><AdminSuggestions /></RequireAuth>} />
+        <Route element={<RequireAuth roles={['ADMIN']}><AdminLayout /></RequireAuth>}>
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/admin/settings" element={<AdminSettings />} />
+          <Route path="/admin/companies" element={<AdminCompanies />} />
+          <Route path="/admin/suggestions" element={<AdminSuggestions />} />
+        </Route>
 
         {/* Company-facing */}
         <Route element={<RequireAuth roles={['COMPANY']}><AppLayout header={<Header />} /></RequireAuth>}>

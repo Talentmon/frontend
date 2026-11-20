@@ -1,0 +1,38 @@
+// The admin bar sits above the admin pages (AdminLayout), not inside them, so it
+// carries its own styles instead of taking them from .admin-panel / .admin-settings.
+// Its own class (.admin-bar, not .appbar) keeps the candidate bar's global styles
+// off it; the sizes are the ones it showed when it still picked those up.
+.admin-bar {
+  position: relative;
+  flex: none;
+  z-index: 50;
+  background: var(--adp-ink);
+  border-bottom: 1px solid rgba(255, 255, 255, .07);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  color: var(--adp-ink);
+  -webkit-font-smoothing: antialiased;
+
+  *, *::before, *::after { box-sizing: border-box; }
+  :focus-visible { outline: 3px solid var(--adp-gold); outline-offset: 2px; border-radius: 6px; }
+
+  .appbar-in { display: flex; align-items: center; gap: 26px; height: 64px; max-width: 1180px; margin: 0 auto; padding: 0 22px; }
+  .brand { display: inline-flex; align-items: center; gap: .55em; flex: none; font-family: 'Baloo 2', 'Bricolage Grotesque', sans-serif; font-weight: 800; text-transform: uppercase; font-size: 1.12rem; color: var(--adp-text-light); white-space: nowrap; text-decoration: none; }
+  .brand .mk { width: 30px; height: 30px; border-radius: 8px; overflow: hidden; display: grid; place-items: center; flex: none; }
+  .brand .mk img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .brand b { color: var(--adp-gold); }
+  .admin-badge { font-family: 'JetBrains Mono', monospace; font-size: .64rem; font-weight: 600; letter-spacing: .1em; color: var(--adp-ink); background: var(--adp-gold); padding: .3em .6em; border-radius: 6px; }
+  .appnav { display: flex; gap: 4px; margin-left: 8px; }
+  .appnav a { font-size: .9rem; font-weight: 500; color: var(--adp-text-dim); padding: .5em .8em; border-radius: 8px; text-decoration: none; white-space: nowrap; transition: color .2s, background .2s; }
+  .appnav a:hover { color: var(--adp-text-light); background: rgba(255, 255, 255, .05); }
+  .appnav a.active { color: var(--adp-text-light); background: rgba(255, 255, 255, .08); }
+  .appnav .nav-count { display: inline-grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px; border-radius: 99px; background: var(--adp-gold); color: var(--adp-ink); font-size: .68rem; font-weight: 700; vertical-align: 1px; }
+  .appbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
+
+  @media (max-width: 600px) {
+    .appnav a { font-size: .82rem; padding: .45em .6em; }
+  }
+  @media (max-width: 560px) {
+    .admin-badge { display: none; }
+  }
+}

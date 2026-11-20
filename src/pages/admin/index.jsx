@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
-import AdminAppBar from './components/AdminAppBar';
 import {
   getOverview,
   getPurchases,
   getBurn,
   getSupplyDemand,
   getCompanies,
-  getMe,
   eur,
   eurCents2,
   monthLabel,
@@ -97,12 +95,6 @@ const AdminPanel = () => {
   const [companiesData, setCompaniesData] = useState(null);
   const [companySearch, setCompanySearch] = useState('');
   const [companySearchDebounced, setCompanySearchDebounced] = useState('');
-  const [me, setMe] = useState(null);
-
-  useEffect(() => {
-    getMe().then(setMe).catch(() => {});
-  }, []);
-
   useEffect(() => {
     Promise.all([getOverview(period), getPurchases(period), getBurn(period), getSupplyDemand(period)])
       .then(([o, p, b, sd]) => {
@@ -160,8 +152,6 @@ const AdminPanel = () => {
       <Helmet>
         <title>Owner panel · Talentmon Admin</title>
       </Helmet>
-
-      <AdminAppBar name={me?.name || undefined} email={me?.email} />
 
       <main className="page">
         <div className="wrap">

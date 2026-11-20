@@ -4,7 +4,9 @@ import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
 import RequireAuth from "components/auth/RequireAuth";
-import CompanyLayout from "components/ui/CompanyLayout";
+import AppLayout from "components/ui/AppLayout";
+import Header from "components/ui/Header";
+import CandidateHeader from "components/ui/CandidateHeader";
 
 // Landing / public
 import LandingPage from './pages/landing/landing-page';
@@ -57,15 +59,18 @@ const Routes = () => {
         <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/about" element={<About />} />
 
+        {/* Each signed-in section has one shell (AppLayout: its own bar + the scroll
+            area under it) that stays mounted while you move between that section's
+            pages; only the page inside changes. */}
+
         {/* Admin */}
         <Route path="/admin" element={<RequireAuth roles={['ADMIN']}><AdminPanel /></RequireAuth>} />
         <Route path="/admin/settings" element={<RequireAuth roles={['ADMIN']}><AdminSettings /></RequireAuth>} />
         <Route path="/admin/companies" element={<RequireAuth roles={['ADMIN']}><AdminCompanies /></RequireAuth>} />
         <Route path="/admin/suggestions" element={<RequireAuth roles={['ADMIN']}><AdminSuggestions /></RequireAuth>} />
 
-        {/* Company-facing: one shell (header + the scroll area under it) that stays
-            mounted while you move between these pages; only the page inside changes. */}
-        <Route element={<RequireAuth roles={['COMPANY']}><CompanyLayout /></RequireAuth>}>
+        {/* Company-facing */}
+        <Route element={<RequireAuth roles={['COMPANY']}><AppLayout header={<Header />} /></RequireAuth>}>
           <Route path="/bookmarked-candidates" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><BookmarkedCandidatesPage /></RequireAuth>} />
           <Route path="/credit-management" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CreditManagement /></RequireAuth>} />
           <Route path="/candidate-search-dashboard" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CandidateSearchDashboard /></RequireAuth>} />
@@ -76,14 +81,17 @@ const Routes = () => {
           <Route path="/suggestions" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><Suggestions /></RequireAuth>} />
         </Route>
 
-        {/* Candidate-facing */}
-        <Route path="/candidate-profile" element={<RequireAuth roles={['CANDIDATE']}><CandidateProfile /></RequireAuth>} />
+        {/* Candidate-facing. The company pages here are public, so each page keeps its own guard. */}
+        <Route element={<AppLayout header={<CandidateHeader />} />}>
+          <Route path="/candidate-profile" element={<RequireAuth roles={['CANDIDATE']}><CandidateProfile /></RequireAuth>} />
+          <Route path="/candidate-settings" element={<RequireAuth roles={['CANDIDATE']}><CandidateSettings /></RequireAuth>} />
+          <Route path="/company-list" element={<CompanyList />} />
+          <Route path="/company-details/:companyId" element={<CompanyDetails />} />
+          <Route path="/company-details/:companyId/reviews" element={<CompanyDetailsReviews />} />
+          <Route path="/my-ratings" element={<RequireAuth roles={['CANDIDATE']}><MyRatingsPage /></RequireAuth>} />
+        </Route>
+        {/* The CV editor has its own toolbar instead of the candidate bar, so it builds its shell itself. */}
         <Route path="/candidate-profile/edit" element={<RequireAuth roles={['CANDIDATE']}><CandidateProfileEdit /></RequireAuth>} />
-        <Route path="/candidate-settings" element={<RequireAuth roles={['CANDIDATE']}><CandidateSettings /></RequireAuth>} />
-        <Route path="/company-list" element={<CompanyList />} />
-        <Route path="/company-details/:companyId" element={<CompanyDetails />} />
-        <Route path="/company-details/:companyId/reviews" element={<CompanyDetailsReviews />} />
-        <Route path="/my-ratings" element={<RequireAuth roles={['CANDIDATE']}><MyRatingsPage /></RequireAuth>} />
 
         <Route path="*" element={<NotFound />} />
       </RouterRoutes>

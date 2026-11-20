@@ -33,7 +33,7 @@ $sh-card-h: 0 1px 2px rgba(11, 26, 44, .05), 0 26px 54px -28px rgba(11, 26, 44, 
 $display: 'Bricolage Grotesque', sans-serif;
 
 // Sticky tops and scroll margins count from the top of the scroll area under the
-// site header (components/ui/CompanyLayout), so the header itself is not in them.
+// site header (components/ui/AppLayout), so the header itself is not in them.
 $two-col-from: 981px;
 
 .page {
@@ -43,7 +43,7 @@ $two-col-from: 981px;
     $paper;
   background-attachment: fixed;
   display: flow-root; // keeps the hero's top margin inside, so the page starts right under the header
-  min-height: 100%; // fills the scroll area under the header (CompanyLayout)
+  min-height: 100%; // fills the scroll area under the header (AppLayout)
   color: $ink;
 }
 

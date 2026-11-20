@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
+import AppLayout from 'components/ui/AppLayout';
+import { scrollPageToTop } from 'components/ui/appScroll';
 import { I } from './icons';
 import { createId, createInitialState, schemaOf } from './data';
 import { loadProfile, saveProfile } from '../profileStore';
@@ -486,11 +488,11 @@ const CandidateProfileEdit = () => {
     saveProfile(state);
     setDirty(false);
     setSavedMode(true);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollPageToTop('smooth');
   };
   const handleBackToEdit = () => {
     setSavedMode(false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    scrollPageToTop('smooth');
   };
 
   const renderSection = (sec) => {
@@ -529,144 +531,149 @@ const CandidateProfileEdit = () => {
     );
   };
 
+  // Stays on top while only the editor under it scrolls (AppLayout).
+  const topbar = (
+    <header className="topbar">
+      <div className="wrap topbar-in">
+        <span className="brand">
+          <span className="mk">
+            <img src="/assets/images/talentmon.png" alt="Talentmon" />
+          </span>
+          <span>Talent<b>mon</b></span>
+        </span>
+        <span className="tb-title">{savedMode ? 'Profile preview' : 'Editing profile'}</span>
+        <div className="tb-right">
+          <span className={`save-state${dirty ? ' saving' : ''}`}>
+            <span className="sdot" />
+            <span>{dirty ? 'Unsaved changes' : 'All saved'}</span>
+          </span>
+          {savedMode ? (
+            <button type="button" className="btn btn-line" onClick={handleBackToEdit}>
+              <I name="back" />
+              Back to editing
+            </button>
+          ) : (
+            <>
+              <button type="button" className="btn btn-line" onClick={() => navigate('/candidate-profile')}>
+                <I name="back" />
+                Back to profile
+              </button>
+              <button type="button" className="btn btn-gold" onClick={handleSaveAndView} disabled={saving}>
+                <I name="eyeFilled" />
+                {saving ? 'Saving…' : 'Save and view'}
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+
   return (
     <div className={`cpe-page${mobilePane === 'preview' ? ' show-preview' : ''}`}>
       <Helmet>
         <title>Edit profile · Talentmon</title>
       </Helmet>
 
-      <header className="topbar">
-        <div className="wrap topbar-in">
-          <span className="brand">
-            <span className="mk">
-              <img src="/assets/images/talentmon.png" alt="Talentmon" />
-            </span>
-            <span>Talent<b>mon</b></span>
-          </span>
-          <span className="tb-title">{savedMode ? 'Profile preview' : 'Editing profile'}</span>
-          <div className="tb-right">
-            <span className={`save-state${dirty ? ' saving' : ''}`}>
-              <span className="sdot" />
-              <span>{dirty ? 'Unsaved changes' : 'All saved'}</span>
-            </span>
-            {savedMode ? (
-              <button type="button" className="btn btn-line" onClick={handleBackToEdit}>
-                <I name="back" />
-                Back to editing
-              </button>
-            ) : (
-              <>
-                <button type="button" className="btn btn-line" onClick={() => navigate('/candidate-profile')}>
-                  <I name="back" />
-                  Back to profile
+      <AppLayout header={topbar}>
+        <main className="page">
+          {!savedMode ? (
+            <div className="wrap">
+              <div className="seg">
+                <button type="button" className={mobilePane === 'edit' ? 'on' : ''} onClick={() => setMobilePane('edit')}>
+                  Edit
                 </button>
-                <button type="button" className="btn btn-gold" onClick={handleSaveAndView} disabled={saving}>
-                  <I name="eyeFilled" />
-                  {saving ? 'Saving…' : 'Save and view'}
+                <button type="button" className={mobilePane === 'preview' ? 'on' : ''} onClick={() => setMobilePane('preview')}>
+                  Preview
                 </button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <main className="page">
-        {!savedMode ? (
-          <div className="wrap">
-            <div className="seg">
-              <button type="button" className={mobilePane === 'edit' ? 'on' : ''} onClick={() => setMobilePane('edit')}>
-                Edit
-              </button>
-              <button type="button" className={mobilePane === 'preview' ? 'on' : ''} onClick={() => setMobilePane('preview')}>
-                Preview
-              </button>
-            </div>
-
-            <div className="edit-grid">
-              <div className="editor-col">
-                <div className="col-head">
-                  <div>
-                    <h1>Edit profile</h1>
-                    <p className="sub">Drag to reorder, hide with the eye icon — changes appear instantly on the right.</p>
-                  </div>
-                </div>
-                <div className="sections">
-                  <BasicsSection
-                    basics={state.basics}
-                    open={!!openIds.basics}
-                    onToggleOpen={() => toggleSectionOpen('basics')}
-                    onChangeField={setBasicsField}
-                    onPhotoUpload={setBasicsPhoto}
-                    onPhotoRemove={removeBasicsPhoto}
-                    photoBusy={photoBusy}
-                    onChangeLink={changeLink}
-                    onAddLink={addLink}
-                    onRemoveLink={removeLink}
-                    photoHidden={!!state.basics.photoHidden}
-                    onTogglePhotoHidden={() => updateState((draft) => { draft.basics.photoHidden = !draft.basics.photoHidden; })}
-                  />
-                  {state.sections.map(renderSection)}
-                  <div className="add-content-wrap">
-                    <button type="button" className="add-content" onClick={() => setModalOpen(true)}>
-                      <I name="plus" />
-                      Add section
-                    </button>
-                  </div>
-                </div>
               </div>
 
-              <div className="preview-col">
-                <div className="col-head">
-                  <div className="pv-toggle">
-                    <button type="button" className={previewMode === 'self' ? 'on' : ''} onClick={() => setPreviewMode('self')}>
-                      My view
-                    </button>
-                    <button type="button" className={previewMode === 'company' ? 'on' : ''} onClick={() => setPreviewMode('company')}>
-                      Company view
-                    </button>
+              <div className="edit-grid">
+                <div className="editor-col">
+                  <div className="col-head">
+                    <div>
+                      <h1>Edit profile</h1>
+                      <p className="sub">Drag to reorder, hide with the eye icon — changes appear instantly on the right.</p>
+                    </div>
+                  </div>
+                  <div className="sections">
+                    <BasicsSection
+                      basics={state.basics}
+                      open={!!openIds.basics}
+                      onToggleOpen={() => toggleSectionOpen('basics')}
+                      onChangeField={setBasicsField}
+                      onPhotoUpload={setBasicsPhoto}
+                      onPhotoRemove={removeBasicsPhoto}
+                      photoBusy={photoBusy}
+                      onChangeLink={changeLink}
+                      onAddLink={addLink}
+                      onRemoveLink={removeLink}
+                      photoHidden={!!state.basics.photoHidden}
+                      onTogglePhotoHidden={() => updateState((draft) => { draft.basics.photoHidden = !draft.basics.photoHidden; })}
+                    />
+                    {state.sections.map(renderSection)}
+                    <div className="add-content-wrap">
+                      <button type="button" className="add-content" onClick={() => setModalOpen(true)}>
+                        <I name="plus" />
+                        Add section
+                      </button>
+                    </div>
                   </div>
                 </div>
-                <div className="pv-frame">
-                  <div className="pv-bar">
-                    {previewMode === 'self' ? (
-                      <>
-                        <I name="eyeFilled" />
-                        <span>
-                          Full preview — <b>everything included</b>, as if you were unlocked
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <I name="building" />
-                        <span>
-                          Company view — <b>name, photo, and contact</b> hidden until unlocked
-                        </span>
-                      </>
-                    )}
+
+                <div className="preview-col">
+                  <div className="col-head">
+                    <div className="pv-toggle">
+                      <button type="button" className={previewMode === 'self' ? 'on' : ''} onClick={() => setPreviewMode('self')}>
+                        My view
+                      </button>
+                      <button type="button" className={previewMode === 'company' ? 'on' : ''} onClick={() => setPreviewMode('company')}>
+                        Company view
+                      </button>
+                    </div>
                   </div>
-                  <div className="pv-scroll">
-                    <div className="cv">
-                      <CvPreview state={state} mode={previewMode} />
+                  <div className="pv-frame">
+                    <div className="pv-bar">
+                      {previewMode === 'self' ? (
+                        <>
+                          <I name="eyeFilled" />
+                          <span>
+                            Full preview — <b>everything included</b>, as if you were unlocked
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <I name="building" />
+                          <span>
+                            Company view — <b>name, photo, and contact</b> hidden until unlocked
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    <div className="pv-scroll">
+                      <div className="cv">
+                        <CvPreview state={state} mode={previewMode} />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="saved-wrap">
-            <div className="saved-flash">
-              <I name="check" strokeWidth={2.4} />
-              Your changes have been saved to your CV.
-            </div>
-            <div className="saved-card">
-              <div className="cv">
-                <CvPreview state={state} mode="self" />
+          ) : (
+            <div className="saved-wrap">
+              <div className="saved-flash">
+                <I name="check" strokeWidth={2.4} />
+                Your changes have been saved to your CV.
+              </div>
+              <div className="saved-card">
+                <div className="cv">
+                  <CvPreview state={state} mode="self" />
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </main>
+          )}
+        </main>
+      </AppLayout>
 
       <ToastHost toasts={toasts} onAction={handleToastAction} />
       <AddContentModal open={modalOpen} onClose={() => setModalOpen(false)} onPick={addSection} />

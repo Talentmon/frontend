@@ -50,7 +50,7 @@ const Header = () => {
     return () => document.removeEventListener('mousedown', onOutside);
   }, [isMobileMenuOpen]);
 
-  // The header stays mounted between company pages (CompanyLayout), so a page
+  // The header stays mounted between company pages (AppLayout), so a page
   // change, from anywhere, closes the menu.
   useEffect(() => { setIsMobileMenuOpen(false); }, [location.pathname]);
 

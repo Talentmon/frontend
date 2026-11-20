@@ -27,7 +27,7 @@
   color: var(--cl-ink);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
+  min-height: 100%; // fills the scroll area under the candidate bar (AppLayout)
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   a { color: inherit; text-decoration: none; }
@@ -35,32 +35,6 @@
   :focus-visible { outline: 3px solid var(--cl-gold); outline-offset: 2px; border-radius: 6px; }
   h1, h2, h3 { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; letter-spacing: -.01em; line-height: 1.1; }
   .wrap { max-width: 1180px; margin: 0 auto; padding: 0 22px; }
-
-  /* ===== APP BAR ===== */
-  .appbar { position: sticky; top: 0; z-index: 50; background: var(--cl-ink); border-bottom: 1px solid rgba(255, 255, 255, .07); }
-  .appbar-in { display: flex; align-items: center; gap: 26px; height: 64px; }
-  .brand {
-    display: inline-flex; align-items: center; gap: .55em; font-family: 'Bricolage Grotesque'; font-weight: 700;
-    font-size: 1.12rem; color: var(--cl-text-light);
-    .mk { width: 30px; height: 30px; border-radius: 8px; overflow: hidden; display: grid; place-items: center; img { width: 100%; height: 100%; object-fit: cover; display: block; } }
-    b { color: var(--cl-gold); }
-  }
-  .appnav {
-    display: flex; gap: 4px; margin-left: 8px;
-    a {
-      font-size: .9rem; font-weight: 500; color: var(--cl-text-dim); padding: .5em .8em; border-radius: 8px; transition: .2s;
-      &:hover { color: var(--cl-text-light); background: rgba(255, 255, 255, .05); }
-      &.on { color: var(--cl-text-light); background: rgba(255, 255, 255, .08); }
-    }
-  }
-  .appbar-right { margin-left: auto; display: flex; align-items: center; gap: 14px; }
-  .user {
-    display: flex; align-items: center; gap: 9px; padding: 5px 6px 5px 12px; border-radius: 99px;
-    background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .08);
-    .un { font-size: .86rem; font-weight: 600; color: var(--cl-text-light); }
-    .ua { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(140deg, #5b8fc4, #2c4d72); display: grid; place-items: center; color: #fff; font-weight: 700; font-size: .8rem; font-family: 'Bricolage Grotesque'; }
-    svg { width: 15px; height: 15px; color: var(--cl-text-dim); }
-  }
 
   .page { padding: 30px 0 70px; }
 
@@ -134,8 +108,6 @@
     .co-grid { grid-template-columns: 1fr 1fr; }
   }
   @media (max-width: 680px) {
-    .appnav { display: none; }
-    .user .un { display: none; }
     .co-grid { grid-template-columns: 1fr; }
     .co-filters { flex-direction: column; align-items: stretch; }
     .co-filters select, .co-search { width: 100%; }

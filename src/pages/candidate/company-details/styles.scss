@@ -28,7 +28,7 @@
   color: var(--cf-ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
+  min-height: 100%; // fills the scroll area under the candidate bar (AppLayout)
 
   *,
   *::before,
@@ -62,105 +62,6 @@
     max-width: 1080px;
     margin: 0 auto;
     padding: 0 22px;
-  }
-
-  /* ===== APP BAR ===== */
-  .appbar {
-    position: sticky;
-    top: 0;
-    z-index: 50;
-    background: var(--cf-ink);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  }
-  .appbar-in {
-    display: flex;
-    align-items: center;
-    gap: 26px;
-    height: 64px;
-  }
-  .brand {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55em;
-    font-family: "Bricolage Grotesque";
-    font-weight: 700;
-    font-size: 1.12rem;
-    color: var(--cf-text-light);
-    .mk {
-      width: 30px;
-      height: 30px;
-      border-radius: 8px;
-      overflow: hidden;
-      display: grid;
-      place-items: center;
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-      }
-    }
-    b {
-      color: var(--cf-gold);
-    }
-  }
-  .appnav {
-    display: flex;
-    gap: 4px;
-    margin-left: 8px;
-    a {
-      font-size: 0.9rem;
-      font-weight: 500;
-      color: var(--cf-text-dim);
-      padding: 0.5em 0.8em;
-      border-radius: 8px;
-      transition: 0.2s;
-      &:hover {
-        color: var(--cf-text-light);
-        background: rgba(255, 255, 255, 0.05);
-      }
-      &.on {
-        color: var(--cf-text-light);
-        background: rgba(255, 255, 255, 0.08);
-      }
-    }
-  }
-  .appbar-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-  .user {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 5px 6px 5px 12px;
-    border-radius: 99px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    .un {
-      font-size: 0.86rem;
-      font-weight: 600;
-      color: var(--cf-text-light);
-    }
-    .ua {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      background: linear-gradient(140deg, #5b8fc4, #2c4d72);
-      display: grid;
-      place-items: center;
-      color: #fff;
-      font-weight: 700;
-      font-size: 0.8rem;
-      font-family: "Bricolage Grotesque";
-    }
-    svg {
-      width: 15px;
-      height: 15px;
-      color: var(--cf-text-dim);
-    }
   }
 
   .page {
@@ -840,12 +741,6 @@
     }
     .contact-legal {
       padding-top: 8px;
-    }
-    .appnav {
-      display: none;
-    }
-    .user .un {
-      display: none;
     }
   }
   @media (prefers-reduced-motion: reduce) {

@@ -6,8 +6,16 @@
   position: sticky;
   top: 0;
   z-index: 200;
+  flex: none;
   background: #0B1A2C;
   border-bottom: 1px solid rgba(255, 255, 255, .07);
+  // The bar sits above the page (AppLayout), not inside it, so it sets the type
+  // it used to take from the page.
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+
+  *, *::before, *::after { box-sizing: border-box; }
 
   .appbar-in {
     display: flex;
@@ -125,6 +133,13 @@
   @media (max-width: 600px) {
     .user .un { display: none; }
     .appnav a { font-size: .82rem; padding: .45em .6em; }
+  }
+
+  // The links don't fit beside the bell and the menu on a phone (there is no
+  // phone menu yet), so they hide there, as My CV, Companies and the company
+  // pages already did when each page styled the bar itself.
+  @media (max-width: 680px) {
+    .appnav { display: none; }
   }
 }
 

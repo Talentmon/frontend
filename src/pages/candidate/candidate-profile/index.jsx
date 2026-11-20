@@ -2,7 +2,6 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 're
 import { formatLocation } from 'utils/countries';
 import { Helmet } from 'react-helmet';
 import { useNavigate } from 'react-router-dom';
-import CandidateHeader from 'components/ui/CandidateHeader';
 import Icon from 'components/AppIcon';
 import { loadProfile } from './profileStore';
 import { createInitialState, initials, srPlural, salaryRow, DEFAULT_PHONE_CODE } from './edit/data';
@@ -160,8 +159,6 @@ const CandidateProfile = () => {
       <Helmet>
         <title>My profile · Talentmon</title>
       </Helmet>
-
-      <CandidateHeader />
 
       <main className="page">
         <div className="wrap">

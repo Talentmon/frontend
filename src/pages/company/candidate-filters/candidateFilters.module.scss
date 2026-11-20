@@ -127,7 +127,7 @@ main.cvMain {
 // The page's bottom padding (.page in bookmarked/purchased.module.scss).
 $page-bottom: 70px;
 // The site header (components/ui/Header). The page scrolls in the area under it
-// (CompanyLayout), so that area is 100dvh minus this tall.
+// (AppLayout), so that area is 100dvh minus this tall.
 $site-header-h: 64px;
 
 // The filters column takes what's left (up to Search's 320px) beside the card.

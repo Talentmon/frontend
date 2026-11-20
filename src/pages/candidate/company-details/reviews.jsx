@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link, useParams } from 'react-router-dom';
 import { getCompanyById, getCompanyReviews, companyToDetails, reviewToFrontend } from '../companiesApi';
-import CandidateHeader from 'components/ui/CandidateHeader';
 import Select from 'components/ui/Select';
 import Stars from './Stars';
 import './styles.scss';
@@ -113,7 +112,6 @@ const CompanyDetailsReviews = () => {
   if (loading) {
     return (
       <div className="cpf-page">
-        <CandidateHeader />
         <main className="page">
           <div className="wrap cpf-notfound">
             <p>Loading…</p>
@@ -126,7 +124,6 @@ const CompanyDetailsReviews = () => {
   if (!company) {
     return (
       <div className="cpf-page">
-        <CandidateHeader />
         <main className="page">
           <div className="wrap cpf-notfound">
             <h2>Company not found</h2>
@@ -142,8 +139,6 @@ const CompanyDetailsReviews = () => {
       <Helmet>
         <title>Reviews · {company.name} · Talentmon</title>
       </Helmet>
-
-      <CandidateHeader />
 
       <main className="page">
         <div className="wrap">

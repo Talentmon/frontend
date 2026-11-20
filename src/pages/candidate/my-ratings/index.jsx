@@ -1,6 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Icon from 'components/AppIcon';
-import CandidateHeader from 'components/ui/CandidateHeader';
 import Select from 'components/ui/Select';
 import Stars from './components/Stars';
 import StarInput from './components/StarInput';
@@ -265,8 +264,6 @@ const MyRatingsPage = () => {
 
   return (
     <div className={styles.page}>
-      <CandidateHeader />
-
       <main className={styles.main}>
         <div className={styles.inner}>
 

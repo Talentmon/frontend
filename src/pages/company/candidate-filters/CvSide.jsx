@@ -15,7 +15,7 @@ const CvSide = ({ children }) => {
   useLayoutEffect(() => {
     const side = ref.current;
     if (!side) return undefined;
-    // The page scrolls inside the area under the header (CompanyLayout), not the window.
+    // The page scrolls inside the area under the header (AppLayout), not the window.
     const scroller = getAppScroller() || window;
     let stickyTop = 0;
     let gap = 0;

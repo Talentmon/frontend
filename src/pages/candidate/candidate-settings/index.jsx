@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Helmet } from 'react-helmet';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useClerk } from '@clerk/clerk-react';
-import CandidateHeader from 'components/ui/CandidateHeader';
 import Select from 'components/ui/Select';
+import { scrollPageToTop } from 'components/ui/appScroll';
 import apiClient from 'lib/apiClient';
 import { getTimezoneOptions } from 'utils/timezones';
 import { useCurrentUser } from 'lib/CurrentUserContext';
@@ -920,8 +920,6 @@ const CandidateSettings = () => {
   return (
     <div className={s.page}>
       <Helmet><title>Settings · Talentmon</title></Helmet>
-      <CandidateHeader />
-
       <div className={s.wrap}>
         <div className={s.phead}>
           <div>
@@ -946,7 +944,7 @@ const CandidateSettings = () => {
               <button
                 key={tab.id}
                 className={`${s.snav}${activeTab === tab.id ? ` ${s.active}` : ''}`}
-                onClick={() => { setActiveTab(tab.id); setSearch(''); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                onClick={() => { setActiveTab(tab.id); setSearch(''); scrollPageToTop('smooth'); }}
               >
                 <span className={s.snavIc}>{tab.icon}</span>
                 <span className={s.snavLabel}>

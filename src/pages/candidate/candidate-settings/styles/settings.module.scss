@@ -29,7 +29,7 @@ $sh-card-h:
 
 // ── Page shell ───────────────────────────────────────────────────────────────
 .page {
-  min-height: 100vh;
+  min-height: 100%; // fills the scroll area under the candidate bar (AppLayout)
   background:
     radial-gradient(
       1100px 460px at 78% -8%,
@@ -126,7 +126,7 @@ $sh-card-h:
   border-radius: $r-lg;
   padding: 10px;
   position: sticky;
-  top: 82px;
+  top: 18px; // from the top of the scroll area under the candidate bar (AppLayout)
   box-shadow: $sh-card;
   max-height: calc(100vh - 102px);
   overflow-y: auto;

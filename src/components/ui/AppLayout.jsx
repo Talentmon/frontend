@@ -1,14 +1,17 @@
 import React, { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import Header from './Header';
 import { APP_SCROLL_ID } from './appScroll';
 
 /**
- * Shell of every company page: the header stays mounted while you move between
- * pages, and only the area under it scrolls, so its scrollbar starts under the
- * header. The window itself never scrolls here.
+ * Shell of the signed-in pages (company, candidate, admin): the bar passed as
+ * `header` stays on top, and only the area under it scrolls, so its scrollbar
+ * starts under the bar. The window itself never scrolls here.
+ *
+ * As a route element it keeps the bar mounted while you move between that
+ * section's pages and renders the page in <Outlet />. A page with its own bar
+ * (the CV editor's toolbar) can wrap itself instead, passing `children`.
  */
-const CompanyLayout = () => {
+const AppLayout = ({ header, className = '', children }) => {
   const scrollRef = useRef(null);
   const { pathname } = useLocation();
 
@@ -22,18 +25,18 @@ const CompanyLayout = () => {
   }, [pathname]);
 
   return (
-    <div className="h-dvh flex flex-col overflow-hidden">
-      <Header />
+    <div className={`h-dvh flex flex-col overflow-hidden ${className}`}>
+      {header}
       <div
         id={APP_SCROLL_ID}
         ref={scrollRef}
         tabIndex={-1}
         className="flex-1 min-h-0 overflow-y-auto outline-none"
       >
-        <Outlet />
+        {children ?? <Outlet />}
       </div>
     </div>
   );
 };
 
-export default CompanyLayout;
+export default AppLayout;

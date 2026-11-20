@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import CandidateHeader from 'components/ui/CandidateHeader';
 import Select from 'components/ui/Select';
 import { listCompanies, getCompanyFilterOptions, companyToListCard } from '../companiesApi';
 import './styles.scss';
@@ -106,8 +105,6 @@ const CompanyList = () => {
       <Helmet>
         <title>Companies · Talentmon</title>
       </Helmet>
-
-      <CandidateHeader />
 
       <main className="page">
         <div className="wrap">

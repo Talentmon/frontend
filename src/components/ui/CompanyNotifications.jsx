@@ -55,7 +55,7 @@ const CompanyNotifications = () => {
     return () => document.removeEventListener('mousedown', onOutside);
   }, []);
 
-  // The header stays mounted between company pages (CompanyLayout): each page
+  // The header stays mounted between company pages (AppLayout): each page
   // change closes the list and re-reads the feed, as a fresh page load used to.
   useEffect(() => {
     setOpen(false);

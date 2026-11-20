@@ -30,7 +30,7 @@ $push-bp: 1400px;
 // ===== Page shell =====
 .page {
   background: $paper;
-  min-height: 100%; // fills the scroll area under the header (CompanyLayout)
+  min-height: 100%; // fills the scroll area under the header (AppLayout)
   padding: 26px 0 70px;
   transition: padding-right 0.34s $ease;
 

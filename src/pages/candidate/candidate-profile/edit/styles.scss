@@ -39,7 +39,7 @@
   color: var(--cpe-ink);
   line-height: 1.55;
   -webkit-font-smoothing: antialiased;
-  min-height: 100vh;
+  // No min-height: its AppLayout fills the screen, the toolbar on top and the editor scrolling under it.
 
   *,
   *::before,
@@ -1849,7 +1849,7 @@
   /* ===== LIVE PREVIEW ===== */
   .preview-col {
     position: sticky;
-    top: 84px;
+    top: 20px; // from the top of the scroll area under the toolbar (AppLayout)
   }
   .pv-toggle {
     display: inline-flex;

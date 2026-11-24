@@ -1268,12 +1268,11 @@ $fold: 0.28s;
   list-style: none;
 }
 
-// When the name and the level picker don't fit one line (a long name in the
-// narrower Bookmarked filter column), the picker and X wrap together under
-// the full name.
+// Always one line. A long name ("Chinese (Cantonese)") that doesn't fit beside
+// the level picker is cut with "…" (the whole name shows on hover); the picker
+// gives up its room first.
 .languageLevelRow {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 6px;
   padding: 5px 4px 5px 12px;
@@ -1282,9 +1281,11 @@ $fold: 0.28s;
   border: 1px solid $line;
 }
 
+// Its whole width, up to what leaves the smallest picker + X (130px) and the gap.
 .languageLevelName {
-  flex: 1 0 auto;
-  max-width: 100%;
+  flex: 0 0 auto;
+  min-width: 0;
+  max-width: calc(100% - 136px);
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
@@ -1294,9 +1295,11 @@ $fold: 0.28s;
   white-space: nowrap;
 }
 
-// Level picker + X: 128px picker where there's room, down to 96px before wrapping.
+// Level picker + X: what the name leaves, a 128px picker at most and 96px at
+// least (the name is cut before it gets smaller).
 .languageLevelControls {
   flex: 1 1 130px;
+  min-width: 130px;
   max-width: 162px;
   margin-left: auto;
   display: flex;

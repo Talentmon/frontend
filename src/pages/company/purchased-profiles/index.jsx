@@ -259,7 +259,7 @@ const PurchasedProfiles = () => {
   // so table view always stays overlay+scrim instead (see forceOverlay below).
   const isCardsPreviewOpen = previewId !== null && viewMode === 'cards';
   // CV open beside the cards (as on Search): the filters in a column on the
-  // left, the search, Sort and the cards (448px) beside it.
+  // left, the search, Sort and the cards (440px) beside it.
   const isCompact = isCardsPreviewOpen && isPushWide;
   const hasProfiles = purchasedProfiles.length > 0;
 
@@ -363,7 +363,7 @@ const PurchasedProfiles = () => {
       </Helmet>
       <div className={`${styles.page} ${isCardsPreviewOpen ? styles.previewOpen : ''}`}>
 
-        <main className={`max-w-[1420px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
+        <main className={`max-w-[1404px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
           {isCompact ? (
             <header className={cf.cvTitle}>
               <h1>Purchased Profiles</h1>

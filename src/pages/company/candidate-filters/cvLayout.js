@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 
 // From this width the CV drawer pushes the page aside on Bookmarked and
 // Purchased (CandidatePreviewDrawer's pushBreakpoint; $push-bp in their SCSS):
-// the 55% left must hold the filters (at least 256px) and a 448px card. Below
+// the 55% left must hold the filters (at least 264px) and a 440px card. Below
 // it the drawer overlays the page, which keeps its normal layout.
 export const CV_PUSH_BREAKPOINT = 1400;
 

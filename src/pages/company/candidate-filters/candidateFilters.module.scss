@@ -104,10 +104,10 @@ $card-muted: #6b7a89;
 
 // ===== Beside an open CV (push layout), laid out like Search =====
 // The title across the top; under it the filter sidebar in a column, and the
-// search, results bar and cards (448px, as with the CV closed) beside it,
+// search, results bar and cards (440px, as with the CV closed) beside it,
 // packed against the CV drawer on the right.
 main.cvMain {
-  max-width: 22px + 320px + 22px + 448px + 22px; // side padding, filters (as on Search), gap, card
+  max-width: 22px + 320px + 22px + 440px + 22px; // side padding, filters (as on Search), gap, card
   margin-left: auto;
   margin-right: 0;
 }
@@ -137,7 +137,7 @@ $site-header-h: 64px;
   --side-top: 20px;
   --side-gap: 20px;
   display: grid;
-  grid-template-columns: minmax(0, 320px) 448px;
+  grid-template-columns: minmax(0, 320px) 440px;
   justify-content: end;
   align-items: start;
   column-gap: 22px;

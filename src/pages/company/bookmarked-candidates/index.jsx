@@ -418,7 +418,7 @@ const BookmarkedCandidatesPage = () => {
   const sharedCount = allBookmarkedCandidates?.filter((c) => c?.pocket !== 'PERSONAL')?.length;
 
   // CV open beside the cards (as on Search and Purchased): the filters in a
-  // column on the left, the search, results bar and cards (448px) beside it.
+  // column on the left, the search, results bar and cards (440px) beside it.
   const isCompact = previewId !== null && isPushWide;
 
   const results = (
@@ -483,7 +483,7 @@ const BookmarkedCandidatesPage = () => {
 
   return (
     <div className={`${styles.page} ${previewId !== null ? styles.previewOpen : ''}`}>
-      <main className={`max-w-[1420px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
+      <main className={`max-w-[1404px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
         {/* Title, the slots strip and Search candidates (just the title beside an open CV) */}
         {isCompact ? (
           <header className={cf.cvTitle}>

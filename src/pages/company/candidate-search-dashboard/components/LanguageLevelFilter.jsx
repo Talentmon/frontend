@@ -49,7 +49,8 @@ const LanguageLevelFilter = ({ id, value = [], onChange, placeholder = 'Select l
         <ul className={styles.languageLevelRows} aria-label="Language levels">
           {value?.map((entry) => (
             <li className={styles.languageLevelRow} key={entry?.name}>
-              <span className={styles.languageLevelName}>{entry?.name}</span>
+              {/* One line: a long name is cut with "…", whole on hover. */}
+              <span className={styles.languageLevelName} title={entry?.name}>{entry?.name}</span>
               <span className={styles.languageLevelControls}>
                 <Select
                   className={styles.languageLevelSelect}

@@ -1103,9 +1103,10 @@ $push-bp: 1400px;
 // ===== Candidate cards grid =====
 .cgrid {
   display: grid;
-  // 444px keeps "Salary minimum" on one line; three of them fit the 1420px page.
-  grid-template-columns: repeat(auto-fill, minmax(min(444px, 100%), 1fr));
-  gap: 16px;
+  // 440px cards, as on Search ("Salary minimum" stays on one line): as many as
+  // fit, three on the 1404px page; they never stretch (a phone gets one narrower).
+  grid-template-columns: repeat(auto-fill, min(440px, 100%));
+  gap: 20px;
   align-items: stretch;
 }
 
@@ -1316,11 +1317,20 @@ $card-gold: #f0ae2e;
 
 // ===== Notes band =====
 // Bleeds to the card's edges at the bottom. Opens via the grid 0fr -> 1fr
-// trick (with the margins easing along) so the card grows smoothly.
+// trick so the card grows smoothly. Its top line stays put, 20px under the
+// buttons, open or closed (closed it's pulled back 20px, so the card keeps
+// its 24px bottom padding): the band opens down from that line and the card's
+// bottom closes up to it, never reaching the buttons.
+// The band keeps its full height and the wrapper cuts it (overflow, rounded
+// like the card's bottom corners): a 0.3fr row only gets 0.3 of the wrapper,
+// which is itself 0.3 of the band, so a band the row's size would vanish well
+// before the space it leaves.
 .notesWrap {
   display: grid;
   grid-template-rows: 0fr;
-  margin: 0 -24px;
+  overflow: hidden;
+  border-radius: 0 0 19px 19px;
+  margin: 20px -24px -20px;
   transition:
     grid-template-rows 0.32s $ease,
     margin 0.32s $ease;
@@ -1333,7 +1343,7 @@ $card-gold: #f0ae2e;
 
 // Hidden once closed, so its fields drop out of the tab order.
 .notesInner {
-  overflow: hidden;
+  align-self: start;
   min-height: 0;
   visibility: hidden;
   transition: visibility 0s 0.32s;

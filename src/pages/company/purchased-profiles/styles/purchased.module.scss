@@ -30,10 +30,10 @@ $r-sm: 9px;
 $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 $drawer-w: 45vw;
 // Push mode (the CV drawer squeezes the page instead of floating over it)
-// needs the filters (at least 256px) and a 448px card side by side in the
-// remaining 55% of the page: 0.55 * $push-bp >= 22+256+22+448+22, so anything
-// narrower falls back to overlay mode. Search pushes from 1520px, where its
-// 320px filters fit; here the filters column shrinks down to 256px first.
+// needs the filters (at least 264px) and a 440px card side by side in the
+// remaining 55% of the page: 0.55 * $push-bp >= 22+264+22+440+22, so anything
+// narrower falls back to overlay mode. Search pushes from 1502px, where its
+// 320px filters fit; here the filters column shrinks down to 264px first.
 // Same value as CV_PUSH_BREAKPOINT in candidate-filters/cvLayout.js.
 $push-bp: 1400px;
 
@@ -155,16 +155,17 @@ $push-bp: 1400px;
 // ===== Candidate cards =====
 .cgrid {
   display: grid;
-  // Same width as the Bookmarked cards: 444px keeps "Salary minimum" on one line.
-  grid-template-columns: repeat(auto-fill, minmax(min(444px, 100%), 1fr));
+  // 440px cards, as on Search and Bookmarked: as many as fit, three on the
+  // 1404px page; they never stretch (a phone gets one narrower).
+  grid-template-columns: repeat(auto-fill, min(440px, 100%));
   // Each card keeps its own height, so opening notes or Hire tracking on one
   // doesn't stretch the others in its row.
   align-items: start;
-  gap: 16px;
+  gap: 20px;
   transition: grid-template-columns 0.34s $ease;
 
   // Wide screens with the CV drawer open: one column of cards beside the CV
-  // (mirrors dashboard.module.scss's .grid.previewOpen), in the 448px
+  // (mirrors dashboard.module.scss's .grid.previewOpen), in the 440px
   // results column (candidateFilters.module.scss .cvLayout).
   &.previewOpen {
     @media (min-width: $push-bp) {
@@ -221,24 +222,32 @@ $card-muted: #5f6b78;
   padding: 0 12px;
 }
 
-// Notes panel under the header. Opens via the grid 0fr -> 1fr trick, with the
-// gap above it easing along, so the card grows smoothly.
+// Notes panel under the header. Opens via the grid 0fr -> 1fr trick, so the
+// card grows smoothly. Closed, it sits in the middle of the 20px between the
+// header and the stats (10px down, pulled back 10px), so it opens from there
+// and closes back there, never touching "Open to offers" or the stats; open,
+// it has 20px above and below.
+// The panel keeps its full height and the wrapper cuts it (overflow): a 0.3fr
+// row only gets 0.3 of the wrapper, which is itself 0.3 of the panel, so a
+// panel the row's size would vanish well before the space it leaves.
 .notesWrap {
   display: grid;
   grid-template-rows: 0fr;
+  overflow: hidden;
+  margin: 10px 0 -10px;
   transition:
     grid-template-rows 0.32s $ease,
     margin 0.32s $ease;
 
   &.open {
     grid-template-rows: 1fr;
-    margin-top: 20px;
+    margin: 20px 0 0;
   }
 }
 
 // Hidden once closed, so its fields drop out of the tab order.
 .notesInner {
-  overflow: hidden;
+  align-self: start;
   min-height: 0;
   visibility: hidden;
   transition: visibility 0s 0.32s;
@@ -470,10 +479,13 @@ $card-muted: #5f6b78;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  // 2px between pills keeps the whole row on one line in a two-column grid card.
+  // One line on a 440px card: 2px between the pills, 6px inside the bar's
+  // sides and 7px inside the pills leave a few px to spare even with the
+  // widest pill bold; what's left is spread between them. A phone wraps.
+  justify-content: space-between;
   gap: 6px 2px;
   margin-top: 6px;
-  padding: 10px;
+  padding: 10px 6px;
   background: #f8f9fa;
   border: 1px solid #e9ebef;
   border-radius: 12px;
@@ -483,7 +495,7 @@ $card-muted: #5f6b78;
   height: 28px;
   display: inline-flex;
   align-items: center;
-  padding: 0 8px;
+  padding: 0 7px;
   border: 1.5px solid transparent;
   border-radius: 999px;
   font-family: inherit;

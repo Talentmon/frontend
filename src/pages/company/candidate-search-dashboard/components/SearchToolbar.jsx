@@ -122,8 +122,11 @@ const SortMenu = ({ value, onChange }) => {
 };
 
 /**
- * Above the results: "9 candidates found" (counted once per search) and how
- * salaries are shown, then sort, and cards / list. Everything else is in the filters.
+ * Above the results: the Filters button, "9 candidates found" (counted once per
+ * search) and how salaries are shown, then sort, and cards / list. Everything
+ * else is in the filters. The Filters button is the filters' title made small:
+ * it shows while they're hidden on a computer, and opens them where they slide
+ * in over the page (phones).
  */
 const SearchToolbar = ({
   sortBy = 'newest',
@@ -132,31 +135,43 @@ const SearchToolbar = ({
   onViewModeChange = () => {},
   resultsCount = 0,
   isFilterCollapsed = false,
+  activeFiltersCount = 0,
   onToggleFilters = () => {}
 }) => (
   <div className={styles.toolbar}>
     <div className={styles.toolbarRow}>
-      <div className={styles.resultsInfo}>
-        <p role="status" className={styles.resultsCount}>
-          <strong>{resultsCount}</strong>
-          {resultsCount === 1 ? 'candidate found' : 'candidates found'}
-        </p>
-        <span className={styles.resultsDivider} aria-hidden="true" />
-        <SalaryViewMenu />
-      </div>
-
-      <div className={styles.toolbarControls}>
-        {/* Filters toggle (small screens) */}
+      <div className={styles.toolbarLead}>
         <button
           type="button"
           onClick={onToggleFilters}
-          className={styles.filtersToggleBtn}
-          aria-label={isFilterCollapsed ? 'Show filters' : 'Hide filters'}
+          className={`${styles.filtersToggleBtn} ${isFilterCollapsed ? styles.filtersToggleShown : ''}`}
+          aria-expanded={!isFilterCollapsed}
+          aria-label={`${isFilterCollapsed ? 'Show filters' : 'Hide filters'}${activeFiltersCount > 0 ? ` (${activeFiltersCount} on)` : ''}`}
         >
-          <Icon name="Filter" size={16} />
-          <span>Filters</span>
+          {/* Same as the open filters' title (FilterSidebar). */}
+          <span className={styles.filtersHeadTitle}>
+            <Icon name="Filter" size={18} />
+            <span>Filters</span>
+            {activeFiltersCount > 0 && (
+              <span className={styles.filtersHeadBadge} aria-hidden="true">{activeFiltersCount}</span>
+            )}
+          </span>
+          <span className={styles.filtersChevron}>
+            <Icon name="ChevronRight" size={18} strokeWidth={2.2} />
+          </span>
         </button>
 
+        <div className={styles.resultsInfo}>
+          <p role="status" className={styles.resultsCount}>
+            <strong>{resultsCount}</strong>
+            {resultsCount === 1 ? 'candidate found' : 'candidates found'}
+          </p>
+          <span className={styles.resultsDivider} aria-hidden="true" />
+          <SalaryViewMenu />
+        </div>
+      </div>
+
+      <div className={styles.toolbarControls}>
         <SortMenu value={sortBy} onChange={onSortChange} />
 
         <ViewToggle value={viewMode} onChange={onViewModeChange} options={VIEW_OPTIONS} />

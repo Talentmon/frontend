@@ -349,7 +349,10 @@ const FilterSidebar = ({
   onApply = () => {},
   onClearFilters = () => {},
   isCollapsed = false,
+  // False where the filters must stay beside the cards (no hide button then).
+  canCollapse = true,
   onToggleCollapse = () => {},
+  onActiveCountChange = () => {},
   onNotify = () => {}
 }) => {
   const [localFilters, setLocalFilters] = useState({
@@ -399,8 +402,8 @@ const FilterSidebar = ({
   const handleApply = () => {
     if (!hasChanges) return;
     onApply(localFilters);
-    // Below 1024px the filters cover the results; close them to show what was found.
-    if (!isCollapsed && window.matchMedia?.('(max-width: 1023px)')?.matches) onToggleCollapse();
+    // Below 846px the filters cover the results; close them to show what was found.
+    if (!isCollapsed && window.matchMedia?.('(max-width: 845px)')?.matches) onToggleCollapse();
   };
 
   // Enter in a typed field (Position, City, the salary amounts) applies, like a
@@ -469,6 +472,12 @@ const FilterSidebar = ({
   const getActiveFiltersCount = () => {
     return ALL_FIELDS?.filter((field) => isFieldActive(field, localFilters))?.length;
   };
+
+  // The toolbar's Filters button shows the same count while the filters are hidden.
+  const activeFiltersCount = getActiveFiltersCount();
+  useEffect(() => {
+    onActiveCountChange(activeFiltersCount);
+  }, [activeFiltersCount, onActiveCountChange]);
 
   // A saved range's net/gross and month/year are in its filters; only the currency is the view's.
   const sameView = (entry) => !entry?.view || entry.view.currency === salaryView.currency;
@@ -682,23 +691,11 @@ const FilterSidebar = ({
     }
   };
 
+  // Hidden: nothing to show on a computer (the toolbar's Filters button brings
+  // them back); where they slide in over the page, this empty card is what
+  // slides out of view.
   if (isCollapsed) {
-    return (
-      <div className={`${styles.filters} ${styles.collapsed}`}>
-        <button
-          onClick={onToggleCollapse}
-          className={styles.filtersHeadCollapse}
-          aria-label="Expand filters"
-        >
-          <Icon name="ChevronRight" size={18} strokeWidth={2.2} />
-        </button>
-        {getActiveFiltersCount() > 0 && (
-          <div className={styles.collapsedBadge}>
-            {getActiveFiltersCount()}
-          </div>
-        )}
-      </div>
-    );
+    return <div className={`${styles.filters} ${styles.collapsed}`} aria-hidden="true" />;
   }
 
   const visibleSavedFilters = showAllSaved ? savedFilters : savedFilters?.slice(0, SAVED_FILTERS_PREVIEW);
@@ -725,13 +722,19 @@ const FilterSidebar = ({
             >
               Clear all
             </button>
-            <button
-              onClick={onToggleCollapse}
-              className={styles.filtersHeadCollapse}
-              aria-label="Hide filters"
-            >
-              <Icon name="ChevronLeft" size={18} strokeWidth={2.2} />
-            </button>
+            {/* Only where hiding them helps (card view: from three columns). */}
+            {canCollapse && (
+              <button
+                onClick={onToggleCollapse}
+                className={styles.filtersHeadCollapse}
+                aria-label="Hide filters"
+              >
+                {/* Turns into the toolbar button's > as the filters hide. */}
+                <span className={styles.filtersChevron}>
+                  <Icon name="ChevronLeft" size={18} strokeWidth={2.2} />
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>

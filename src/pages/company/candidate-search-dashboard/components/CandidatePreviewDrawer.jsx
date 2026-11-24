@@ -45,7 +45,7 @@ const CandidatePreviewDrawer = ({
   // Viewport width (px) above which the host page pushes its content aside
   // instead of overlaying it with the scrim — must match that page's own
   // push breakpoint so the scrim doesn't stay dimmed after the push kicks in.
-  pushBreakpoint = 1520,
+  pushBreakpoint = 1502,
   // Search: the card's own data shows at once; the rest of the CV (jobs,
   // education, languages) is still on its way ('loading'), or didn't come
   // ('failed', with `onRetry`). Other pages have the whole CV already.

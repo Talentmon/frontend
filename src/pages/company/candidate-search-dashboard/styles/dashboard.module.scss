@@ -19,11 +19,36 @@ $r-md: 13px;
 $r-sm: 9px;
 $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 $drawer-w: 45vw;
+// ===== Card columns and page width (Search) =====
+// Cards are always 440px, 20px apart across and down, and the page is exactly
+// as wide as its columns, centred:
+//   filters shown:  22 + 320 + 22 + N × 440 + (N − 1) × 20 + 22 = 366 + 460 × N
+//   filters hidden: 22 + N × 440 + (N − 1) × 20 + 22            =  24 + 460 × N
+// How many (--cols, which .grid reads too):
+// - filters shown: 2 where they fit (from 1306px), else 1 (from 846px). Below
+//   846px the filters slide in over the page, above one column of cards.
+// - filters hidden: 3. They can only be hidden from 1424px, where three fit;
+//   below that the filters stay (index.jsx).
+// - from a 1920px window on, one more column in both for every further 460px
+//   (a card and its gap): 2380, 2840, 3300…
+// The breakpoints leave 20px for a scrollbar.
+$card-w: 440px;
+$card-gap: 20px;
+$card-step: $card-w + $card-gap; // 460px
+$filters-w: 320px;
+$filters-on: 22px + $filters-w + 22px + 22px - $card-gap; // + 460px per column
+$filters-off: 22px + 22px - $card-gap; // + 460px per column
+$overlay-max: 845px; // FILTERS_BESIDE_MIN - 1 in index.jsx
+$two-cols: 1306px; // 366 + 2 × 460 + 20
+$wide-from: 1920px;
+
 // Push mode (drawer squeezes the page instead of floating over it) needs the
-// filter sidebar (320px) + the 450px card floor to fit in the remaining 55%
-// of the page: 0.55 * $push-bp >= 22+320+22+450+22, so anything narrower
-// falls back to overlay mode instead of clipping the card behind the drawer.
-$push-bp: 1520px;
+// filter sidebar (320px) + a 440px card in the remaining 55% of the page:
+// 0.55 * $push-bp >= 22+320+22+440+22, so anything narrower falls back to
+// overlay mode. The filters column gives up the few px a scrollbar takes
+// rather than push the card behind the drawer.
+// Same value as the drawer's pushBreakpoint in index.jsx.
+$push-bp: 1502px;
 
 // ===== Page shell =====
 .page {
@@ -43,20 +68,55 @@ $push-bp: 1520px;
 }
 
 .body {
-  max-width: 1320px;
+  --cols: 1;
+  max-width: calc(#{$filters-on} + #{$card-step} * var(--cols));
   margin: 0 auto;
   padding: 24px 22px 70px;
   display: grid;
-  grid-template-columns: auto 1fr;
+  grid-template-columns: $filters-w minmax(0, 1fr);
   gap: 22px;
   align-items: start;
 
-  @media (max-width: 1023px) {
+  @media (min-width: $two-cols) {
+    --cols: 2;
+  }
+
+  @for $k from 1 through 6 {
+    @media (min-width: $wide-from + $k * $card-step) {
+      --cols: #{2 + $k};
+    }
+  }
+
+  @media (min-width: $overlay-max + 1) {
+    > .filters {
+      width: auto;
+    }
+
+    &.filtersCollapsed {
+      --cols: 3;
+      max-width: calc(#{$filters-off} + #{$card-step} * var(--cols));
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+
+  @for $k from 1 through 6 {
+    @media (min-width: $wide-from + $k * $card-step) {
+      &.filtersCollapsed {
+        --cols: #{3 + $k};
+      }
+    }
+  }
+
+  // Phones and small tablets: the filters slide in over the page, and the
+  // cards are one column (a phone gets it narrower).
+  @media (max-width: $overlay-max) {
+    --cols: 1;
+    max-width: 22px + $card-w + 22px;
     grid-template-columns: 1fr;
   }
 
   // Wide screens with the CV drawer open (push mode): shrink the results
-  // column itself to 450px (instead of 1fr, which would otherwise gobble up
+  // column itself to the card (instead of 1fr, which would otherwise gobble up
   // any leftover space) and pack both columns against the right edge of the
   // (still full-width) grid container — .body's own width:auto means
   // margin:auto can't center/right-align the box itself, so justify-content
@@ -65,9 +125,23 @@ $push-bp: 1520px;
   // drawer.
   &.previewOpen {
     @media (min-width: $push-bp) {
-      grid-template-columns: auto 450px;
+      grid-template-columns: minmax(0, $filters-w) $card-w;
       justify-content: end;
+
+      &.filtersCollapsed {
+        grid-template-columns: $card-w;
+      }
     }
+  }
+}
+
+// List view: rows, not cards. The page is as wide as two card columns with
+// the filters shown and three without, at every width.
+.page.listMode .body {
+  --cols: 2;
+
+  &.filtersCollapsed {
+    --cols: 3;
   }
 }
 
@@ -75,8 +149,212 @@ $push-bp: 1520px;
 // overlay+scrim at every width, so undo the grid-view push behavior above.
 .page.listMode .body.previewOpen {
   @media (min-width: $push-bp) {
-    grid-template-columns: auto 1fr;
+    grid-template-columns: $filters-w minmax(0, 1fr);
     justify-content: normal;
+
+    &.filtersCollapsed {
+      grid-template-columns: minmax(0, 1fr);
+    }
+  }
+}
+
+// ===== Hiding / showing the filters (a computer) =====
+// A view transition in two steps (toggleFilters in index.jsx). Hiding: the
+// filters roll up to their title, then the title shrinks into the toolbar's
+// Filters button while the count, the cards and the page's edges move to
+// their new places. Showing runs the other way: the button grows into the
+// title as everything moves back, then the filters roll down.
+// On <html> for the whole transition: .filtersVt, with .filtersVtHide or
+// .filtersVtShow, and .filtersVtFar when hiding far down the page, with the
+// toolbar out of view: there the filters only roll up and fade.
+// The box's path (rolling, then changing into the button) is measured and set
+// in index.jsx; this sheet does the rest.
+// The cards carry their names (CandidateCard); the rest are named only during
+// the transition, as a name also makes its element a stacking context, which
+// would put the Salaries and Sort menus under the cards.
+$vt-roll: 0.2s; // FILTERS_ROLL_MS in index.jsx
+$vt-move: 0.3s; // FILTERS_MOVE_MS in index.jsx
+
+.filtersVt {
+  // The bar is named too so it stays on top: a card half scrolled under it
+  // mustn't pass over it.
+  :global(header):has(+ :global(#app-scroll)) {
+    view-transition-name: app-header;
+  }
+
+  // The open filters and the button are one box that changes shape; their
+  // "Filters" titles (with the count) one title, their < and > one arrow.
+  .filters:not(.collapsed),
+  .filtersToggleBtn {
+    view-transition-name: search-filters;
+  }
+
+  .filtersHeadTitle {
+    view-transition-name: search-filters-title;
+  }
+
+  .filtersChevron {
+    view-transition-name: search-filters-chevron;
+  }
+
+  // On its own, so it's gone before the arrow passes over its place (and back
+  // only after).
+  .filtersClear {
+    view-transition-name: search-filters-clear;
+  }
+
+  .resultsInfo {
+    view-transition-name: search-results-info;
+  }
+
+  .toolbarControls {
+    view-transition-name: search-toolbar-controls;
+  }
+
+  .loadMoreBtn {
+    view-transition-name: search-load-more;
+  }
+
+  &::view-transition-group(*) {
+    animation-duration: $vt-move;
+    animation-timing-function: $ease;
+  }
+
+  // No cross-fade: each card or row keeps its old look until it moves, then
+  // shows its new one, at its own size and pinned top-left (a list row that
+  // changes width and wraps differently would otherwise show both looks).
+  &::view-transition-old(*),
+  &::view-transition-new(*) {
+    height: 100%;
+    object-fit: none;
+    object-position: left top;
+    overflow: clip;
+  }
+
+  &::view-transition-old(*) {
+    animation: filtersVtHide 0s both;
+  }
+
+  &::view-transition-new(*) {
+    animation: filtersVtShow 0s both;
+  }
+
+  // The box clips what's in it as it rolls up or down (its corners and
+  // shadow come with the path in index.jsx).
+  &::view-transition-group(search-filters) {
+    overflow: clip;
+  }
+
+  // Title and arrow are the same size in both places: a plain cross-fade,
+  // and the arrow turns from < to > (or back).
+  &::view-transition-old(search-filters-title) {
+    animation: filtersVtFadeOut $vt-move $ease both;
+  }
+
+  &::view-transition-new(search-filters-title) {
+    animation: filtersVtFadeIn $vt-move $ease both;
+  }
+
+  &::view-transition-old(search-filters-chevron) {
+    animation: filtersVtTurnOut $vt-move $ease both;
+  }
+
+  &::view-transition-new(search-filters-chevron) {
+    animation: filtersVtTurnIn $vt-move $ease both;
+  }
+}
+
+// Hiding: everything waits while the filters roll up.
+.filtersVtHide {
+  &::view-transition-group(*),
+  &::view-transition-old(*),
+  &::view-transition-new(*),
+  &::view-transition-old(search-filters-title),
+  &::view-transition-new(search-filters-title),
+  &::view-transition-old(search-filters-chevron),
+  &::view-transition-new(search-filters-chevron) {
+    animation-delay: $vt-roll;
+  }
+
+  // The filters card fades into the button as it shrinks.
+  &::view-transition-old(search-filters) {
+    animation: filtersVtFadeOut $vt-move $ease $vt-roll both;
+  }
+
+  &::view-transition-new(search-filters) {
+    animation: filtersVtFadeIn $vt-move $ease $vt-roll both;
+  }
+
+  &::view-transition-old(search-filters-clear) {
+    animation: filtersVtFadeOut 0.1s linear $vt-roll both;
+  }
+}
+
+// Showing: the button fades into the filters card as it grows.
+.filtersVtShow {
+  &::view-transition-old(search-filters) {
+    animation: filtersVtFadeOut $vt-roll $ease both;
+  }
+
+  &::view-transition-new(search-filters) {
+    animation: filtersVtFadeIn $vt-roll $ease both;
+  }
+
+  &::view-transition-new(search-filters-clear) {
+    animation: filtersVtFadeIn 0.12s linear $vt-roll both;
+  }
+}
+
+// Hiding with the toolbar out of view: no button to turn into. The whole
+// title row stays in the card, which rolls up and fades (its path in index.jsx).
+.filtersVtFar {
+  .filtersHeadTitle,
+  .filtersChevron,
+  .filtersClear,
+  .filtersToggleBtn {
+    view-transition-name: none;
+  }
+
+  &::view-transition-old(search-filters) {
+    animation: none;
+  }
+}
+
+@keyframes filtersVtHide {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes filtersVtShow {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes filtersVtFadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes filtersVtFadeIn {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes filtersVtTurnOut {
+  to {
+    opacity: 0;
+    transform: rotate(180deg);
+  }
+}
+
+@keyframes filtersVtTurnIn {
+  from {
+    opacity: 0;
+    transform: rotate(-180deg);
   }
 }
 
@@ -93,7 +371,7 @@ $push-bp: 1520px;
 .scrim {
   display: none;
 
-  @media (max-width: 1023px) {
+  @media (max-width: $overlay-max) {
     position: fixed;
     top: 64px;
     left: 0;
@@ -136,20 +414,16 @@ $hint: #5b6573;
     0 12px 32px -14px rgba(11, 26, 44, 0.22);
   transition: width 0.2s $ease;
 
+  // Hidden filters leave no strip on a computer: the toolbar's Filters button
+  // brings them back. Where they slide in over the page (phones, list view
+  // up to 1300px) the closed card stays, just off screen.
   &.collapsed {
-    width: 56px;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 0 10px;
-
-    .filtersHeadCollapse {
-      width: 36px;
-      height: 36px;
-      border-radius: $r-sm;
+    @media (min-width: $overlay-max + 1) {
+      display: none;
     }
   }
 
-  @media (max-width: 1023px) {
+  @media (max-width: $overlay-max) {
     position: fixed;
     top: 64px;
     left: 0;
@@ -1141,20 +1415,15 @@ $fold: 0.28s;
   }
 }
 
-.collapsedBadge {
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: $gold;
-  color: #3b2606;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  font-weight: 700;
+// The < on the filters' title and the > on the toolbar's Filters button: one
+// arrow that turns as one becomes the other.
+.filtersChevron {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
 }
 
-// ===== Search toolbar: "9 candidates found" | Salaries ▾ ... Sort by ▾ [grid|list] =====
+// ===== Search toolbar: [Filters >] "9 candidates found" | Salaries ▾ ... Sort by ▾ [grid|list] =====
 $bar-bg: #f1f3f6; // segmented tracks, icon tiles
 $bar-hover-border: #c5cbd3;
 $bar-glow: 0 0 0 3px rgba(230, 169, 60, 0.18);
@@ -1175,16 +1444,25 @@ $pop-shadow: 0 18px 40px -16px rgba(11, 26, 44, 0.3);
   flex-wrap: wrap;
 }
 
+// The Filters button (when it shows) and the count with the Salaries button.
+.toolbarLead {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+}
+
 .resultsInfo {
   min-width: 0;
   display: flex;
   align-items: center;
   gap: 14px;
 
-  // On a phone the Salaries button goes under the count.
+  // On a phone the Salaries button goes under the count (and the Filters
+  // button beside it).
   @media (max-width: 639px) {
-    flex-wrap: wrap;
-    row-gap: 10px;
+    display: contents;
 
     .resultsDivider {
       display: none;
@@ -1363,29 +1641,40 @@ $pop-shadow: 0 18px 40px -16px rgba(11, 26, 44, 0.3);
   gap: 8px;
 }
 
+// The filters' title made small: "Filters" (with the count) looks just as on
+// the open filters (.filtersHeadTitle), so hiding them reads as the title
+// shrinking into this button.
 .filtersToggleBtn {
+  flex: none;
   display: none;
   align-items: center;
-  gap: 0.5em;
+  gap: 10px;
   height: 40px;
   border: 1px solid $line;
   background: $white;
   border-radius: 10px;
-  padding: 0 0.9em;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: $ink;
+  padding: 0 9px 0 14px;
   transition: border-color 0.15s;
 
-  svg {
-    color: $gold-deep;
+  .filtersChevron {
+    color: $slate-2;
+    transition: color 0.15s;
   }
 
   &:hover {
     border-color: $bar-hover-border;
+
+    .filtersChevron {
+      color: $ink;
+    }
   }
 
-  @media (max-width: 1023px) {
+  @media (max-width: $overlay-max) {
+    display: flex;
+  }
+
+  // On a computer it's there while the filters are hidden.
+  &.filtersToggleShown {
     display: flex;
   }
 }
@@ -1568,9 +1857,9 @@ $pop-shadow: 0 18px 40px -16px rgba(11, 26, 44, 0.3);
 }
 
 // In list view, the filter sidebar collapses to the mobile overlay/button
-// earlier (1300px) than it normally would (1023px), since list rows need
+// earlier (1300px) than it normally would (845px), since list rows need
 // more horizontal room than the grid cards do.
-@media (min-width: 1024px) and (max-width: 1300px) {
+@media (min-width: $overlay-max + 1) and (max-width: 1300px) {
   .listMode .body {
     grid-template-columns: 1fr;
   }
@@ -1606,6 +1895,7 @@ $pop-shadow: 0 18px 40px -16px rgba(11, 26, 44, 0.3);
     box-shadow: 0 0 80px rgba(0, 0, 0, 0.3);
 
     &.collapsed {
+      display: flex;
       width: 300px;
       align-items: stretch;
       padding: 20px;
@@ -1652,47 +1942,25 @@ $pop-shadow: 0 18px 40px -16px rgba(11, 26, 44, 0.3);
 
 .grid {
   display: grid;
-  gap: 16px;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  transition: grid-template-columns 0.34s $ease;
+  gap: $card-gap;
+  // As many 440px columns as .body's --cols; minmax(0, …) lets a card give up
+  // a few px (a wider scrollbar) instead of pushing past the page, and never a
+  // bare 1fr: that grows to the card's min-content, and the skill tags
+  // (nowrap) then push the card past its column.
+  grid-template-columns: repeat(var(--cols, 1), minmax(0, $card-w));
+  justify-content: center;
 
-  @media (max-width: 760px) {
-    gap: clamp(16px, calc(16px + (100vw - 480px) * 0.05), 30px);
-  }
-
-  @media (min-width: 761px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  @media (min-width: 1081px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 36px;
-  }
-
-  &.filtersCollapsed {
-    @media (min-width: 1024px) {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-    }
-  }
-
-  // minmax(0, …), never a bare 1fr: a bare 1fr track grows to the card's
-  // min-content, and the skill tags (nowrap) then push the card past its
-  // column — SkillsRow sees the wider row and shows every tag, which keeps it
-  // that wide.
-  // List rows sit closer than the cards: half the grid's 36px.
+  // List rows sit closer than the cards: 18px.
   &.list {
     grid-template-columns: minmax(0, 1fr);
     gap: 18px;
   }
 
-  // Wide screens with the CV drawer open: collapse to a single column so the
-  // list and the open detail panel can be compared side by side. The 450px
-  // cap itself comes from .main so the toolbar shrinks along with the grid.
+  // Wide screens with the CV drawer open: one column beside the CV, in the
+  // 440px results column (.body.previewOpen), so the toolbar shrinks with it.
   &.previewOpen {
     @media (min-width: $push-bp) {
       grid-template-columns: minmax(0, 1fr);
-      gap: 16px;
     }
   }
 }
@@ -2287,6 +2555,65 @@ $sc-gold: #f0ae2e;
   overflow: hidden;
 }
 
+// Search's grid card: the position on one line, cut with "…". Resting on a cut
+// one runs it on over the match ring (which fades) to the card's edge; one
+// still cut there also gets a tooltip with the whole title. OneLineTitle
+// (CandidateCardParts.jsx) sets data-cut, data-long and --title-room.
+.scTitleWrap {
+  position: relative;
+  z-index: 1; // over the match ring it runs into
+  margin-top: 9px;
+}
+
+.scTitleOneLine {
+  margin-top: 0;
+  display: block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: margin-right 0.2s $ease;
+}
+
+.scTitleWrap[data-cut]:hover .scTitleOneLine {
+  margin-right: calc(-1 * var(--title-room, 0px));
+  transition-delay: 0.15s;
+}
+
+.scHead:has(.scTitleWrap[data-cut]:hover) .scRing {
+  opacity: 0.1;
+  transition-delay: 0.15s;
+}
+
+.scTitleTip {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: -10px;
+  width: max-content;
+  max-width: calc(100% + var(--title-room, 0px) + 20px);
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: $ink;
+  color: $white;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.35;
+  box-shadow: 0 12px 28px -12px rgba(11, 26, 44, 0.45);
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.15s $ease,
+    transform 0.15s $ease,
+    visibility 0s linear 0.15s;
+}
+
+.scTitleWrap[data-long]:hover .scTitleTip {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition-delay: 0.5s;
+}
+
 .scMeta {
   margin-top: 8px;
   display: flex;
@@ -2314,6 +2641,7 @@ $sc-gold: #f0ae2e;
   align-items: center;
   gap: 6px;
   padding-top: 3px;
+  transition: opacity 0.2s $ease;
 }
 
 .scRingDial {

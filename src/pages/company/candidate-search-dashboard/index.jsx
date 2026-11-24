@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { flushSync } from 'react-dom';
 import { Helmet } from 'react-helmet';
 import FilterSidebar from './components/FilterSidebar';
 import SearchToolbar from './components/SearchToolbar';
@@ -12,6 +13,8 @@ import { addNotification } from 'utils/notificationStore';
 import { formatCredits } from 'utils/formatCredits';
 import { setCreditBalance, useCreditBalance } from 'lib/creditBalance';
 import { useSalaryView } from 'lib/salaryView';
+import { getAppScroller } from 'components/ui/appScroll';
+import { useMinWidth } from '../candidate-filters/cvLayout';
 import {
   searchCandidates,
   getSearchCandidate,
@@ -26,6 +29,59 @@ import {
 
 const UNLOCK_COST = 1;
 const PAGE_SIZE = 20;
+
+// Hiding / showing the filters (toggleFilters): they roll up to their title
+// (or down from it), and the title changes into the toolbar's Filters button
+// (or back). Same lengths as $vt-roll / $vt-move in dashboard.module.scss.
+// Card view (dashboard.module.scss .body): from 846px the filters sit beside
+// the cards (narrower, they slide in over the page); they can be hidden only
+// from 1424px, where three 440px cards fit without them. Below that hiding
+// them wouldn't add a column, so they stay.
+const FILTERS_BESIDE_MIN = 846;
+const FILTERS_HIDE_MIN = 1424;
+// The CV drawer pushes the page aside from here: 55% of it holds the filters and a 440px card.
+const CV_PUSH_MIN = 1502;
+
+const FILTERS_ROLL_MS = 200;
+const FILTERS_MOVE_MS = 300;
+const ROLL_EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+const MOVE_EASE = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
+// The filters card's corners and shadow, and the button's (dashboard.module.scss).
+const CARD_LOOK = {
+  borderRadius: '18px',
+  boxShadow: '0 1px 2px rgba(11, 26, 44, 0.06), 0 12px 32px -14px rgba(11, 26, 44, 0.22)'
+};
+const BUTTON_LOOK = {
+  borderRadius: '10px',
+  boxShadow: '0 1px 2px rgba(11, 26, 44, 0), 0 12px 32px -14px rgba(11, 26, 44, 0)'
+};
+
+const byClass = (name) => document.querySelector(`.${CSS.escape(name)}`);
+
+/**
+ * Where the filters' box is: the open filters card (with how tall its title
+ * row is, what it rolls up to) or, hidden, the toolbar's Filters button.
+ */
+const filtersBox = (collapsed) => {
+  if (collapsed) {
+    const button = byClass(styles.filtersToggleBtn);
+    return button ? { rect: button.getBoundingClientRect() } : null;
+  }
+  const card = document.querySelector(`.${CSS.escape(styles.filters)}:not(.${CSS.escape(styles.collapsed)})`);
+  const head = card?.querySelector(`.${CSS.escape(styles.filtersHead)}`);
+  if (!card || !head) return null;
+  const rect = card.getBoundingClientRect();
+  return { rect, titleHeight: head.getBoundingClientRect().bottom - rect.top };
+};
+
+/** One step of the box's path: where it is, its size and its look. */
+const boxFrame = (rect, height, look, extra = {}) => ({
+  transform: `translate(${rect.left}px, ${rect.top}px)`,
+  width: `${rect.width}px`,
+  height: `${height}px`,
+  ...look,
+  ...extra
+});
 
 const CandidateSearchDashboard = () => {
   const [candidates, setCandidates] = useState([]);
@@ -45,8 +101,17 @@ const CandidateSearchDashboard = () => {
   const [applied, setApplied] = useState({ filters: {}, view: null });
   const appliedView = applied.view || salaryView;
   const [isFilterCollapsed, setIsFilterCollapsed] = useState(
-    () => typeof window !== 'undefined' && window.innerWidth < 1024
+    () => typeof window !== 'undefined' && window.innerWidth < FILTERS_BESIDE_MIN
   );
+  const filtersBeside = useMinWidth(FILTERS_BESIDE_MIN);
+  const roomToHideFilters = useMinWidth(FILTERS_HIDE_MIN);
+  // Hidden only where that helps: list view, the slide-in filters (closed), or
+  // card view from 1424px. Elsewhere they show, whatever was picked before.
+  const canHideFilters = viewMode === 'list' || !filtersBeside || roomToHideFilters;
+  const filtersCollapsed = isFilterCollapsed && canHideFilters;
+  // For the toolbar's Filters button (the sidebar counts its fields).
+  const [activeFiltersCount, setActiveFiltersCount] = useState(0);
+  const filtersTransition = useRef(null);
 
   const [bookmarksById, setBookmarksById] = useState({});
   const { balance: credits } = useCreditBalance();
@@ -275,6 +340,85 @@ const CandidateSearchDashboard = () => {
     setApplied({ filters: {}, view: salaryView });
   };
 
+  // Hiding or showing the filters beside the results (a computer) is a view
+  // transition in two steps (.filtersVt in dashboard.module.scss). Hiding: the
+  // filters roll up to their title, then the title shrinks into the toolbar's
+  // Filters button while the cards and the count move. Showing: the button
+  // grows into the title as everything moves back, then the filters roll down.
+  // The filters' box follows a path measured here. Not where the filters slide
+  // in over the page (they have their own slide), not with a CV open (the cards
+  // would pass over it), and not for reduced motion or a browser without view
+  // transitions: there it just changes.
+  const toggleFilters = () => {
+    const next = !filtersCollapsed;
+    if (next && !canHideFilters) return;
+    const media = (query) => window.matchMedia?.(query)?.matches;
+    const besideResults = media(`(min-width: ${FILTERS_BESIDE_MIN}px)`) && !(viewMode === 'list' && media('(max-width: 1300px)'));
+    if (
+      typeof document.startViewTransition !== 'function'
+      || !besideResults
+      || previewId !== null
+      || media('(prefers-reduced-motion: reduce)')
+    ) {
+      setIsFilterCollapsed(next);
+      return;
+    }
+
+    const hiding = next;
+    const from = filtersBox(filtersCollapsed);
+    // Hiding far down the page, the toolbar (where the button is) is out of
+    // view: the filters only roll up and fade there.
+    const viewTop = getAppScroller()?.getBoundingClientRect().top ?? 0;
+    const far = hiding && (byClass(styles.toolbarRow)?.getBoundingClientRect().bottom ?? 0) <= viewTop;
+
+    const root = document.documentElement;
+    const classes = [styles.filtersVt, hiding ? styles.filtersVtHide : styles.filtersVtShow];
+    if (far) classes.push(styles.filtersVtFar);
+    // A quick second click starts over: off with the first one's classes.
+    root.classList.remove(styles.filtersVt, styles.filtersVtHide, styles.filtersVtShow, styles.filtersVtFar);
+    root.classList.add(...classes);
+
+    let to = null;
+    const transition = document.startViewTransition(() => {
+      flushSync(() => setIsFilterCollapsed(next));
+      to = filtersBox(next);
+    });
+    filtersTransition.current = transition;
+
+    transition.ready
+      .then(() => {
+        if (!from || !to) return;
+        const total = FILTERS_ROLL_MS + FILTERS_MOVE_MS;
+        let frames;
+        if (hiding) {
+          const rolledUp = { offset: FILTERS_ROLL_MS / total, easing: MOVE_EASE };
+          frames = far
+            ? [
+              boxFrame(from.rect, from.rect.height, CARD_LOOK, { opacity: 1, easing: ROLL_EASE }),
+              boxFrame(from.rect, from.titleHeight, CARD_LOOK, { opacity: 1, ...rolledUp }),
+              boxFrame(from.rect, from.titleHeight, CARD_LOOK, { opacity: 0 })
+            ]
+            : [
+              boxFrame(from.rect, from.rect.height, CARD_LOOK, { easing: ROLL_EASE }),
+              boxFrame(from.rect, from.titleHeight, CARD_LOOK, rolledUp),
+              boxFrame(to.rect, to.rect.height, BUTTON_LOOK)
+            ];
+        } else {
+          frames = [
+            boxFrame(from.rect, from.rect.height, BUTTON_LOOK, { easing: MOVE_EASE }),
+            boxFrame(to.rect, to.titleHeight, CARD_LOOK, { offset: FILTERS_MOVE_MS / total, easing: ROLL_EASE }),
+            boxFrame(to.rect, to.rect.height, CARD_LOOK)
+          ];
+        }
+        root.animate(frames, { duration: total, fill: 'both', pseudoElement: '::view-transition-group(search-filters)' });
+      })
+      .catch(() => {});
+
+    transition.finished.finally(() => {
+      if (filtersTransition.current === transition) root.classList.remove(...classes);
+    });
+  };
+
   const handlePreviewCandidate = (candidateId) => {
     setPreviewId(candidateId);
   };
@@ -291,22 +435,24 @@ const CandidateSearchDashboard = () => {
       </Helmet>
       <div className={`${styles.page} ${viewMode === 'list' ? styles.listMode : ''} ${previewId !== null ? styles.previewOpen : ''}`}>
 
-        {!isFilterCollapsed && (
+        {!filtersCollapsed && (
           <div
             className={`${styles.scrim} ${styles.show}`}
             onClick={() => setIsFilterCollapsed(true)}
           />
         )}
 
-        <div className={`${styles.body} ${previewId !== null ? styles.previewOpen : ''}`}>
+        <div className={`${styles.body} ${previewId !== null ? styles.previewOpen : ''} ${filtersCollapsed ? styles.filtersCollapsed : ''}`}>
           {/* Filter Sidebar */}
           <FilterSidebar
             appliedFilters={applied.filters}
             appliedView={appliedView}
             onApply={handleApplyFilters}
             onClearFilters={handleClearFilters}
-            isCollapsed={isFilterCollapsed}
-            onToggleCollapse={() => setIsFilterCollapsed(!isFilterCollapsed)}
+            isCollapsed={filtersCollapsed}
+            canCollapse={canHideFilters}
+            onToggleCollapse={toggleFilters}
+            onActiveCountChange={setActiveFiltersCount}
             onNotify={showToast}
           />
 
@@ -319,8 +465,9 @@ const CandidateSearchDashboard = () => {
               viewMode={viewMode}
               onViewModeChange={setViewMode}
               resultsCount={total}
-              isFilterCollapsed={isFilterCollapsed}
-              onToggleFilters={() => setIsFilterCollapsed(!isFilterCollapsed)}
+              isFilterCollapsed={filtersCollapsed}
+              activeFiltersCount={activeFiltersCount}
+              onToggleFilters={toggleFilters}
             />
 
             {/* Results */}
@@ -336,7 +483,7 @@ const CandidateSearchDashboard = () => {
                 activePreviewId={previewId}
                 isPreviewOpen={previewId !== null}
                 loading={loading}
-                isFilterCollapsed={isFilterCollapsed}
+                isFilterCollapsed={filtersCollapsed}
                 hasMore={hasMore}
                 loadingMore={loadingMore}
                 onLoadMore={handleLoadMore}
@@ -357,7 +504,7 @@ const CandidateSearchDashboard = () => {
           onUnlock={handleRequestUnlock}
           unlockCost={UNLOCK_COST}
           forceOverlay={viewMode === 'list'}
-          pushBreakpoint={1520}
+          pushBreakpoint={CV_PUSH_MIN}
         />
 
         {/* Unlock confirmation modal */}

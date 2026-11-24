@@ -53,7 +53,9 @@ const CandidateCard = forwardRef(({
   const bookmarkLabel = isBookmarked ? 'Remove from bookmarks' : 'Bookmark candidate';
 
   const avatar = <CardAvatar candidate={candidate} unlocked={isPurchased} />;
-  const identity = <CardIdentity candidate={candidate} unlocked={isPurchased} />;
+  const identity = <CardIdentity candidate={candidate} unlocked={isPurchased} oneLineTitle={!isList} />;
+  // Each card glides to its new place when the filters are shown or hidden (index.jsx).
+  const transitionStyle = { viewTransitionName: `search-card-${candidate?.id}` };
   const statusBadge = <StatusBadge searchStatus={candidate?.searchStatus} />;
   const stats = <CardStats candidate={candidate} salaryFirst={!isList} />;
   const skillsRow = skills.length > 0 && <SkillsRow skills={skills} />;
@@ -74,7 +76,7 @@ const CandidateCard = forwardRef(({
 
   if (isList) {
     return (
-      <div ref={ref} {...prefetchProps} className={`${styles.card} ${styles.scCard} ${styles.scListCard} ${isPurchased ? styles.unlocked : ''} ${isActive ? styles.active : ''}`}>
+      <div ref={ref} {...prefetchProps} style={transitionStyle} className={`${styles.card} ${styles.scCard} ${styles.scListCard} ${isPurchased ? styles.unlocked : ''} ${isActive ? styles.active : ''}`}>
         {/* Main: avatar/identity + stats, skills, description */}
         <div className={styles.scListMain}>
           <div className={styles.scListTop}>
@@ -118,7 +120,7 @@ const CandidateCard = forwardRef(({
 
   // Grid view
   return (
-    <div ref={ref} {...prefetchProps} className={`${styles.card} ${styles.scCard} ${isPurchased ? styles.unlocked : ''} ${isActive ? styles.active : ''}`}>
+    <div ref={ref} {...prefetchProps} style={transitionStyle} className={`${styles.card} ${styles.scCard} ${isPurchased ? styles.unlocked : ''} ${isActive ? styles.active : ''}`}>
       {/* Header: avatar, name/role/meta/status, match ring */}
       <div className={styles.scHead}>
         {avatar}

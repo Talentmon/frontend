@@ -125,8 +125,63 @@ export const CardAvatar = ({ candidate, unlocked }) => (
   </div>
 );
 
-/** Name (pills until unlocked), role and location/work arrangement. */
-export const CardIdentity = ({ candidate, unlocked }) => {
+/**
+ * The position on one line, cut with "…" (Search's grid card). Resting on a cut
+ * one runs it on over the match ring to the card's edge; one still cut there
+ * also gets a tooltip with the whole title. The styles do the hover; this only
+ * measures whether the title is cut, and how far it may run (--title-room).
+ */
+const OneLineTitle = ({ text }) => {
+  const wrapRef = useRef(null);
+  const titleRef = useRef(null);
+  const [fit, setFit] = useState({ cut: false, long: false, room: 0 });
+
+  useLayoutEffect(() => {
+    const wrap = wrapRef.current;
+    const title = titleRef.current;
+    // .scInfo, then .scHead: the room is its gap and the match ring.
+    const head = wrap.parentElement?.parentElement;
+    let live = true;
+
+    const measure = () => {
+      if (!live) return;
+      const box = wrap.clientWidth;
+      const full = title.scrollWidth;
+      const room = head ? Math.max(0, Math.round(head.getBoundingClientRect().right - wrap.getBoundingClientRect().right)) : 0;
+      const next = { cut: full > box, long: full > box + room, room };
+      setFit((prev) => (prev.cut === next.cut && prev.long === next.long && prev.room === next.room ? prev : next));
+    };
+
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(wrap);
+    // The width of the text changes once the web font is in.
+    document.fonts?.ready.then(measure);
+    return () => {
+      live = false;
+      observer.disconnect();
+    };
+  }, [text]);
+
+  return (
+    <div
+      ref={wrapRef}
+      className={styles.scTitleWrap}
+      data-cut={fit.cut ? '' : undefined}
+      data-long={fit.long ? '' : undefined}
+      style={{ '--title-room': `${fit.room}px` }}
+    >
+      <h3 ref={titleRef} className={`${styles.scTitle} ${styles.scTitleOneLine}`}>{text}</h3>
+      {fit.long && <span className={styles.scTitleTip} aria-hidden="true">{text}</span>}
+    </div>
+  );
+};
+
+/**
+ * Name (pills until unlocked), role and location/work arrangement.
+ * `oneLineTitle`: the position on one line (Search's grid card), else up to two.
+ */
+export const CardIdentity = ({ candidate, unlocked, oneLineTitle = false }) => {
   const workArrangement = candidate?.workArrangement || (candidate?.jobType?.includes('remote') ? 'Remote' : 'On-site');
 
   return (
@@ -139,7 +194,11 @@ export const CardIdentity = ({ candidate, unlocked }) => {
           <i />
         </span>
       )}
-      <h3 className={styles.scTitle}>{candidate?.position}</h3>
+      {oneLineTitle ? (
+        <OneLineTitle text={candidate?.position} />
+      ) : (
+        <h3 className={styles.scTitle}>{candidate?.position}</h3>
+      )}
       <div className={styles.scMeta}>
         {candidate?.location && (
           <span><Icon name="MapPin" size={15} />{candidate?.location}</span>

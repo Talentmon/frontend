@@ -15,16 +15,20 @@ export const COMMON_EMPTY = {
   industry: [],
   subIndustry: [],
   experience: EMPTY_EXPERIENCE, // years, From – To
+  // Not a filter: it only narrows the Skills list to pick from (as on Search).
   skillCategory: [],
   skills: [],
+  // 'any' / 'all' of 2+ picked skills, languages, certificates.
   skillsMatch: 'any',
   // The currency it's typed in is part of the salary view (lib/salaryView.js).
   salary: { min: '', max: '' },
   languages: [],
+  languagesMatch: 'any',
   country: [],
   location: [], // cities
   education: [], // levels; any of them, each exactly
   certificates: [],
+  certMatch: 'any',
   candidateStatus: '',
   availability: '',
   jobType: [],
@@ -146,7 +150,7 @@ export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
   if (experienceActive(f.experience)) keep((c) => inExperienceRange(c?.experience, f.experience));
 
   // Match any / Match all. A skill counts in Skills, a job's skills or a job's description
-  // (utils/skillMatch). A category with no skill picked counts the same way for any skill in it.
+  // (utils/skillMatch). A category only narrows the list to pick from, so it filters nothing.
   if (f.skills.length) {
     if (f.skillsMatch === 'all') {
       const each = f.skills.map((name) => makeSkillMatcher([name]));
@@ -154,8 +158,6 @@ export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
     } else {
       keep(makeSkillMatcher(f.skills));
     }
-  } else if (f.skillCategory.length) {
-    keep(makeSkillMatcher(getSkillNamesFor({ categories: f.skillCategory })));
   }
 
   if (f.salary.min || f.salary.max) {
@@ -166,19 +168,22 @@ export function applyCommonFilters(list, f, view = DEFAULT_SALARY_VIEW) {
     out = filterByBaseSalary(out, range, (c) => salaryBase(c?.expectedSalary, terms));
   }
 
-  // Any picked language, at one of its picked levels (none picked = any level).
+  // A language at one of its picked levels (none picked = any level): any of them, or all with Match all.
   if (f.languages.length) {
-    keep((c) =>
-      f.languages.some((entry) =>
-        c?.languages?.some((language) => lower(language?.name) === lower(entry?.name) && (!entry?.levels?.length || entry.levels.includes(language?.level)))
-      )
-    );
+    const speaks = (c, entry) =>
+      !!c?.languages?.some((language) => lower(language?.name) === lower(entry?.name) && (!entry?.levels?.length || entry.levels.includes(language?.level)));
+    keep((c) => (f.languagesMatch === 'all' ? f.languages.every((entry) => speaks(c, entry)) : f.languages.some((entry) => speaks(c, entry))));
   }
 
   if (f.country.length) keep((c) => matchers.country(c, f.country));
   if (f.location.length) keep((c) => matchers.location(c, f.location));
   if (f.education.length) keep((c) => matchers.education(c, f.education));
-  if (f.certificates.length) keep((c) => matchers.certificates(c, f.certificates));
+  // Any of the certificates, or every one with Match all.
+  if (f.certificates.length) {
+    keep((c) =>
+      f.certMatch === 'all' ? f.certificates.every((name) => matchers.certificates(c, [name])) : matchers.certificates(c, f.certificates)
+    );
+  }
   if (f.candidateStatus) keep((c) => matchers.candidateStatus(c, f.candidateStatus));
   if (f.availability) keep((c) => matchers.availability(c, f.availability));
   if (f.jobType.length) keep((c) => matchers.jobType(c, f.jobType));
@@ -194,7 +199,7 @@ export const commonActiveCount = (f) =>
   [
     f.industry.length + f.subIndustry.length,
     experienceActive(f.experience) ? 1 : 0,
-    f.skillCategory.length + f.skills.length,
+    f.skills.length,
     f.salary.min || f.salary.max ? 1 : 0,
     f.languages.length,
     f.country.length,
@@ -267,10 +272,4 @@ export const skillsInCategories = (skills, categories = []) => {
 export const withIndustries = (filters, industries) => {
   const covered = new Set(industries.flatMap((name) => getSubIndustries(name)));
   return { ...filters, industry: industries, subIndustry: filters.subIndustry.filter((sub) => !covered.has(sub)) };
-};
-
-/** Skill categories picked; skills outside them drop out. */
-export const withSkillCategories = (filters, categories) => {
-  const valid = new Set(getSkillNamesFor({ categories }).map(lower));
-  return { ...filters, skillCategory: categories, skills: filters.skills.filter((name) => valid.has(lower(name))) };
 };

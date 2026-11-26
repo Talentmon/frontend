@@ -7,7 +7,7 @@ import PickedChips from '../candidate-search-dashboard/components/PickedChips';
 import ExperienceRangeFilter from '../candidate-search-dashboard/components/ExperienceRangeFilter';
 import { EMPTY_EXPERIENCE, experienceActive, experienceLabel } from 'utils/experienceRange';
 import SalaryRangeFilter from '../candidate-search-dashboard/components/SalaryRangeFilter';
-import SkillsMatchToggle from '../candidate-search-dashboard/components/SkillsMatchToggle';
+import SkillsMatchToggle, { CERTIFICATE_MATCH, LANGUAGE_MATCH } from '../candidate-search-dashboard/components/SkillsMatchToggle';
 import { MenuOption } from '../bookmarked-candidates/components/Popover';
 import bm from '../bookmarked-candidates/styles/bookmarked.module.scss';
 import ds from '../candidate-search-dashboard/styles/dashboard.module.scss';
@@ -22,8 +22,7 @@ import {
   salaryChipLabel,
   skillsInCategories,
   toggleIn,
-  withIndustries,
-  withSkillCategories
+  withIndustries
 } from './commonFilters';
 
 export const toOptions = (names) => names.map((name) => ({ value: name, label: name }));
@@ -191,18 +190,35 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
     side: () => <ExperienceRangeFilter id={fid('experience')} value={f.experience} onChange={(next) => set('experience', next)} />
   };
 
+  // Category only narrows the Skills list (as on Search): it isn't counted, has no
+  // chip and filters nothing; picked skills stay whatever it shows.
   const skillOptions = skillsInCategories(opts.skills, f.skillCategory);
+  const categorySelect = (
+    <>
+      <Select
+        id={fid('skill-category')}
+        options={toOptions(opts.skillCategories)}
+        value={f.skillCategory}
+        onChange={(value) => set('skillCategory', value)}
+        placeholder="All categories"
+        multipleLabel={(count) => `${count} categories`}
+        multiple
+        clearable
+        clearPosition="end"
+        clearLabel="Clear category"
+        aria-describedby={fid('skill-category-hint')}
+      />
+      <p id={fid('skill-category-hint')} className={ds.fieldHint}>Narrows the skills list below</p>
+    </>
+  );
   const skills = {
     key: 'skills',
     label: 'Skills',
-    available: opts.skills.length > 0 || f.skills.length + f.skillCategory.length > 0,
-    count: f.skillCategory.length + f.skills.length,
-    summary: [...f.skills, ...f.skillCategory],
+    available: opts.skills.length > 0 || f.skills.length > 0,
+    count: f.skills.length,
+    summary: [...f.skills],
     clear: { skillCategory: [], skills: [], skillsMatch: 'any' },
-    chips: [
-      ...f.skillCategory.map((name) => chip(`cat-${name}`, name, () => onFiltersChange(withSkillCategories(f, toggleIn(f.skillCategory, name))))),
-      ...f.skills.map((name) => chip(`skill-${name}`, name, () => set('skills', toggleIn(f.skills, name))))
-    ],
+    chips: f.skills.map((name) => chip(`skill-${name}`, name, () => set('skills', toggleIn(f.skills, name)))),
     pill: {
       width: 320,
       padded: true,
@@ -210,14 +226,7 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
         <>
           {opts.skillCategories.length > 0 && (
             <PopField id={fid('skill-category')} label="Category">
-              <Select
-                id={fid('skill-category')}
-                value={f.skillCategory}
-                onChange={(value) => onFiltersChange(withSkillCategories(f, value))}
-                placeholder="Select category"
-                options={toOptions(opts.skillCategories)}
-                multiple
-              />
+              {categorySelect}
             </PopField>
           )}
           <PopField id={fid('skills')} label="Skills">
@@ -238,14 +247,7 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
       <>
         {opts.skillCategories.length > 0 && (
           <SideField id={fid('skill-category')} label="Category">
-            <Select
-              id={fid('skill-category')}
-              options={toOptions(opts.skillCategories)}
-              value={f.skillCategory}
-              onChange={(value) => onFiltersChange(withSkillCategories(f, value))}
-              placeholder="Select category"
-              multiple
-            />
+            {categorySelect}
           </SideField>
         )}
         <SideField id={fid('skills')} label="Skills">
@@ -281,6 +283,9 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
   };
 
   const languageLabel = (entry) => (entry.levels?.length ? `${entry.name} (${entry.levels.join(', ')})` : entry.name);
+  const languagesToggle = f.languages.length >= 2 && (
+    <SkillsMatchToggle value={f.languagesMatch} onChange={(value) => set('languagesMatch', value)} {...LANGUAGE_MATCH} />
+  );
   const languageField = (hideLabel) => (
     <LanguageLevelFilter
       id={fid('languages')}
@@ -295,7 +300,7 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
     available: opts.languages.length > 0 || f.languages.length > 0,
     count: f.languages.length,
     summary: f.languages.map(languageLabel),
-    clear: { languages: [] },
+    clear: { languages: [], languagesMatch: 'any' },
     chips: f.languages.map((entry) =>
       chip(`lang-${entry.name}`, languageLabel(entry), () => set('languages', f.languages.filter((e) => e.name !== entry.name)))
     ),
@@ -303,15 +308,21 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
       width: 340,
       padded: true,
       body: (
-        <PopField id={fid('languages')} label="Languages">
-          {languageField()}
-        </PopField>
+        <>
+          <PopField id={fid('languages')} label="Languages">
+            {languageField()}
+          </PopField>
+          {languagesToggle}
+        </>
       )
     },
     side: (hideLabel) => (
-      <SideField id={fid('languages')} label="Languages" hideLabel={hideLabel}>
-        {languageField(hideLabel)}
-      </SideField>
+      <>
+        <SideField id={fid('languages')} label="Languages" hideLabel={hideLabel}>
+          {languageField(hideLabel)}
+        </SideField>
+        {languagesToggle}
+      </>
     )
   };
 
@@ -440,37 +451,46 @@ export function commonFields({ filters: f, onFiltersChange, opts, idPrefix, onRa
   };
 
   const certificateNames = namesWithPicked(opts.certificates, f.certificates);
+  const certificatesToggle = f.certificates.length >= 2 && (
+    <SkillsMatchToggle value={f.certMatch} onChange={(value) => set('certMatch', value)} {...CERTIFICATE_MATCH} />
+  );
   const certificates = {
     key: 'certificates',
     label: 'Certifications',
     available: opts.certificates.length > 0 || f.certificates.length > 0,
     count: f.certificates.length,
     summary: f.certificates,
-    clear: { certificates: [] },
+    clear: { certificates: [], certMatch: 'any' },
     chips: f.certificates.map((name) => chip(`cert-${name}`, name, () => set('certificates', toggleIn(f.certificates, name)))),
     pill: {
       width: 300,
       body: (
-        <CheckList
-          label="Certifications"
-          items={certificateNames.map((name) => ({ value: name, label: name, count: opts.certificateCount(name) }))}
-          picked={f.certificates}
-          onToggle={(name) => set('certificates', toggleIn(f.certificates, name))}
-        />
+        <>
+          <CheckList
+            label="Certifications"
+            items={certificateNames.map((name) => ({ value: name, label: name, count: opts.certificateCount(name) }))}
+            picked={f.certificates}
+            onToggle={(name) => set('certificates', toggleIn(f.certificates, name))}
+          />
+          {certificatesToggle && <div className={cf.popMatch}>{certificatesToggle}</div>}
+        </>
       )
     },
     side: (hideLabel) => (
-      <SideField id={fid('certificates')} label="Certifications" hideLabel={hideLabel}>
-        <Select
-          id={fid('certificates')}
-          options={toOptions(certificateNames)}
-          value={f.certificates}
-          onChange={(value) => set('certificates', value)}
-          placeholder="Select certification"
-          multiple
-          searchable
-        />
-      </SideField>
+      <>
+        <SideField id={fid('certificates')} label="Certifications" hideLabel={hideLabel}>
+          <Select
+            id={fid('certificates')}
+            options={toOptions(certificateNames)}
+            value={f.certificates}
+            onChange={(value) => set('certificates', value)}
+            placeholder="Select certification"
+            multiple
+            searchable
+          />
+        </SideField>
+        {certificatesToggle}
+      </>
     )
   };
 

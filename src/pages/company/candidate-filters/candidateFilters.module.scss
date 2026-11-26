@@ -103,9 +103,10 @@ $card-muted: #6b7a89;
   color: $card-muted;
 }
 
-// "With notes" closes the list, under the last group.
-.sideNotes {
-  padding: 8px 0 10px;
+// "With notes" in the card's footer, under a line, as Search's Save filter:
+// the groups scroll above it and the card always ends the same way.
+.sideFoot {
+  padding: 6px 20px 8px;
 }
 
 // ===== Beside an open CV (push layout), laid out like Search =====

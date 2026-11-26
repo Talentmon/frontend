@@ -25,7 +25,8 @@ const summaryOf = (items) => (items.length > 2 ? `${items.slice(0, 2).join(', ')
  * The filters beside an open CV, laid out like Search's sidebar: a card with
  * "Filters", how many are on and Clear all, then groups that fold open, each
  * with its count, a Clear while open and what's set while closed; With notes
- * at the bottom. The page's own groups (`leadGroups`: { id, title, count,
+ * in the footer under a line (where Search has Save filter), so the groups
+ * scroll above it and the card always ends the same way. The page's own groups (`leadGroups`: { id, title, count,
  * summary, clear, body }) come first, then Search's. The lists offer only what
  * the candidates on the page have. Clear all leaves the search alone.
  */
@@ -139,16 +140,16 @@ const CandidateFilterSidebar = ({
             </div>
           );
         })}
+      </div>
 
-        <div className={`${ds.fgroup} ${cf.sideNotes}`}>
-          <Checkbox
-            id={`${idPrefix}-f-notes`}
-            className={ds.checkRow}
-            label={notesLabel}
-            checked={filters.hasNotes}
-            onChange={() => onFiltersChange({ ...filters, hasNotes: !filters.hasNotes })}
-          />
-        </div>
+      <div className={`${ds.filtersFoot} ${cf.sideFoot}`}>
+        <Checkbox
+          id={`${idPrefix}-f-notes`}
+          className={ds.checkRow}
+          label={notesLabel}
+          checked={filters.hasNotes}
+          onChange={() => onFiltersChange({ ...filters, hasNotes: !filters.hasNotes })}
+        />
       </div>
     </section>
   );

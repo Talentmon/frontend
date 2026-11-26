@@ -42,13 +42,13 @@ const REQUIRED_FIELDS = [
 ];
 
 const FILTER_GROUPS = [
-  { name: 'Basic search', text: 'Position and location' },
+  { name: 'Basic search', text: 'Position, one or more cities and countries' },
   { name: 'Salary', text: 'Range for the candidate’s salary minimum, typed in the currency you pick, in the net or gross, per month or per year that salaries are shown in' },
   { name: 'Experience & education', text: 'Years of experience, from – to, and one or more education levels' },
-  { name: 'Skills', text: 'Skill categories and specific skills' },
-  { name: 'Languages', text: 'Languages, each with a minimum level' },
+  { name: 'Skills', text: 'Specific skills, any or all of them; a category only narrows the list to pick from' },
+  { name: 'Languages', text: 'Languages at the levels you tick, any or all of them' },
   { name: 'Industry', text: 'Industry, then subindustry' },
-  { name: 'Certifications', text: 'Any certification, or by issuer, family or exact name' },
+  { name: 'Certifications', text: 'Any certification, or specific ones, any or all of them; family and issuer only narrow the list' },
   { name: 'Status & preferences', text: 'Actively searching or open to offers, job type, work mode, notice period, relocation and business travel' },
 ];
 
@@ -324,8 +324,9 @@ const CompanyHelp = () => {
                     <li><b>Company email</b> is your login email and is filled in for you.</li>
                     <li><b>Short description</b> has room for 200 characters. Candidates read it first, so make it count.</li>
                     <li>
-                      <b>Salary view</b> sets how your team sees candidates' salaries: net or gross, per month or per
-                      year, and the currency of the salary filter (see <b>Salaries</b> under Search).
+                      <b>Salary view</b>, on the <b>Filter settings</b> tab, sets how your team sees candidates'
+                      salaries: net or gross, per month or per year, and the currency of the salary filter (see{' '}
+                      <b>Salaries</b> under Search).
                     </li>
                     <li><b>Payment currency</b> is the currency your card is charged in when you buy Credits (see Credits).</li>
                   </ul>
@@ -478,8 +479,10 @@ const CompanyHelp = () => {
               </Callout>
               <div className={styles.prose}>
                 <p>
-                  Use <b>Sort</b> to order results by newest, experience or salary, and switch between grid and list
-                  view with the buttons next to it.
+                  Results come <b>best match first</b>: how much of what you filtered for each candidate has (whether
+                  a lower or a higher salary and more or fewer years rank higher is set in <b>Filter settings</b>).
+                  Use <b>Sort</b> to order them by newest,
+                  experience or salary instead, and switch between grid and list view with the buttons next to it.
                 </p>
               </div>
 
@@ -487,7 +490,7 @@ const CompanyHelp = () => {
               <div className={styles.prose}>
                 <p>
                   Candidates give their salary minimum both net and gross. Your team sees it the way your company set
-                  under <b>Salary view</b> in Company information, for example net per month, and the{' '}
+                  under <b>Salary view</b> in Filter settings, for example net per month, and the{' '}
                   <b>Salaries</b> button next to the number of candidates found says which. Cards and CVs always show
                   the amount in the candidate's own currency.
                 </p>

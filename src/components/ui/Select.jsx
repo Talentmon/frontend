@@ -46,6 +46,9 @@ const Select = React.forwardRef(({
     error,
     searchable = false,
     clearable = false,
+    // Where the clear x sits: 'start' (before the value) or 'end' (by the arrow).
+    clearPosition = "start",
+    clearLabel, // the clear x's name for screen readers, e.g. "Clear categories"
     loading = false,
     id,
     name,
@@ -55,6 +58,10 @@ const Select = React.forwardRef(({
     // Lets the list grow past the field to fit its longest option, for a small
     // pill trigger only as wide as its label (e.g. the company-list filters).
     fitOptions = false,
+    // (option, where) => node: draws an option some other way than its plain
+    // label, `where` being 'trigger' or 'list' (e.g. a currency's symbol tile
+    // and bold code). Search still matches the label.
+    renderLabel,
     onKeyDown,
     ...props
 }, ref) => {
@@ -101,7 +108,8 @@ const Select = React.forwardRef(({
         }
 
         const selectedOption = options?.find(opt => opt?.value === value);
-        return selectedOption ? selectedOption?.label : placeholder;
+        if (!selectedOption) return placeholder;
+        return renderLabel ? renderLabel(selectedOption, 'trigger') : selectedOption?.label;
     };
 
     const closeDropdown = () => {
@@ -270,6 +278,8 @@ const Select = React.forwardRef(({
     };
 
     const hasValue = multiple ? value?.length > 0 : value !== undefined && value !== '';
+    const showClear = clearable && hasValue && !loading && !disabled;
+    const clearAtEnd = clearPosition === "end";
 
     return (
         <div ref={containerRef} className={cn("relative", className)}>
@@ -306,7 +316,7 @@ const Select = React.forwardRef(({
                     {...props}
                 >
                     <div className="flex items-center gap-1.5 min-w-0">
-                        {clearable && hasValue && !loading && (
+                        {clearable && !clearAtEnd && hasValue && !loading && (
                             <button
                                 type="button"
                                 aria-label="Clear selection"
@@ -327,9 +337,24 @@ const Select = React.forwardRef(({
                             </svg>
                         )}
 
+                        {/* Room for the clear x, which sits over it (outside this button). */}
+                        {showClear && clearAtEnd && <span className="h-5 w-5 shrink-0" aria-hidden="true" />}
                         <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
                     </div>
                 </button>
+
+                {/* Over the trigger's spare room just left of the arrow, not in it (a button can't hold a button). */}
+                {showClear && clearAtEnd && (
+                    <button
+                        type="button"
+                        aria-label={clearLabel || `Clear ${props["aria-label"] || label || placeholder}`}
+                        title="Clear"
+                        onClick={handleClear}
+                        className="absolute right-[32px] top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded-[4px] text-red-400 transition-colors hover:bg-red-500/50 hover:text-black focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#e6a93c]"
+                    >
+                        <X className="h-3.5 w-3.5" />
+                    </button>
+                )}
 
                 {/* Hidden native select for form submission */}
                 <select
@@ -437,7 +462,7 @@ const Select = React.forwardRef(({
                                                         )}
                                                     </span>
                                                 )}
-                                                <span className="min-w-0 flex-1 break-words">{option?.label}</span>
+                                                <span className="min-w-0 flex-1 break-words">{renderLabel ? renderLabel(option, 'list') : option?.label}</span>
                                                 {option?.description && (
                                                     <span className="text-xs text-muted-foreground ml-2">
                                                         {option?.description}

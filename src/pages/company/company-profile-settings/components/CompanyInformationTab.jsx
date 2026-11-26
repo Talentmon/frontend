@@ -3,8 +3,7 @@ import Icon from 'components/AppIcon';
 import Image from 'components/AppImage';
 import Select from 'components/ui/Select';
 import { COMPANY_SIZE_OPTIONS, INDUSTRY_OPTIONS, PAYMENT_CURRENCY_OPTIONS, WORK_MODE_OPTIONS, uploadCompanyLogo } from '../companyApi';
-import { SALARY_BASIS_OPTIONS, SALARY_PERIOD_OPTIONS } from 'lib/salaryView';
-import { currencySelectOptions, currencySymbol, getCurrency } from 'utils/currencyService';
+import { currencySymbol, getCurrency } from 'utils/currencyService';
 import SectionHead from './SectionHead';
 import { FieldError, Group, Hint } from './FormBits';
 import styles from '../styles/company.module.scss';
@@ -24,7 +23,6 @@ const BENEFITS_LIST = [
   'Extra days off',
 ];
 const BENEFIT_OPTIONS = BENEFITS_LIST.map((benefit) => ({ value: benefit, label: benefit }));
-const CURRENCY_OPTIONS = currencySelectOptions();
 
 const WORK_MODE_CARD = {
   REMOTE: { icon: 'Monitor', sub: 'Work from anywhere' },
@@ -579,75 +577,7 @@ const CompanyInformationTab = ({ companyData, onDataChange, onSave, isSaving, fi
         </div>
       </div>
 
-      {/* Salary view — for the team only; candidates never see it */}
-      <div className={styles.card}>
-        <SectionHead
-          icon="Banknote"
-          title="Salary view"
-          subtitle="How candidates' salaries are shown to your team in Search, Bookmarked and Purchased."
-        />
-
-        <div className={styles.form3}>
-          {[
-            { field: 'salaryViewBasis', label: 'Net or gross', options: SALARY_BASIS_OPTIONS },
-            { field: 'salaryViewPeriod', label: 'Per month or per year', options: SALARY_PERIOD_OPTIONS }
-          ].map(({ field, label, options }) => (
-            <div key={field} {...fieldProps(field)}>
-              <span className={styles.flabel} id={`${field}Label`}>{label} {requiredMark}</span>
-              <div
-                className={errors[field] ? `${styles.seg} ${styles.segInvalid}` : styles.seg}
-                role="radiogroup"
-                aria-labelledby={`${field}Label`}
-              >
-                {options.map((option) => {
-                  const on = companyData?.[field] === option.value;
-                  return (
-                    <button
-                      key={option.value}
-                      type="button"
-                      role="radio"
-                      aria-checked={on}
-                      className={`${styles.segBtn}${on ? ` ${styles.segOn}` : ''}`}
-                      onClick={() => handleInputChange(field, option.value)}
-                    >
-                      {option.label}
-                    </button>
-                  );
-                })}
-              </div>
-              {fieldError(field)}
-            </div>
-          ))}
-
-          <div {...fieldProps('salaryViewCurrency')}>
-            <label className={styles.flabel}>Salary filter currency {requiredMark}</label>
-            <div className={errors.salaryViewCurrency ? styles.selectInvalid : undefined}>
-              <Select
-                value={companyData?.salaryViewCurrency || ''}
-                onChange={(v) => handleInputChange('salaryViewCurrency', v)}
-                options={CURRENCY_OPTIONS}
-                placeholder="Select currency…"
-                searchable
-              />
-            </div>
-            {fieldError('salaryViewCurrency')}
-          </div>
-        </div>
-
-        <div className={styles.note}>
-          <Icon name="Info" size={16} />
-          <div>
-            <p>
-              Candidates give both net and gross, so every profile can be shown either way, always in the candidate's
-              own currency. The salary filter's range is typed in the Salary filter currency and compared at today's exchange rate.
-            </p>
-            <p>
-              Anyone on your team can switch any of these in the Salary filter; they go back to these when they close the
-              tab or sign out.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Salary view is on the Filter settings tab (FilterSettingsTab). */}
 
       {/* Payments — what the company's card is charged in; Credit prices stay in EUR */}
       <div className={styles.card}>

@@ -8,6 +8,7 @@ import CompanyInformationTab from './components/CompanyInformationTab';
 import TeamManagementTab from './components/TeamManagementTab';
 import ReputationManagementTab from './components/ReputationManagementTab';
 import AccountPreferencesTab from './components/AccountPreferencesTab';
+import FilterSettingsTab from './components/FilterSettingsTab';
 import PublicProfilePreview from './components/PublicProfilePreview';
 import DeleteAccountModal from './components/DeleteAccountModal';
 import {
@@ -24,7 +25,11 @@ import {
   deleteCompanyAccount,
   validateCompany,
   REQUIRED_COMPANY_FIELD_LABELS,
+  FILTER_SETTINGS_FIELDS,
 } from './companyApi';
+
+// The tab a profile field is on (Salary view and Match are on Filter settings).
+const tabOfField = (field) => (FILTER_SETTINGS_FIELDS.includes(field) ? 'filters' : 'company');
 import styles from './styles/company.module.scss';
 
 const CompanyProfileSettings = () => {
@@ -97,15 +102,22 @@ const CompanyProfileSettings = () => {
       name: 'Account settings',
       icon: 'Settings',
       description: 'Login, security, time zone'
+    },
+    {
+      id: 'filters',
+      name: 'Filter settings',
+      icon: 'SlidersHorizontal',
+      description: 'Salary view and match'
     }
   ];
 
   const handleSaveCompany = async () => {
     const errors = validateCompany(companyData);
     setFieldErrors(errors);
-    if (Object.keys(errors).length > 0) {
-      // The toast is success-styled, so point at the first bad field instead.
-      setActiveTab('company');
+    const errorFields = Object.keys(errors);
+    if (errorFields.length > 0) {
+      // The toast is success-styled, so point at the first bad field instead (on its tab).
+      setActiveTab(errorFields.some((field) => tabOfField(field) === 'company') ? 'company' : 'filters');
       setTimeout(() => {
         document.querySelector('[data-invalid="true"]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 0);
@@ -143,7 +155,7 @@ const CompanyProfileSettings = () => {
         setTimeout(() => navigate('/candidate-search-dashboard'), 1500);
         return;
       }
-      fireToast('Company information saved');
+      fireToast(activeTab === 'filters' ? 'Filter settings saved' : 'Company information saved');
     } catch (err) {
       fireToast(err?.response?.data?.message || 'Could not save — please try again.');
     } finally {
@@ -239,6 +251,17 @@ const CompanyProfileSettings = () => {
         );
       case 'reputation':
         return <ReputationManagementTab reputationData={reputationData} />;
+      case 'filters':
+        return (
+          <FilterSettingsTab
+            companyData={companyData}
+            onDataChange={handleCompanyDataChange}
+            onSave={handleSaveCompany}
+            isSaving={isSaving}
+            errors={fieldErrors}
+            readOnly={!isCompanyOwner}
+          />
+        );
       case 'preferences':
         return (
           <AccountPreferencesTab
@@ -326,10 +349,16 @@ const CompanyProfileSettings = () => {
               {companyData.missingFields.length > 0 && (
                 <div className={styles.onboardMissing}>
                   <span>Still missing:</span>
+                  {/* Each one opens the tab it's on (Salary view is on Filter settings). */}
                   {companyData.missingFields.map((field) => (
-                    <span key={field} className={styles.onboardChip}>
+                    <button
+                      type="button"
+                      key={field}
+                      className={styles.onboardChip}
+                      onClick={() => setActiveTab(tabOfField(field))}
+                    >
                       {REQUIRED_COMPANY_FIELD_LABELS[field] || field}
-                    </span>
+                    </button>
                   ))}
                 </div>
               )}

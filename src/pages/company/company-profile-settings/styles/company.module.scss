@@ -399,13 +399,6 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   min-width: 0;
 }
 
-// Three side by side (Salary view: net/gross, month/year, currency); wraps when the card gets narrow.
-.form3 {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
-  gap: 16px 18px;
-}
-
 .fieldFull {
   grid-column: 1 / -1;
 }
@@ -582,8 +575,14 @@ $sticky-from: 921px;  // the two-column layout; below it everything scrolls
   border-radius: 999px;
   background: $white;
   border: 1px solid $line;
+  font: inherit;
   font-weight: 600;
   color: $ink;
+  // A button: it opens the tab the field is on.
+  cursor: pointer;
+
+  &:hover { border-color: $gold; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 1px; }
 }
 
 // ===== Logo upload =====
@@ -2301,55 +2300,603 @@ $red-deep: #b53e3e;
   place-items: center;
 }
 
-// ===== Segmented control (Salary view) =====
+// ===== Filter settings (Salary view + Match) =====
+// Three across needs ~600px inside the card. Next to the side nav that room
+// runs out below a 981px window, on its own below 701px. (Media queries, not
+// container queries: Chrome stops laying out a container inside the page's
+// <fieldset> once the window is resized.)
+@mixin fs-narrow {
+  @media (min-width: 921px) and (max-width: 980px), (max-width: 700px) { @content; }
+}
+
+.fsBody {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.fsBodyMatch { gap: 26px; }
+
+// Net/gross, month/year and currency side by side; stacked on a narrow card.
+.fsGrid3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+
+  .flabel { margin-bottom: 8px; color: $ink; }
+
+  @include fs-narrow { grid-template-columns: minmax(0, 1fr); }
+}
+
+.fsHelp {
+  margin: 7px 2px 0;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: #6B7482;
+}
+
+// Segmented control: Net / Gross, Per month / Per year.
 .seg {
   display: flex;
-  gap: 2px;
-  padding: 3px;
+  gap: 4px;
+  padding: 4px;
   background: #F1F3F6;
-  border-radius: 11px;
+  border-radius: 12px;
 }
 
 .segBtn {
   flex: 1;
-  height: 34px;
-  padding: 0 14px;
-  border-radius: 8px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
   background: transparent;
   color: #5B6573;
-  font-size: 13.5px;
+  font-size: 14px;
   line-height: 18px;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
+  cursor: pointer;
   transition: background-color .15s ease, color .15s ease;
 
   &:hover:not(:disabled):not(.segOn) { color: $ink; }
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  &:disabled { cursor: default; }
 }
 
 .segOn {
   background: $white;
   color: $ink;
-  box-shadow: 0 1px 2px rgba(11, 26, 44, .14);
+  font-weight: 700;
+  box-shadow: 0 1px 2px rgba(11, 26, 44, .10), 0 0 0 1px rgba(11, 26, 44, .04);
 }
 
 // The seg itself can't take a red border, so a missing pick outlines the track.
 .segInvalid { box-shadow: inset 0 0 0 1px #D14343; }
 
-// ===== Grey info box under a card's fields =====
-.note {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-  padding: 12px 14px;
-  background: #F6F7F9;
+// Currency field: as tall as the segmented tracks beside it, symbol tile first.
+.stack .fsCurrency button[role="combobox"] {
+  height: 44px;
   border-radius: 12px;
+  padding-left: 8px;
+}
+
+// "€ EUR · Euro" — in the field and in its list (Select's renderLabel).
+.fsCur {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.fsCurSym {
+  flex: none;
+  min-width: 28px;
+  height: 28px;
+  box-sizing: border-box;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #F1F3F6;
+  color: #5B6573;
+  display: grid;
+  place-items: center;
+  font-size: 12.5px;
+  line-height: 1;
+  font-weight: 700;
+
+  &[data-long] { font-size: 10.5px; }
+}
+
+.fsCurText {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 400;
+  color: #5B6573;
+
+  b { font-weight: 700; color: $ink; }
+}
+
+.fsCurrency .fsCurSym { background: #FDF3E1; color: #9A6410; }
+
+// In the list a long name wraps, the code takes the row's hover/picked colour,
+// and the picked row's gold background gets a white tile.
+[role="option"] .fsCurText {
+  white-space: normal;
+
+  b { color: inherit; }
+}
+
+[role="option"][aria-selected="true"] .fsCurSym { background: $white; color: #9A6410; }
+
+// Grey panel: "How salaries are shown" and the Match explanation.
+.fsPanel {
+  padding: 14px;
+  background: #F4F6F8;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fsPanelMatch { gap: 14px; }
+
+.fsPanelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin: 0 2px;
+}
+
+.fsPanelTitle {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 18px;
+  font-weight: 700;
+  color: $ink;
+
+  svg { flex: none; color: $slate-2; }
+}
+
+.fsMono {
+  margin: 0;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  line-height: 16px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #6B7482;
+}
+
+.fsOnCards {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+
+  .fsMono { margin-right: 2px; }
+}
+
+.fsAmount {
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: $white;
+  font-size: 13.5px;
+  line-height: 18px;
+  font-weight: 700;
+  color: $ink;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+
+  span { font-size: 12.5px; font-weight: 500; color: #6B7482; }
+}
+
+.fsTiles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+
+  li {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    background: $white;
+    border-radius: 12px;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 19px;
+    color: #475569;
+  }
+
+  strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: $ink;
+  }
+
+  // One under another: icon beside the text instead of above it.
+  @include fs-narrow {
+    grid-template-columns: minmax(0, 1fr);
+
+    li { flex-direction: row; align-items: flex-start; gap: 12px; }
+  }
+}
+
+.fsTileIcon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+}
+
+.fsToneGold { background: #FDF3E1; color: #9A6410; }
+.fsToneBlue { background: #E8EFFC; color: #2F5BB7; }
+.fsToneGrey { background: #F1F3F6; color: #475569; }
+
+// "Filters decide who → Match decides the order".
+.fsFlow {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+
+  @media (max-width: 600px) { flex-direction: column; }
+}
+
+.fsFlowCard {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: $white;
+  border-radius: 12px;
+}
+
+.fsFlowIcon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+}
+
+.fsFlowTitle {
+  display: block;
+  font-size: 14.5px;
+  line-height: 20px;
+  font-weight: 600;
+  color: $ink;
+
+  strong { font-weight: 800; }
+}
+
+.fsFlowSub {
+  display: block;
+  margin-top: 2px;
   font-size: 13px;
-  line-height: 19px;
+  line-height: 18px;
+  color: #5B6573;
+}
+
+.fsFlowArrow {
+  flex: none;
+  align-self: center;
+  display: flex;
+  color: #B8C0C9;
+
+  @media (max-width: 600px) { transform: rotate(90deg); }
+}
+
+// What counts toward Match: four always, then Salary and Years when picked below.
+.fsCounts {
+  padding: 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.fsChips {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.fsChip {
+  height: 28px;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: $white;
+  border: 1px solid $line;
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  color: $ink;
+  white-space: nowrap;
+}
+
+.fsChipState { font-size: 12px; font-weight: 500; }
+
+.fsChipOn {
+  background: #FDF3E1;
+  border-color: $gold;
+  color: #9A6410;
+}
+
+.fsChipOff {
+  background: transparent;
+  border: 1px dashed #C5CBD3;
+  color: #5B6573;
+
+  .fsChipState { color: $slate-2; }
+}
+
+.fsChipSep {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: #D5DAE0;
+}
+
+.fsCountsNote {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 17px;
+  color: #5B6573;
+}
+
+// "All your skills 100% + 1 of 2 languages 50% = 75% match".
+.fsExample {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 12px;
+  background: $white;
+  border-radius: 12px;
+}
+
+.fsExampleSum {
+  flex: 1 1 260px; // on a phone it drops under "Example" instead of squeezing beside it
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 18px;
   color: #475569;
 
-  > svg { flex: none; margin-top: 2px; color: $slate-2; }
-  p { margin: 0; }
-  p + p { margin-top: 6px; }
+  strong { font-weight: 700; color: $ink; }
+}
+
+.fsOp {
+  font-size: 16px;
+  line-height: 18px;
+  font-weight: 700;
+  color: #A0A8B3;
+}
+
+// The result: a gold-outlined pill, no ring (user's call).
+.fsResult {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: $white;
+  box-shadow: inset 0 0 0 1.5px $gold;
+  font-size: 14px;
+  line-height: 18px;
+  font-weight: 700;
+  color: $ink;
+  white-space: nowrap;
+}
+
+// Salary / Years of experience: which end of the range ranks higher.
+.fsPrefs {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.fsPref {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  & + & {
+    border-top: 1px solid #EEF0F3;
+    padding-top: 22px;
+  }
+}
+
+.fsPrefHead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+
+  > .fsMono { white-space: nowrap; }
+
+  // The question already says "in your range".
+  @media (max-width: 600px) { > .fsMono { display: none; } }
+}
+
+.fsPrefTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+
+  h3 {
+    margin: 0;
+    font-size: 15px;
+    line-height: 20px;
+    font-weight: 700;
+    color: $ink;
+  }
+
+  p {
+    margin: 1px 0 0;
+    font-size: 13px;
+    line-height: 18px;
+    color: #5B6573;
+  }
+}
+
+.fsPrefIcon {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #F1F3F6;
+  color: #475569;
+  display: grid;
+  place-items: center;
+}
+
+.fsOptions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+
+  @include fs-narrow { grid-template-columns: minmax(0, 1fr); }
+}
+
+.fsOpt {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1.5px solid $line;
+  border-radius: 14px;
+  background: $white;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease;
+
+  &:hover:not(:disabled):not(.fsOptOn) {
+    border-color: #C5CBD3;
+    background: #FAFBFC;
+  }
+
+  &:focus-visible { outline: 2px solid $gold; outline-offset: 2px; }
+  &:disabled { cursor: default; }
+}
+
+.fsOptOn {
+  border-color: $gold;
+  background: #FFFBF3;
+}
+
+.fsOptHead {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.fsRadio {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 1.5px solid #C5CBD3;
+  display: grid;
+  place-items: center;
+
+  &::after {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $gold;
+    opacity: 0;
+  }
+
+  .fsOptOn & {
+    border-color: $gold;
+
+    &::after { opacity: 1; }
+  }
+}
+
+.fsOptLabel {
+  font-size: 14px;
+  line-height: 19px;
+  font-weight: 700;
+  color: $ink;
+}
+
+.fsOptText {
+  font-size: 12.5px;
+  line-height: 17px;
+  color: #5B6573;
+}
+
+// The scale at the bottom of each choice: which end counts 100%.
+.fsScale {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-top: auto;
+}
+
+.fsBar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+
+  &[data-dir="down"] { background: linear-gradient(90deg, $gold, #F6E2B8); }
+  &[data-dir="up"] { background: linear-gradient(90deg, #F6E2B8, $gold); }
+  &[data-dir="flat"] { background: repeating-linear-gradient(90deg, #D5DAE0 0 6px, transparent 6px 10px); }
+}
+
+.fsBarEnds {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11.5px;
+  line-height: 14px;
+  color: #6B7482;
+
+  > :only-child { margin-inline: auto; }
 }
 
 // ===== Payments card =====

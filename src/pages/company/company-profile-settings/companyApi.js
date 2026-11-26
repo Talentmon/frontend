@@ -28,6 +28,22 @@ export const REQUIRED_COMPANY_FIELD_LABELS = {
   paymentCurrency: 'Payment currency',
 };
 
+// Fields on the Filter settings tab (the rest of the profile is on Company information).
+export const FILTER_SETTINGS_FIELDS = [
+  'salaryViewBasis',
+  'salaryViewPeriod',
+  'salaryViewCurrency',
+  'matchSalaryPreference',
+  'matchExperiencePreference',
+];
+
+// Filter settings → Match: which end of the salary / experience range ranks
+// higher (RangePreference); the backend's default, for a company read before it had these.
+const MATCH_DEFAULTS = {
+  matchSalaryPreference: 'NONE',
+  matchExperiencePreference: 'NONE',
+};
+
 // What a company can be charged in at checkout — the currencies Paddle accepts.
 // Mirrors PAYMENT_CURRENCIES on the backend (billing-currencies.ts).
 export const PAYMENT_CURRENCY_CODES = [
@@ -106,6 +122,7 @@ export function companyToFrontend(c) {
     salaryViewBasis: c.salaryViewBasis || '',
     salaryViewPeriod: c.salaryViewPeriod || '',
     salaryViewCurrency: c.salaryViewCurrency || '',
+    ...Object.fromEntries(Object.entries(MATCH_DEFAULTS).map(([field, fallback]) => [field, c[field] || fallback])),
     paymentCurrency: c.paymentCurrency || '',
     benefits: c.benefits || [],
     registrationNumber: c.registrationNumber || '',
@@ -138,6 +155,7 @@ export function companyToPayload(companyData) {
     salaryViewBasis: emptyToUndefined(companyData.salaryViewBasis),
     salaryViewPeriod: emptyToUndefined(companyData.salaryViewPeriod),
     salaryViewCurrency: emptyToUndefined(companyData.salaryViewCurrency),
+    ...Object.fromEntries(Object.keys(MATCH_DEFAULTS).map((field) => [field, emptyToUndefined(companyData[field])])),
     paymentCurrency: emptyToUndefined(companyData.paymentCurrency),
     registrationNumber: emptyToUndefined(companyData.registrationNumber),
     benefits: companyData.benefits || [],

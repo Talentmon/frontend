@@ -93,7 +93,7 @@ const CandidateCard = forwardRef(({
         {/* Side: match + status, unlock, preview + save */}
         <div className={styles.scListSide}>
           {statusBadge}
-          {!!matchScore && (
+          {matchScore != null && (
             <div className={styles.listMatch}>
               <span className={styles.factK}>Match</span>
               <span className={styles.matchDot} aria-hidden="true" />
@@ -130,7 +130,7 @@ const CandidateCard = forwardRef(({
           {statusBadge}
         </div>
 
-        {!!matchScore && <MatchRing score={matchScore} />}
+        {matchScore != null && <MatchRing score={matchScore} />}
       </div>
 
       {stats}

@@ -78,7 +78,7 @@ const BookmarkedCandidateCard = ({
           <StatusBadge searchStatus={candidate?.searchStatus} />
         </div>
 
-        {!!candidate?.matchScore && <MatchRing score={candidate?.matchScore} />}
+        {candidate?.matchScore != null && <MatchRing score={candidate?.matchScore} />}
       </div>
 
       <CardStats candidate={candidate} salaryFirst />

@@ -23,6 +23,8 @@ export function bookmarkToFrontend(row) {
     industries: [...new Set(experiences.map((e) => e.industry).filter(Boolean))],
     subIndustries: [...new Set(experiences.map((e) => e.subIndustry).filter(Boolean))],
     bookmarkId: row.id,
+    // Their Match in the search they were saved from, as it was then (null: that search had nothing Match counts).
+    matchScore: typeof row.matchScore === 'number' ? row.matchScore : null,
     unlockCost: UNLOCK_COST,
     // { id, text, createdAt, author, editedAt, editedBy }, oldest first — author/editedBy carry `you`.
     // (A backend from before the note list sends one string; ignore it rather than break the card.)

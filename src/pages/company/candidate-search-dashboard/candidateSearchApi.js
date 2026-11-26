@@ -143,18 +143,6 @@ export function getSearchCandidate(id) {
   return apiClient.get(`/candidates/search/${id}`).then((r) => r.data);
 }
 
-// Deterministic seeded "match" placeholder — the backend intentionally does
-// not compute a real match score (no job posting to compare against yet).
-// Kept as a visible mock per product decision until real matching logic
-// exists; not derived from any real field.
-export function mockMatchScore(id = '') {
-  let hash = 0;
-  for (let i = 0; i < id.length; i += 1) {
-    hash = (hash * 31 + id.charCodeAt(i)) >>> 0;
-  }
-  return 68 + (hash % 31); // 68-98
-}
-
 function highestEducation(education = []) {
   const best = [...education].sort((a, b) => (EDUCATION_LEVEL_RANK[b.level] || 0) - (EDUCATION_LEVEL_RANK[a.level] || 0))[0];
   return best ? EDUCATION_BACKEND_TO_FILTER[best.level] : undefined;
@@ -217,7 +205,8 @@ export function candidateToFrontend(raw) {
     locationFull: formatLocation(city, country),
     experience: raw.yearsExperience || 0,
     profileStrength: raw.profileStrength || 0,
-    matchScore: mockMatchScore(raw.id),
+    // How well they fit the search (Filter settings → Match); null when it has nothing Match counts.
+    matchScore: typeof raw.match === 'number' ? raw.match : null,
     searchStatus: STATUS_TO_FRONTEND[raw.status] || 'active',
     description: summaryFrom(raw.customSections),
     skills: (raw.skills || []).map((s) => s.name),
@@ -274,8 +263,11 @@ export function unlockCandidate(candidateId, positionContext, view) {
 export function listBookmarkIds() {
   return apiClient.get('/companies/me/bookmarks/ids').then((r) => r.data);
 }
-export function createBookmark(candidateId) {
-  return apiClient.post('/companies/me/bookmarks', { candidateId }).then((r) => r.data);
+/** `matchScore`: their Match in the search they're saved from; Bookmarked keeps showing it. */
+export function createBookmark(candidateId, matchScore) {
+  return apiClient
+    .post('/companies/me/bookmarks', { candidateId, ...(typeof matchScore === 'number' ? { matchScore } : {}) })
+    .then((r) => r.data);
 }
 export function removeBookmark(id) {
   return apiClient.delete(`/companies/me/bookmarks/${id}`).then((r) => r.data);

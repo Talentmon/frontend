@@ -4,9 +4,11 @@ import SalaryViewMenu from './SalaryViewMenu';
 import ViewToggle from './ViewToggle';
 import styles from '../styles/dashboard.module.scss';
 
-// Newest first by default. (No "Relevance": it only meant a more complete profile first.)
+// Best match first by default (Filter settings → Match); with nothing Match
+// counts it's newest first. (No "Relevance": it only meant a more complete profile first.)
 // `group` puts a line between kinds; `short` is what the closed button shows.
 export const SORT_OPTIONS = [
+  { value: 'match', label: 'Best match first', short: 'Best match', icon: 'Target', group: 0 },
   { value: 'newest', label: 'Newest first', short: 'Newest', icon: 'Clock', group: 0 },
   { value: 'experience', label: 'Most experience first', short: 'Most experience', icon: 'Briefcase', group: 1 },
   { value: 'experience_asc', label: 'Least experience first', short: 'Least experience', icon: 'Briefcase', group: 1 },
@@ -129,7 +131,7 @@ const SortMenu = ({ value, onChange }) => {
  * in over the page (phones).
  */
 const SearchToolbar = ({
-  sortBy = 'newest',
+  sortBy = 'match',
   onSortChange = () => {},
   viewMode = 'grid',
   onViewModeChange = () => {},

@@ -91,7 +91,8 @@ const CandidateSearchDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const [sortBy, setSortBy] = useState('newest');
+  // Best match first; with nothing Match counts that's newest first.
+  const [sortBy, setSortBy] = useState('match');
   const [viewMode, setViewMode] = useState('grid');
   // Net or gross, per month or per year: what the cards show and sorting by
   // salary orders by. Its currency is the one a salary range is typed in.
@@ -276,7 +277,8 @@ const CandidateSearchDashboard = () => {
     }
 
     try {
-      const bookmark = await createBookmark(candidateId);
+      // The bookmark keeps their Match from this search.
+      const bookmark = await createBookmark(candidateId, candidates.find((c) => c.id === candidateId)?.matchScore);
       setBookmarksById((prev) => ({ ...prev, [candidateId]: bookmark.id }));
       showToast('Saved to bookmarks');
     } catch (err) {

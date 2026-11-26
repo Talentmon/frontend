@@ -206,6 +206,14 @@ export function getCertificationNamesFor({ issuers = [], families = [] } = {}) {
   return [...new Set(names)];
 }
 
+// The issuers with a certification in any of `families` (all of them when none is picked), A–Z.
+export function getIssuerNamesFor({ families = [] } = {}) {
+  if (families.length === 0) return ISSUER_NAMES;
+  return [...new Set(CERTIFICATION_CATALOG.filter((c) => families.includes(c.family)).map((c) => c.issuer))].sort((a, b) =>
+    a.localeCompare(b)
+  );
+}
+
 export function findIssuer(issuerName) {
   return ISSUER_NAMES.find((i) => i.toLowerCase() === String(issuerName || '').trim().toLowerCase());
 }

@@ -5,13 +5,14 @@ import Select from 'components/ui/Select';
 import Combobox from 'components/ui/Combobox';
 import { Checkbox } from 'components/ui/Checkbox';
 import { INDUSTRY_NAMES, getSubIndustries } from 'utils/industries';
-import { ISSUER_NAMES, FAMILY_NAMES, getCertificationNamesFor } from 'utils/certifications';
+import { FAMILY_NAMES, getCertificationNamesFor, getIssuerNamesFor } from 'utils/certifications';
 import { CATEGORY_NAMES as SKILL_CATEGORY_NAMES, getSkillNamesFor } from 'utils/skills';
 import { currencySymbol } from 'utils/currencyService';
 import { COUNTRY_OPTIONS } from 'utils/countries';
 import { basisWord, periodWord, rangeView, useSalaryView } from 'lib/salaryView';
 import {
   listSavedFilters,
+  listSearchCities,
   createSavedFilter,
   updateSavedFilter,
   deleteSavedFilter,
@@ -23,7 +24,7 @@ import ExperienceRangeFilter from './ExperienceRangeFilter';
 import LanguageLevelFilter from './LanguageLevelFilter';
 import PickedChips from './PickedChips';
 import SalaryRangeFilter from './SalaryRangeFilter';
-import SkillsMatchToggle from './SkillsMatchToggle';
+import SkillsMatchToggle, { CERTIFICATE_MATCH, LANGUAGE_MATCH } from './SkillsMatchToggle';
 import styles from '../styles/dashboard.module.scss';
 
 // Several can be picked; a candidate matches with any of them, exactly that level.
@@ -69,24 +70,43 @@ const skillCategoryOptions = SKILL_CATEGORY_NAMES.map((name) => ({ value: name, 
 
 const industryOptions = INDUSTRY_NAMES.map((name) => ({ value: name, label: name }));
 
-const certIssuerOptions = ISSUER_NAMES.map((name) => ({ value: name, label: name }));
 const certFamilyOptions = FAMILY_NAMES.map((name) => ({ value: name, label: name }));
+const toOptions = (names) => names.map((name) => ({ value: name, label: name }));
 
-// Every skill / certification name in the catalog. Names outside it were
-// typed in by hand and survive a category / issuer / family change.
-const CATALOG_SKILLS = new Set(getSkillNamesFor({ categories: [] }));
-const CATALOG_CERT_NAMES = new Set(getCertificationNamesFor({ issuers: [], families: [] }));
+// The cities in `places` ({ city, country }, where the candidates live), in
+// any of `countries` when some are picked: each once, A–Z.
+const citiesIn = (places = [], countries = []) => {
+  const byKey = new Map();
+  places.forEach(({ city, country }) => {
+    if (!city || (countries.length && !countries.includes(country))) return;
+    if (!byKey.has(city.toLowerCase())) byKey.set(city.toLowerCase(), city);
+  });
+  return [...byKey.values()].sort((a, b) => a.localeCompare(b));
+};
 
 // Single source of truth for every filter: its type drives both rendering
 // and the default/active/clear logic below, so adding a filter only means
 // adding an entry here.
+// `helper`: not a filter, it only narrows the list of the field under it
+// (Category → Skills; Family → Issuer → Certification Name). Nothing is
+// searched by it; it doesn't count as a filter and isn't sent or saved.
+// `selectAll(filters)`: when the list offers "Select all" (once a helper narrows it).
+// `countNoun`: how the picks are counted next to the label ("14 skills").
 const FILTER_GROUPS = [
   {
     id: 'basic',
     title: 'Basic Search',
     fields: [
       { key: 'position', type: 'text', label: 'Position', placeholder: 'e.g. Frontend Developer' },
-      { key: 'location', type: 'text', label: 'City', placeholder: 'e.g. London' },
+      // Any of the cities: picked from where the candidates live (in the picked countries), or typed.
+      {
+        key: 'location',
+        type: 'comboMulti',
+        label: 'City',
+        placeholder: 'Type or choose a city',
+        maxRows: 3,
+        getOptions: (localFilters, { cities }) => citiesIn(cities, localFilters?.country || [])
+      },
       { key: 'country', type: 'multiSelect', label: 'Country', placeholder: 'Select country', options: COUNTRY_OPTIONS, searchable: true }
     ]
   },
@@ -118,12 +138,24 @@ const FILTER_GROUPS = [
     id: 'skills',
     title: 'Skills',
     fields: [
-      { key: 'skillCategory', type: 'multiSelect', label: 'Category', placeholder: 'Select category', options: skillCategoryOptions },
+      {
+        key: 'skillCategory',
+        type: 'multiSelect',
+        helper: true,
+        label: 'Category',
+        placeholder: 'All categories',
+        hint: 'Narrows the skills list below',
+        options: skillCategoryOptions,
+        multipleLabel: (count) => `${count} categories`
+      },
       {
         key: 'skills',
         type: 'comboMulti',
         label: 'Skills',
         placeholder: 'Type or choose a skill',
+        countNoun: ['skill', 'skills'],
+        maxRows: 5,
+        selectAll: (localFilters) => localFilters?.skillCategory?.length > 0,
         getOptions: (localFilters) => getSkillNamesFor({ categories: localFilters?.skillCategory || [] })
       }
     ]
@@ -165,13 +197,35 @@ const FILTER_GROUPS = [
     title: 'Certifications',
     fields: [
       { key: 'hasCertifications', type: 'checkbox', label: 'Has at least one certification' },
-      { key: 'certIssuer', type: 'multiSelect', label: 'Issuing Organization', placeholder: 'Select issuer', options: certIssuerOptions, searchable: true },
-      { key: 'certFamily', type: 'multiSelect', label: 'Certification Family', placeholder: 'Select family', options: certFamilyOptions },
+      {
+        key: 'certFamily',
+        type: 'multiSelect',
+        helper: true,
+        label: 'Certification Family',
+        placeholder: 'All families',
+        hint: 'Narrows the issuers and certificates below',
+        options: certFamilyOptions,
+        multipleLabel: (count) => `${count} families`
+      },
+      {
+        key: 'certIssuer',
+        type: 'multiSelect',
+        helper: true,
+        label: 'Issuing Organization',
+        placeholder: 'All issuers',
+        hint: 'Narrows the certificates below',
+        searchable: true,
+        getOptions: (localFilters) => toOptions(getIssuerNamesFor({ families: localFilters?.certFamily || [] })),
+        multipleLabel: (count) => `${count} issuers`
+      },
       {
         key: 'certName',
         type: 'comboMulti',
         label: 'Certification Name',
         placeholder: 'Type or choose from list',
+        countNoun: ['certificate', 'certificates'],
+        maxRows: 5,
+        selectAll: (localFilters) => localFilters?.certFamily?.length > 0 || localFilters?.certIssuer?.length > 0,
         getOptions: (localFilters) =>
           getCertificationNamesFor({ issuers: localFilters?.certIssuer || [], families: localFilters?.certFamily || [] })
       }
@@ -192,6 +246,34 @@ const FILTER_GROUPS = [
 ];
 
 const ALL_FIELDS = FILTER_GROUPS.flatMap((group) => group?.fields);
+const HELPER_KEYS = ALL_FIELDS.filter((field) => field.helper).map((field) => field.key);
+// The helper fields' values in `f` (empty when it has none), e.g. to keep them through a reset.
+const helpersOf = (f = {}) => Object.fromEntries(HELPER_KEYS.map((key) => [key, f?.[key] || []]));
+
+// A list narrowed by a helper with nothing picked from it. The helper alone
+// filters nothing, so Apply doesn't search then: it points at the list.
+const ORPHAN_CHECKS = [
+  {
+    group: 'skills',
+    field: 'skills',
+    test: (f) => f?.skillCategory?.length > 0 && !f?.skills?.length,
+    message: 'Pick skills, use Select all, or clear the category.'
+  },
+  {
+    group: 'certifications',
+    field: 'certName',
+    test: (f) => (f?.certFamily?.length > 0 || f?.certIssuer?.length > 0) && !f?.certName?.length,
+    message: 'Pick certificates, use Select all, or clear the family and issuer.'
+  }
+];
+const orphansIn = (f) => ORPHAN_CHECKS.filter((check) => check.test(f));
+
+// "Match any / all" under a group's list, once 2+ are picked. Stored as `key`.
+const MATCH_TOGGLES = {
+  skills: { list: 'skills', key: 'skillsMatch' },
+  languages: { list: 'languages', key: 'languagesMatch', ...LANGUAGE_MATCH },
+  certifications: { list: 'certName', key: 'certMatch', ...CERTIFICATE_MATCH }
+};
 
 const emptyValueForType = (type) => {
   switch (type) {
@@ -211,17 +293,20 @@ const emptyValueForType = (type) => {
   }
 };
 
-// skillsMatch isn't a filter of its own (it never counts as active): it
-// says whether 2+ picked skills are matched as "any of" or "all of".
+// skillsMatch, languagesMatch and certMatch aren't filters of their own (they
+// never count as active): each says whether 2+ picks are "any of" or "all of".
 const DEFAULT_FILTERS = {
   ...ALL_FIELDS?.reduce((acc, field) => {
     acc[field.key] = emptyValueForType(field?.type);
     return acc;
   }, {}),
-  skillsMatch: 'any'
+  skillsMatch: 'any',
+  languagesMatch: 'any',
+  certMatch: 'any'
 };
 
 const isFieldActive = (field, localFilters) => {
+  if (field?.helper) return false;
   const value = localFilters?.[field?.key];
   switch (field?.type) {
     case 'salaryRange':
@@ -245,7 +330,8 @@ const countActiveInGroup = (group, localFilters) =>
 const hasActiveFilters = (f) => ALL_FIELDS.some((field) => isFieldActive(field, f));
 
 // Saved filters come back from the API with empty values left out, so both
-// sides are filled in with the defaults before comparing.
+// sides are filled in with the defaults before comparing. Helpers aren't
+// filters, so they never make the fields differ from the results.
 const normalizeFilters = (f = {}) => {
   const merged = {
     ...DEFAULT_FILTERS,
@@ -253,7 +339,10 @@ const normalizeFilters = (f = {}) => {
     salary: { ...DEFAULT_FILTERS.salary, ...f?.salary },
     experience: { ...DEFAULT_FILTERS.experience, ...f?.experience }
   };
-  merged.skillsMatch = merged.skills?.length >= 2 && merged.skillsMatch === 'all' ? 'all' : 'any';
+  Object.values(MATCH_TOGGLES).forEach(({ list, key }) => {
+    merged[key] = merged[list]?.length >= 2 && merged[key] === 'all' ? 'all' : 'any';
+  });
+  HELPER_KEYS.forEach((key) => delete merged[key]);
   return merged;
 };
 const sameFilters = (a, b) => JSON.stringify(normalizeFilters(a)) === JSON.stringify(normalizeFilters(b));
@@ -277,7 +366,7 @@ const formatAmount = (value) => {
 const groupSummaryItems = (groupId, f, view) => {
   switch (groupId) {
     case 'basic':
-      return [f.position?.trim(), f.location?.trim(), ...(f.country || [])].filter(Boolean);
+      return [f.position?.trim(), ...(f.location || []), ...(f.country || [])].filter(Boolean);
     case 'experience':
       return [
         experienceActive(f.experience) && experienceLabel(f.experience),
@@ -297,7 +386,7 @@ const groupSummaryItems = (groupId, f, view) => {
       return [`${from ? `From ${from}` : `Up to ${to}`} ${per}`];
     }
     case 'skills':
-      return [...(f.skills || []), ...(f.skillCategory || [])];
+      return [...(f.skills || [])];
     case 'languages':
       return (f.languages || []).map((entry) => (entry?.levels?.length ? `${entry.name} (${entry.levels.join(', ')})` : entry?.name));
     case 'industry': {
@@ -306,12 +395,7 @@ const groupSummaryItems = (groupId, f, view) => {
       return [...subs, ...withoutSub];
     }
     case 'certifications':
-      return [
-        f.hasCertifications && 'Has a certification',
-        ...(f.certName || []),
-        ...(f.certIssuer || []),
-        ...(f.certFamily || [])
-      ].filter(Boolean);
+      return [f.hasCertifications && 'Has a certification', ...(f.certName || [])].filter(Boolean);
     case 'status':
       return [
         f.status && optionLabel(statusOptions, f.status),
@@ -366,6 +450,9 @@ const FilterSidebar = ({
   const [isNamingFilter, setIsNamingFilter] = useState(false);
   const [filterNameDraft, setFilterNameDraft] = useState('');
   const [openGroups, setOpenGroups] = useState(DEFAULT_OPEN_GROUPS);
+  // Lists Apply pointed at (a helper set, nothing picked); each one's message
+  // shows until something is picked from it or its helper is cleared.
+  const [flagged, setFlagged] = useState([]);
   const [salaryView, setSalaryView] = useSalaryView();
 
   // A saved filter keeps the salary view its range was typed in (`view`).
@@ -377,12 +464,24 @@ const FilterSidebar = ({
       .catch(() => {});
   }, []);
 
+  // Where the candidates this company can find live: the City field's suggestions.
+  // Without them the field still takes typed cities.
+  const [cityPlaces, setCityPlaces] = useState([]);
+  useEffect(() => {
+    listSearchCities()
+      .then(setCityPlaces)
+      .catch(() => {});
+  }, []);
+  // What a field's getOptions may need besides the filters.
+  const optionContext = { cities: cityPlaces };
+
   // Every field edits the draft only - except taking off the last filter while
   // the results still show some: that's Clear all, so it searches right away
   // instead of waiting for Apply.
+  // (The helpers stay as they are: they only narrow a list.)
   const updateDraft = (updatedFilters) => {
     if (!hasActiveFilters(updatedFilters) && hasActiveFilters(appliedFilters)) {
-      handleClearAll();
+      clearFilters(helpersOf(updatedFilters));
       return;
     }
     setLocalFilters(updatedFilters);
@@ -399,14 +498,32 @@ const FilterSidebar = ({
   const hasChanges =
     !sameFilters(localFilters, appliedFilters) || (salaryRangeOn && salaryView.currency !== appliedView?.currency);
 
+  const orphans = orphansIn(localFilters);
+  const orphanFields = orphans.map((check) => check.field).join(',');
+  useEffect(() => {
+    const stillOrphan = orphanFields.split(',');
+    setFlagged((prev) => (prev.some((field) => !stillOrphan.includes(field)) ? prev.filter((field) => stillOrphan.includes(field)) : prev));
+  }, [orphanFields]);
+  const fieldErrors = Object.fromEntries(orphans.filter((check) => flagged.includes(check.field)).map((check) => [check.field, check.message]));
+
   const handleApply = () => {
+    // A helper with nothing picked under it: open its group and point at the list, search nothing.
+    if (orphans.length) {
+      setFlagged(orphans.map((check) => check.field));
+      setOpenGroups((prev) => ({ ...prev, ...Object.fromEntries(orphans.map((check) => [check.group, true])) }));
+      // Once the group has unfolded.
+      setTimeout(() => {
+        document.getElementById(fieldId(orphans[0].field))?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 320);
+      return;
+    }
     if (!hasChanges) return;
     onApply(localFilters);
     // Below 846px the filters cover the results; close them to show what was found.
     if (!isCollapsed && window.matchMedia?.('(max-width: 845px)')?.matches) onToggleCollapse();
   };
 
-  // Enter in a typed field (Position, City, the salary amounts) applies, like a
+  // Enter in a typed field (Position, the salary amounts) applies, like a
   // form. Dropdowns and the Skills box use Enter themselves, so they're left alone.
   const handleBodyKeyDown = (e) => {
     const target = e?.target;
@@ -416,10 +533,9 @@ const FilterSidebar = ({
     handleApply();
   };
 
-  // Multi-selects that narrow another field also drop what no longer fits
-  // in it: subindustries of an unpicked industry, skills outside the picked
-  // categories, certification names outside the picked issuers / families.
-  // Names typed in by hand (not in the catalog) are always kept.
+  // Subindustries of an unpicked industry go, and so do issuers outside the
+  // picked families (Issuer only narrows the list). Picked skills and
+  // certificates always stay, whatever list a helper shows now.
   const handleMultiChange = (key, updated) => {
     const next = { ...localFilters, [key]: updated };
 
@@ -428,17 +544,9 @@ const FilterSidebar = ({
       next.subIndustry = (localFilters?.subIndustry || []).filter((sub) => validSubs.includes(sub));
     }
 
-    if (key === 'skillCategory') {
-      const validNames = new Set(getSkillNamesFor({ categories: updated }));
-      next.skills = (localFilters?.skills || []).filter((name) => validNames.has(name) || !CATALOG_SKILLS.has(name));
-    }
-
-    if (key === 'certIssuer' || key === 'certFamily') {
-      const validNames = new Set(getCertificationNamesFor({
-        issuers: next.certIssuer || [],
-        families: next.certFamily || []
-      }));
-      next.certName = (localFilters?.certName || []).filter((name) => validNames.has(name) || !CATALOG_CERT_NAMES.has(name));
+    if (key === 'certFamily') {
+      const validIssuers = new Set(getIssuerNamesFor({ families: updated }));
+      next.certIssuer = (localFilters?.certIssuer || []).filter((issuer) => validIssuers.has(issuer));
     }
 
     updateDraft(next);
@@ -448,12 +556,15 @@ const FilterSidebar = ({
     handleFilterChange(key, !localFilters?.[key]);
   };
 
-  const handleClearAll = () => {
-    setLocalFilters(DEFAULT_FILTERS);
+  // Searches with no filters right away. `keep`: fields to leave as they are (the helpers).
+  const clearFilters = (keep = {}) => {
+    setLocalFilters({ ...DEFAULT_FILTERS, ...keep });
     setActiveSavedFilterId(null);
     setIsNamingFilter(false);
     onClearFilters();
   };
+
+  const handleClearAll = () => clearFilters();
 
   // "Clear" in an open group's header empties just that group (the salary
   // currency is part of the salary view, so it stays as picked) and hands
@@ -464,7 +575,7 @@ const FilterSidebar = ({
       // An emptied salary range drops its terms too (the currency is the view's and stays).
       cleared[field.key] = emptyValueForType(field.type);
     });
-    if (group?.id === 'skills') cleared.skillsMatch = 'any';
+    if (MATCH_TOGGLES[group?.id]) cleared[MATCH_TOGGLES[group.id].key] = 'any';
     updateDraft(cleared);
     document.getElementById(`filter-group-toggle-${group?.id}`)?.focus();
   };
@@ -491,7 +602,8 @@ const FilterSidebar = ({
   // A saved filter searches right away, and expands every group it sets
   // something in, so what's switched on is visible; open groups stay open.
   const handleApplySavedFilter = (entry) => {
-    const nextFilters = { ...DEFAULT_FILTERS, ...entry?.filters };
+    // Only filters are saved; a helper from an older saved filter isn't brought back.
+    const nextFilters = { ...DEFAULT_FILTERS, ...entry?.filters, ...helpersOf() };
     // Its salary range carries its own net/gross and month/year; it's typed in its currency.
     if (entry?.view && entry.view.currency !== salaryView.currency) setSalaryView({ ...salaryView, currency: entry.view.currency });
     setLocalFilters(nextFilters);
@@ -598,7 +710,7 @@ const FilterSidebar = ({
         );
 
       case 'multiSelect': {
-        const options = field?.getOptions ? field.getOptions(localFilters) : field?.options;
+        const options = field?.getOptions ? field.getOptions(localFilters, optionContext) : field?.options;
         const isDisabled = field?.disabled ? field.disabled(localFilters) : false;
         return (
           <div className={styles.field} key={field?.key}>
@@ -613,7 +725,15 @@ const FilterSidebar = ({
               multipleLabel={field?.multipleLabel}
               searchable={!!field?.searchable}
               disabled={isDisabled}
+              // A helper is cleared on its own, without touching what's picked under it.
+              clearable={!!field?.helper}
+              clearPosition="end"
+              clearLabel={`Clear ${field?.label?.toLowerCase()}`}
+              aria-describedby={field?.hint ? `${fieldId(field?.key)}-hint` : undefined}
             />
+            {field?.hint && (
+              <p id={`${fieldId(field?.key)}-hint`} className={styles.fieldHint}>{field.hint}</p>
+            )}
             {field?.chips && (
               <PickedChips
                 label={`Selected ${field?.label?.toLowerCase()}`}
@@ -639,18 +759,42 @@ const FilterSidebar = ({
         );
 
       case 'comboMulti': {
-        const options = field?.getOptions ? field.getOptions(localFilters) : field?.options;
+        const options = field?.getOptions ? field.getOptions(localFilters, optionContext) : field?.options;
+        const picked = localFilters?.[field?.key] || [];
+        const error = fieldErrors[field?.key];
+        const errorId = `${fieldId(field?.key)}-error`;
         return (
-          <div className={styles.field} key={field?.key}>
-            {renderLabel(field)}
+          <div className={styles.field} key={field?.key} data-invalid={error ? 'true' : undefined}>
+            {field?.countNoun ? (
+              <div className={styles.fieldLabelRow}>
+                {renderLabel(field)}
+                {picked.length > 0 && (
+                  <span className={styles.fieldHint}>
+                    {picked.length} {picked.length === 1 ? field.countNoun[0] : field.countNoun[1]}
+                  </span>
+                )}
+              </div>
+            ) : (
+              renderLabel(field)
+            )}
             <Combobox
               id={fieldId(field?.key)}
               options={options}
-              value={localFilters?.[field?.key]}
+              value={picked}
               onChange={(value) => handleFilterChange(field?.key, value)}
               placeholder={field?.placeholder}
               multiple
+              selectAll={!!field?.selectAll?.(localFilters)}
+              maxRows={field?.maxRows}
+              invalid={!!error}
+              aria-describedby={error ? errorId : undefined}
             />
+            {error && (
+              <p id={errorId} className={styles.fieldError} role="alert">
+                <Icon name="AlertCircle" size={14} strokeWidth={2.2} />
+                {error}
+              </p>
+            )}
           </div>
         );
       }
@@ -798,6 +942,7 @@ const FilterSidebar = ({
           // Summary, Clear and the fields stay in the page either way and fold /
           // fade with the group (styles: $fold); while closed, the fields are inert.
           const hasActive = activeCount > 0;
+          const matchToggle = MATCH_TOGGLES[group?.id];
           return (
             <div className={`${styles.fgroup} ${isOpen ? styles.fgroupOpen : ''}`} key={group?.id}>
               <h3 className={`${styles.fgroupHead} ${isOpen ? styles.fgroupHeadOpen : ''}`}>
@@ -839,10 +984,13 @@ const FilterSidebar = ({
                 <div className={styles.fgroupFoldInner}>
                   <div className={styles.fgroupBody} id={bodyId}>
                     {group?.fields?.map(renderField)}
-                    {group?.id === 'skills' && localFilters?.skills?.length >= 2 && (
+                    {matchToggle && localFilters?.[matchToggle.list]?.length >= 2 && (
                       <SkillsMatchToggle
-                        value={localFilters?.skillsMatch}
-                        onChange={(value) => handleFilterChange('skillsMatch', value)}
+                        value={localFilters?.[matchToggle.key]}
+                        onChange={(value) => handleFilterChange(matchToggle.key, value)}
+                        {...(matchToggle.label
+                          ? { label: matchToggle.label, anyHint: matchToggle.anyHint, allHint: matchToggle.allHint }
+                          : {})}
                       />
                     )}
                   </div>
@@ -903,8 +1051,9 @@ const FilterSidebar = ({
               type="button"
               className={styles.applyFiltersBtn}
               onClick={handleApply}
-              disabled={!hasChanges}
-              title={hasChanges ? undefined : 'The results already show these filters'}
+              // On while a helper waits for picks too: a click shows what's missing.
+              disabled={!hasChanges && !orphans.length}
+              title={hasChanges || orphans.length ? undefined : 'The results already show these filters'}
             >
               <Icon name="Search" size={16} strokeWidth={2.4} />
               Apply filters

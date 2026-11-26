@@ -1144,6 +1144,23 @@ $fold: 0.28s;
   color: $hint;
 }
 
+// Under a list Apply pointed at: a helper is set but nothing is picked from it.
+.fieldError {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin: 0;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: #c23b3b;
+
+  svg {
+    flex: none;
+    margin-top: 1px;
+  }
+}
+
 // Under the salary range when its currency has no exchange rate (SalaryRangeFilter).
 .salaryWarn {
   margin: 0;

@@ -48,7 +48,7 @@ const WORK_MODE_BACKEND_TO_FILTER = Object.fromEntries(
 export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
   const out = {};
   if (filters.position) out.position = filters.position;
-  if (filters.location) out.location = filters.location;
+  if (filters.location?.length) out.location = filters.location;
   if (filters.country?.length) out.country = filters.country;
   const experience = experienceToBackend(filters.experience);
   if (experience) out.experience = experience;
@@ -56,19 +56,19 @@ export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
   if (filters.availability) out.availability = filters.availability;
   if (filters.status) out.status = STATUS_TO_BACKEND[filters.status];
   if (filters.skills?.length) out.skills = filters.skills;
-  // "Match all" only means something with 2+ skills; "any" is the default
-  // and is never sent.
+  // "Match all" only means something with 2+ picks; "any" is the default
+  // and is never sent. (Skill category, certificate family and issuer only
+  // narrow a list in the filters, so they're never sent.)
   if (filters.skills?.length >= 2 && filters.skillsMatch === 'all') out.skillsMatch = 'all';
-  if (filters.skillCategory?.length) out.skillCategory = filters.skillCategory;
   if (filters.languages?.length) out.languages = filters.languages;
+  if (filters.languages?.length >= 2 && filters.languagesMatch === 'all') out.languagesMatch = 'all';
   if (filters.industry?.length) out.industry = filters.industry;
   if (filters.subIndustry?.length) out.subIndustry = filters.subIndustry;
   if (filters.jobType?.length) out.jobType = filters.jobType.map((t) => JOB_TYPE_TO_BACKEND[t]).filter(Boolean);
   if (filters.workMode?.length) out.workMode = filters.workMode.map((m) => WORK_MODE_FILTER_TO_BACKEND[m]).filter(Boolean);
   if (filters.hasCertifications) out.hasCertifications = true;
-  if (filters.certIssuer?.length) out.certIssuer = filters.certIssuer;
-  if (filters.certFamily?.length) out.certFamily = filters.certFamily;
   if (filters.certName?.length) out.certName = filters.certName;
+  if (filters.certName?.length >= 2 && filters.certMatch === 'all') out.certMatch = 'all';
   if (filters.relocationReady) out.relocationReady = true;
   if (filters.travelReady) out.travelReady = true;
   if (filters.salary?.min || filters.salary?.max) {
@@ -89,6 +89,8 @@ export function filtersToBackend(filters = {}, view = DEFAULT_SALARY_VIEW) {
 // in backend enum shape) is loaded back into FilterSidebar's local state.
 export function filtersToFrontend(filters = {}) {
   const out = { ...filters };
+  // A list of cities; filters saved before that hold one city as a string.
+  if (typeof out.location === 'string') out.location = out.location.trim() ? [out.location.trim()] : [];
   // A From – To range; filters saved before that hold a bucket like "3-5".
   if (out.experience) out.experience = toExperienceRange(out.experience);
   // A list of levels; filters saved before that hold one level as a string.
@@ -127,6 +129,13 @@ export function searchCandidates({ filters, sort, offset = 0, limit = 20, filter
   if (sort) params.sort = sort;
   if (Object.keys(backendFilters).length) params.filters = JSON.stringify(backendFilters);
   return apiClient.get('/candidates/search', { params }).then((r) => r.data);
+}
+
+/** Where the candidates this company can find live, `[{ city, country }]`: the City filter's suggestions. */
+export function listSearchCities() {
+  return apiClient
+    .get('/candidates/search/cities')
+    .then((r) => r.data.map(({ location, country }) => splitLocation(location, country)));
 }
 
 /** One candidate's whole anonymized CV, for the preview (the cards carry only what they show). */

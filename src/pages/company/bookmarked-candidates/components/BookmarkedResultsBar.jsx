@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import Icon from 'components/AppIcon';
-import SalaryViewMenu from '../../candidate-search-dashboard/components/SalaryViewMenu';
-import ds from '../../candidate-search-dashboard/styles/dashboard.module.scss';
+import ResultsCount from '../../candidate-filters/ResultsCount';
+import TeamFilterMenu from '../../candidate-filters/TeamFilterMenu';
 import Popover from './Popover';
 import styles from '../styles/bookmarked.module.scss';
 
@@ -17,8 +17,10 @@ const SORT_OPTIONS = [
 ];
 
 /**
- * "Showing 4 of 10 candidates" and how salaries are shown, with Sort, Reorder and Select multiple, right above the cards.
- * `compact` (beside an open CV): Sort shows just its name, Reorder and Select multiple just their icons.
+ * "Showing 4 of 10 candidates" and how salaries are shown, with Saved by (a
+ * team's), Sort, Reorder and Select multiple, right above the cards.
+ * `compact` (beside an open CV): the tools take a row of their own, Reorder and
+ * Select multiple as just their icons on the left, Saved by and Sort on the right.
  */
 const BookmarkedResultsBar = ({
   shown,
@@ -31,6 +33,9 @@ const BookmarkedResultsBar = ({
   onSaveOrder,
   selectionMode,
   onToggleSelectionMode,
+  recruiters = [],
+  savedBy = [],
+  onSavedByChange,
   compact = false
 }) => {
   const [sortOpen, setSortOpen] = useState(false);
@@ -40,76 +45,97 @@ const BookmarkedResultsBar = ({
   const reorderLabel = !reorderMode ? 'Reorder' : hasReordered ? 'Save order' : 'Cancel reorder';
   const reorderIcon = !reorderMode ? 'GripVertical' : hasReordered ? 'Check' : 'X';
 
-  return (
-    <div className={styles.resultsBar}>
-      {/* The count, then how salaries are shown (the cards show bare amounts). */}
-      <div className={ds.resultsInfo}>
-        <p role="status" className={styles.resultsCount}>
-          Showing <strong>{shown}</strong> of {total} candidate{total === 1 ? '' : 's'}
-        </p>
-        <span className={ds.resultsDivider} aria-hidden="true" />
-        <SalaryViewMenu compact={compact} />
-      </div>
+  const menus = (
+    <div className={styles.resultsToolsGroup}>
+      <TeamFilterMenu
+        id="bm-saved-by"
+        label="Saved by"
+        items={recruiters}
+        picked={savedBy}
+        onChange={onSavedByChange}
+        compact={compact}
+      />
 
-      <div className={styles.resultsTools}>
-        {/* Sorting is pinned to the drag order while reordering. */}
-        <Popover
-          id="bm-sort"
-          label="Sort bookmarked candidates"
-          role="listbox"
-          open={sortOpen && !reorderMode}
-          onToggle={() => setSortOpen((prev) => !prev)}
-          onClose={closeSort}
-          align="right"
-          width={210}
-          renderTrigger={(props) => (
-            <button {...props} className={`${styles.toolBtn} ${sortOpen ? styles.toolBtnOpen : ''}`} disabled={reorderMode}>
-              <span className={compact ? styles.srOnly : styles.toolBtnMuted}>Sort:</span>
-              <span className={styles.toolBtnStrong}>{sortLabel}</span>
-              <Icon name="ChevronDown" size={14} strokeWidth={2.2} className={styles.pillChevron} />
-            </button>
-          )}
-        >
-          {SORT_OPTIONS.map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              role="option"
-              aria-selected={option.value === sortBy}
-              className={`${styles.menuOption} ${option.value === sortBy ? styles.menuOptionSelected : ''}`}
-              onClick={() => {
-                onSortChange(option.value);
-                closeSort();
-                document.getElementById('bm-sort-trigger')?.focus();
-              }}
-            >
-              {option.label}
-            </button>
-          ))}
-        </Popover>
-
-        {!selectionMode && (
-          <button
-            type="button"
-            className={`${styles.toolBtn} ${reorderMode ? styles.toolBtnOn : ''}`}
-            onClick={reorderMode && hasReordered ? onSaveOrder : onToggleReorderMode}
-            title={compact ? reorderLabel : undefined}
-          >
-            <Icon name={reorderIcon} size={16} />
-            <span className={compact ? styles.srOnly : undefined}>{reorderLabel}</span>
+      {/* Sorting is pinned to the drag order while reordering. */}
+      <Popover
+        id="bm-sort"
+        label="Sort bookmarked candidates"
+        role="listbox"
+        open={sortOpen && !reorderMode}
+        onToggle={() => setSortOpen((prev) => !prev)}
+        onClose={closeSort}
+        matchTrigger
+        renderTrigger={(props) => (
+          <button {...props} className={`${styles.toolBtn} ${sortOpen ? styles.toolBtnOpen : ''}`} disabled={reorderMode}>
+            <span className={styles.toolBtnMuted}>Sort:</span>
+            <span className={styles.toolBtnStrong}>{sortLabel}</span>
+            <Icon name="ChevronDown" size={14} strokeWidth={2.2} className={styles.pillChevron} />
           </button>
         )}
-
-        {!reorderMode && (
+      >
+        {SORT_OPTIONS.map((option) => (
           <button
+            key={option.value}
             type="button"
-            className={`${styles.toolBtn} ${selectionMode ? styles.toolBtnOn : ''}`}
-            onClick={onToggleSelectionMode}
-            title={compact ? (selectionMode ? 'Cancel selection' : 'Select multiple') : undefined}
+            role="option"
+            aria-selected={option.value === sortBy}
+            className={`${styles.menuOption} ${option.value === sortBy ? styles.menuOptionSelected : ''}`}
+            onClick={() => {
+              onSortChange(option.value);
+              closeSort();
+              document.getElementById('bm-sort-trigger')?.focus();
+            }}
           >
-            <Icon name={selectionMode ? 'X' : 'CheckSquare'} size={16} />
-            <span className={compact ? styles.srOnly : undefined}>{selectionMode ? 'Cancel selection' : 'Select multiple'}</span>
+            {option.label}
           </button>
+        ))}
+      </Popover>
+    </div>
+  );
+
+  const actions = (
+    <div className={styles.resultsToolsGroup}>
+      {!selectionMode && (
+        <button
+          type="button"
+          className={`${styles.toolBtn} ${reorderMode ? styles.toolBtnOn : ''}`}
+          onClick={reorderMode && hasReordered ? onSaveOrder : onToggleReorderMode}
+          title={compact ? reorderLabel : undefined}
+        >
+          <Icon name={reorderIcon} size={16} />
+          <span className={compact ? styles.srOnly : undefined}>{reorderLabel}</span>
+        </button>
+      )}
+
+      {!reorderMode && (
+        <button
+          type="button"
+          className={`${styles.toolBtn} ${selectionMode ? styles.toolBtnOn : ''}`}
+          onClick={onToggleSelectionMode}
+          title={compact ? (selectionMode ? 'Cancel selection' : 'Select multiple') : undefined}
+        >
+          <Icon name={selectionMode ? 'X' : 'CheckSquare'} size={16} />
+          <span className={compact ? styles.srOnly : undefined}>{selectionMode ? 'Cancel selection' : 'Select multiple'}</span>
+        </button>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={styles.resultsBar}>
+      <ResultsCount shown={shown} total={total} fill={compact} />
+
+      <div className={`${styles.resultsTools} ${compact ? styles.resultsToolsRow : ''}`}>
+        {compact ? (
+          <>
+            {actions}
+            {menus}
+          </>
+        ) : (
+          <>
+            {menus}
+            {actions}
+          </>
         )}
       </div>
     </div>

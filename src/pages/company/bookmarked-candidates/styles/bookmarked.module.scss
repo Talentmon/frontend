@@ -460,6 +460,12 @@ $push-bp: 1400px;
   right: 0;
 }
 
+// As wide as its trigger, right under it (Sort, Saved by / Unlocked by).
+.popPanelMatch {
+  left: 0;
+  right: 0;
+}
+
 .popField {
   display: flex;
   flex-direction: column;
@@ -669,6 +675,47 @@ $push-bp: 1400px;
   gap: 8px;
 }
 
+// Beside an open CV, "Showing 2 of 2 candidates | Salaries Net · per month"
+// spans the cards' column, from the filters' side to the CV's. The count is
+// 13px there, like the buttons under it, and a little closer to its divider,
+// so both fit in 440px; when they still don't, ResultsCount drops "Showing",
+// and past that Salaries goes to a line of its own.
+.resultsInfoFull {
+  flex: 1 1 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 12px;
+
+  .resultsCount {
+    font-size: 13px;
+    white-space: nowrap;
+  }
+}
+
+// Beside an open CV the tools get a row of their own under the count: the
+// icon buttons (Cards / Table, Reorder, Select multiple) on the left, the
+// menus (Saved by / Unlocked by, Sort) on the right.
+.resultsToolsRow {
+  flex: 1 1 100%;
+  min-width: 0;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+
+  // The icons keep their size; the menus give way (a long name in Saved by ends in "…").
+  > :first-child {
+    flex: none;
+  }
+}
+
+.resultsToolsGroup {
+  position: relative; // Saved by's list spans the group beside an open CV
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .toolBtn {
   height: 36px;
   display: inline-flex;
@@ -721,6 +768,25 @@ $push-bp: 1400px;
   &:hover:not(:disabled) {
     background: $ink-2;
     border-color: $ink-2;
+  }
+}
+
+// Saved by / Unlocked by while someone is ticked (as an active filter pill).
+.toolBtnActive {
+  background: #fdf3e1;
+  border-color: $gold;
+
+  &:hover:not(:disabled) {
+    background: #fdf3e1;
+    border-color: $gold;
+  }
+
+  .toolBtnStrong {
+    color: #9a6410;
+  }
+
+  svg {
+    color: $gold-deep;
   }
 }
 

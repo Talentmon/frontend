@@ -36,7 +36,7 @@ import {
 } from './bookmarksApi';
 import styles from './styles/bookmarked.module.scss';
 
-// Search's filters (shared with Purchased) plus Saved by: the teammates picked, empty = everyone.
+// Search's filters (shared with Purchased) plus Saved by (beside Sort): the teammates picked, empty = everyone.
 const EMPTY_FILTERS = { ...COMMON_EMPTY, savedBy: [] };
 
 const BookmarkedCandidatesPage = () => {
@@ -80,8 +80,8 @@ const BookmarkedCandidatesPage = () => {
       .catch(() => {});
   }, []);
 
-  // Everyone who saved at least one candidate, with how many — the "saved by"
-  // filter only shows up once there are two or more of them.
+  // Everyone who saved at least one candidate, with how many — Saved by (beside
+  // Sort) only shows up once there are two or more of them.
   const recruiterOptions = useMemo(() => {
     const byId = new Map();
     allBookmarkedCandidates.forEach((c) => {
@@ -404,9 +404,10 @@ const BookmarkedCandidatesPage = () => {
     setPreviewId(null);
   };
 
-  // Clears every filter (Saved by too); the salary currency is part of the salary view and stays as picked.
+  // Clears every filter. Saved by sits beside Sort, outside the filters, so it stays as picked
+  // (like Sort); the salary currency is part of the salary view and stays too.
   const handleClearFilters = () => {
-    setFilters(EMPTY_FILTERS);
+    setFilters((prev) => ({ ...EMPTY_FILTERS, savedBy: prev.savedBy }));
   };
 
   // "Remove some" on a full list: straight into select mode.
@@ -434,6 +435,9 @@ const BookmarkedCandidatesPage = () => {
         onSaveOrder={handleSaveOrder}
         selectionMode={selectionMode}
         onToggleSelectionMode={handleToggleSelectionMode}
+        recruiters={recruiterOptions}
+        savedBy={filters.savedBy}
+        onSavedByChange={(savedBy) => setFilters((prev) => ({ ...prev, savedBy }))}
         compact={isCompact}
       />
 
@@ -512,7 +516,6 @@ const BookmarkedCandidatesPage = () => {
                 filters={filters}
                 onFiltersChange={handleFiltersChange}
                 opts={filterOpts}
-                recruiterOptions={recruiterOptions}
               />
             </CvSide>
             <div className={cf.cvResults}>
@@ -534,7 +537,6 @@ const BookmarkedCandidatesPage = () => {
               onFiltersChange={handleFiltersChange}
               onClearFilters={handleClearFilters}
               opts={filterOpts}
-              recruiterOptions={recruiterOptions}
             />
             {results}
           </>

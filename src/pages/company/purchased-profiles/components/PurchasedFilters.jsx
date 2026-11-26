@@ -1,6 +1,6 @@
 import React from 'react';
 import CandidateFilterBar, { FilterChip } from '../../candidate-filters/CandidateFilterBar';
-import { CheckList, RadioList } from '../../candidate-filters/commonFields';
+import { RadioList } from '../../candidate-filters/commonFields';
 import { optionLabel, toggleIn } from '../../candidate-filters/commonFilters';
 import { UNLOCKED_OPTIONS, filterOptions } from '../purchasedFilters';
 
@@ -20,39 +20,16 @@ export const AttentionChip = ({ filters, onFiltersChange, className = '' }) =>
 
 /**
  * The filter bar above the unlocked candidates (CandidateFilterBar, shared
- * with Bookmarked): Unlocked by (a team's, first) and Unlocked, then Search's
- * filters; five show, "More filters" holds the rest. The stage and the
- * position are picked in the pipeline above; they show here as chips.
- * (Beside an open CV, PurchasedFilterSidebar takes its place.)
+ * with Bookmarked): Unlocked, then Search's filters; five show, "More
+ * filters" holds the rest. The stage and the position are picked in the
+ * pipeline above; they show here as chips. (Unlocked by sits beside Sort,
+ * TeamFilterMenu. Beside an open CV, PurchasedFilterSidebar takes this bar's place.)
  */
 const PurchasedFilters = ({ filters, onFiltersChange, onClearFilters, profiles = [] }) => {
   const opts = filterOptions(profiles);
   const set = (key, value) => onFiltersChange({ ...filters, [key]: value });
-  const unlockerLabel = (id) => opts.unlockers.find((o) => o.value === id)?.label || 'teammate';
 
   const leadFields = ({ onRadioPicked }) => [
-    // Once two or more teammates have unlocked.
-    opts.unlockers.length > 1 && {
-      key: 'unlockedby',
-      label: 'Unlocked by',
-      count: filters.unlockedBy.length,
-      chips: filters.unlockedBy.map((id) => ({
-        key: `by-${id}`,
-        label: `Unlocked by ${unlockerLabel(id)}`,
-        onRemove: () => set('unlockedBy', toggleIn(filters.unlockedBy, id))
-      })),
-      pill: {
-        width: 260,
-        body: (
-          <CheckList
-            label="Unlocked by"
-            items={opts.unlockers}
-            picked={filters.unlockedBy}
-            onToggle={(id) => set('unlockedBy', toggleIn(filters.unlockedBy, id))}
-          />
-        )
-      }
-    },
     {
       key: 'unlocked',
       label: 'Unlocked',

@@ -61,7 +61,7 @@ const FilterPill = ({ id, label, count = 0, open, onToggle, onClose, ...panel })
  * Every filter on shows as a removable chip below, with Clear all.
  *
  * The filters are Search's (commonFields), after the page's own `leadFields`
- * (e.g. Saved by / Unlocked by), each a pill whose panel is a list with counts
+ * (e.g. Purchased's Unlocked), each a pill whose panel is a list with counts
  * or a small form. `leadChips`: filters set elsewhere on the page (the pipeline).
  */
 const CandidateFilterBar = ({

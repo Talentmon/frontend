@@ -109,6 +109,71 @@ $card-muted: #6b7a89;
   padding: 6px 20px 8px;
 }
 
+// ===== Saved by / Unlocked by, beside Sort (TeamFilterMenu) =====
+
+// A long name ends in "…" rather than pushing Sort off the row: the menu gives
+// up its width first (beside an open CV the row is a 440px card wide).
+// (div. so it outranks Popover's own .popRoot { flex: none } whatever the stylesheet order.)
+div.teamRoot {
+  flex: 0 1 auto;
+  min-width: 0;
+
+  > button {
+    max-width: 100%;
+    // Room for the names in its list (which is as wide as the button).
+    min-width: 200px;
+  }
+
+  .teamValue {
+    margin-right: auto;
+  }
+}
+
+// Beside an open CV: the button is too narrow for names, so its list spans
+// it and Sort together (the group, .resultsToolsGroup, is the positioned box).
+div.teamRootSpan {
+  position: static;
+
+  > button {
+    min-width: 0;
+  }
+}
+
+.teamValue {
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.teamHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 30px;
+  padding-right: 6px;
+
+  .menuHeading {
+    padding: 6px 10px 2px;
+  }
+}
+
+.teamClear {
+  height: 24px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #9a6410;
+
+  &:hover {
+    color: $gold-deep;
+  }
+}
+
 // ===== Beside an open CV (push layout), laid out like Search =====
 // The title across the top; under it the filter sidebar in a column, and the
 // search, results bar and cards (440px, as with the CV closed) beside it,

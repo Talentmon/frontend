@@ -23,6 +23,9 @@ const Popover = ({
   role = 'dialog',
   // Extra class on the root, e.g. to fill a grid cell (Purchased's compact filters).
   className = '',
+  // The panel exactly as wide as the trigger (Sort above the cards): it spans the
+  // nearest positioned box, which is the root unless `className` makes it static.
+  matchTrigger = false,
   children
 }) => {
   const rootRef = useRef(null);
@@ -70,8 +73,8 @@ const Popover = ({
           id={panelId}
           role={role}
           aria-label={label}
-          className={`${styles.popPanel} ${padded ? styles.popPanelPadded : ''} ${align === 'right' ? styles.popPanelRight : ''}`}
-          style={width ? { width } : undefined}
+          className={`${styles.popPanel} ${padded ? styles.popPanelPadded : ''} ${align === 'right' ? styles.popPanelRight : ''} ${matchTrigger ? styles.popPanelMatch : ''}`}
+          style={width && !matchTrigger ? { width } : undefined}
         >
           {children}
         </div>

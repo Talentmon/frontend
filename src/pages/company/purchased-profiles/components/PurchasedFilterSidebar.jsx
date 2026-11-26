@@ -16,13 +16,11 @@ const STATUS_TONES = { new: 'sNew', contacted: 'sContacted', interviewed: 'sInte
  * The filters beside an open CV (CandidateFilterSidebar, Search's layout):
  * Purchased's own groups first — Status (the stages, each with its dot and
  * count; open), "Hiring for" (one position, as in the pipeline) and Unlocked
- * (by whom, for a team, and when) — then Search's.
+ * (when) — then Search's. (Unlocked by sits beside Sort, TeamFilterMenu.)
  */
 const PurchasedFilterSidebar = ({ filters, onFiltersChange, profiles = [] }) => {
   const opts = filterOptions(profiles);
   const set = (key, value) => onFiltersChange({ ...filters, [key]: value });
-  const hasTeam = opts.unlockers.length > 1;
-  const unlockerLabel = (id) => opts.unlockers.find((o) => o.value === id)?.label || 'teammate';
   // A pick that's no longer on offer stays listed while it's picked.
   const unlockedOptions = UNLOCKED_OPTIONS.filter(({ value }) => opts.unlockedCounts[value] || value === filters.unlocked);
 
@@ -81,33 +79,19 @@ const PurchasedFilterSidebar = ({ filters, onFiltersChange, profiles = [] }) => 
     {
       id: 'unlocked',
       title: 'Unlocked',
-      count: (filters.unlocked ? 1 : 0) + filters.unlockedBy.length,
-      summary: [...filters.unlockedBy.map(unlockerLabel), filters.unlocked && optionLabel(UNLOCKED_OPTIONS, filters.unlocked)].filter(Boolean),
-      clear: { unlocked: '', unlockedBy: [] },
+      count: filters.unlocked ? 1 : 0,
+      summary: filters.unlocked ? [optionLabel(UNLOCKED_OPTIONS, filters.unlocked)] : [],
+      clear: { unlocked: '' },
       body: (
-        <>
-          {hasTeam && (
-            <SideField id="pp-f-unlocked-by" label="By">
-              <Select
-                id="pp-f-unlocked-by"
-                options={opts.unlockers.map(({ value, label }) => ({ value, label }))}
-                value={filters.unlockedBy}
-                onChange={(value) => set('unlockedBy', value)}
-                placeholder="Anyone on the team"
-                multiple
-              />
-            </SideField>
-          )}
-          <SideField id="pp-f-unlocked" label="When" hideLabel={!hasTeam}>
-            <Select
-              id="pp-f-unlocked"
-              options={[{ value: '', label: 'Any time' }, ...unlockedOptions]}
-              value={filters.unlocked}
-              onChange={(value) => set('unlocked', value)}
-              placeholder="Any time"
-            />
-          </SideField>
-        </>
+        <SideField id="pp-f-unlocked" label="When" hideLabel>
+          <Select
+            id="pp-f-unlocked"
+            options={[{ value: '', label: 'Any time' }, ...unlockedOptions]}
+            value={filters.unlocked}
+            onChange={(value) => set('unlocked', value)}
+            placeholder="Any time"
+          />
+        </SideField>
       )
     }
   ].filter(Boolean);

@@ -29,7 +29,7 @@ import {
   attentionList,
   STATUS_KEYS,
 } from './purchasesApi';
-import { DEFAULT_SORT, EMPTY_FILTERS, activeFilterCount, applyFilters, sortProfiles } from './purchasedFilters';
+import { DEFAULT_SORT, EMPTY_FILTERS, activeFilterCount, applyFilters, filterOptions, sortProfiles } from './purchasedFilters';
 import { useSalaryView } from 'lib/salaryView';
 import { useExchangeRates } from 'utils/exchangeRateService';
 import cf from '../candidate-filters/candidateFilters.module.scss';
@@ -91,6 +91,8 @@ const PurchasedProfiles = () => {
     () => [...new Set(purchasedProfiles.map((p) => p?.hiringFor).filter(Boolean))].sort((a, b) => a.localeCompare(b)),
     [purchasedProfiles]
   );
+  // Teammates who unlocked someone, with how many, for Unlocked by beside Sort.
+  const unlockers = useMemo(() => filterOptions(purchasedProfiles).unlockers, [purchasedProfiles]);
   const isFiltered = activeFilterCount(filters) > 0 || !!filters.search.trim();
 
   // One stage and one position at a time ('' = all).
@@ -101,7 +103,8 @@ const PurchasedProfiles = () => {
     setFilters((prev) => ({ ...prev, statuses: [], attention: true }));
     setSortBy('waiting-desc');
   };
-  const clearFilters = () => setFilters(EMPTY_FILTERS);
+  // Unlocked by sits beside Sort, outside the filters, so it stays as picked (like Sort).
+  const clearFilters = () => setFilters((prev) => ({ ...EMPTY_FILTERS, unlockedBy: prev.unlockedBy }));
 
   const updateProfile = (profileId, changes) => {
     setPurchasedProfiles((prev) => prev?.map((p) => (p?.id === profileId ? { ...p, ...(typeof changes === 'function' ? changes(p) : changes) } : p)));
@@ -288,6 +291,9 @@ const PurchasedProfiles = () => {
           onSortChange={setSortBy}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          unlockers={unlockers}
+          unlockedBy={filters.unlockedBy}
+          onUnlockedByChange={(unlockedBy) => setFilters((prev) => ({ ...prev, unlockedBy }))}
           compact={isCompact}
         />
       )}

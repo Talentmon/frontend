@@ -1598,6 +1598,12 @@ $pop-shadow: 0 18px 40px -16px rgba(11, 26, 44, 0.3);
   gap: 12px;
 }
 
+// Bookmarked, Purchased: exactly as wide as the button (SalaryViewMenu fitButton).
+.salaryPopFit {
+  right: 0;
+  width: auto;
+}
+
 .salaryPopTitle {
   margin: 0;
   font-size: 14px;

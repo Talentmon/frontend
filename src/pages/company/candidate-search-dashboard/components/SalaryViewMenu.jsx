@@ -25,10 +25,11 @@ const Segmented = ({ label, options, value, onChange }) => (
  * Purchased: how the cards and CVs show salaries for this visit (the
  * company's default is in its settings). Only the display: a salary filter
  * keeps the net/gross and month/year it was typed in (lib/salaryView
- * rangeView), so who matches stays the same. `compact` (beside an open CV)
- * leaves out the word "Salaries".
+ * rangeView), so who matches stays the same. `fitButton` (Bookmarked,
+ * Purchased): the popover is exactly as wide as the button, right under it, so
+ * beside an open CV it never runs into the CV.
  */
-const SalaryViewMenu = ({ compact = false }) => {
+const SalaryViewMenu = ({ fitButton = false }) => {
   const [view, setView] = useSalaryView();
   const [open, setOpen] = useState(false);
   const rootRef = useRef(null);
@@ -67,18 +68,17 @@ const SalaryViewMenu = ({ compact = false }) => {
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={`${id}-pop`}
-        aria-label={compact ? `Salaries: ${basis} ${period}` : undefined}
         onClick={() => setOpen((prev) => !prev)}
       >
         <span className={styles.salaryChipIcon} aria-hidden="true">
           <Icon name="Coins" size={14} strokeWidth={2.2} />
         </span>
-        {!compact && <span className={styles.barMuted}>Salaries</span>}
+        <span className={styles.barMuted}>Salaries</span>
         <span className={styles.barValue}>{basis} · {period}</span>
         <Icon name="ChevronDown" size={14} strokeWidth={2.4} className={styles.barChevron} aria-hidden="true" />
       </button>
       {open && (
-        <div id={`${id}-pop`} role="dialog" aria-labelledby={`${id}-title`} data-salary-view-pop="" className={styles.salaryPop}>
+        <div id={`${id}-pop`} role="dialog" aria-labelledby={`${id}-title`} data-salary-view-pop="" className={`${styles.salaryPop} ${fitButton ? styles.salaryPopFit : ''}`}>
           <p id={`${id}-title`} className={styles.salaryPopTitle}>Show salaries as</p>
           <Segmented label="Net or gross" options={SALARY_BASIS_OPTIONS} value={view.basis} onChange={(next) => setView({ ...view, basis: next })} />
           <Segmented label="Per month or per year" options={SALARY_PERIOD_OPTIONS} value={view.period} onChange={(next) => setView({ ...view, period: next })} />

@@ -15,6 +15,7 @@ export const EMPTY_FILTERS = {
   statuses: [],
   hiringFor: [],
   unlocked: '',
+  // The teammates picked in Unlocked by, beside Sort; empty = everyone.
   unlockedBy: [],
   // Set from Review in the pipeline's Needs attention row; shows as a chip only.
   attention: false
@@ -64,13 +65,12 @@ export function filterOptions(profiles) {
   };
 }
 
-/** Filters that are on, not counting the search text. */
+/** Filters that are on, not counting the search text or Unlocked by (that one sits beside Sort and Clear all keeps it). */
 export const activeFilterCount = (filters) =>
   commonActiveCount(filters) +
   filters.statuses.length +
   filters.hiringFor.length +
   (filters.unlocked ? 1 : 0) +
-  filters.unlockedBy.length +
   (filters.attention ? 1 : 0);
 
 const digits = (value = '') => value.replace(/\D/g, '');

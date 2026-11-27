@@ -29,8 +29,10 @@ $drawer-w: 45vw;
 //   846px the filters slide in over the page, above one column of cards.
 // - filters hidden: 3. They can only be hidden from 1424px, where three fit;
 //   below that the filters stay (index.jsx).
-// - from a 1920px window on, one more column in both for every further 460px
-//   (a card and its gap): 2380, 2840, 3300…
+// - Three is the most, at any width: the point is cards you can take in at a
+//   glance. With the filters shown the third comes only on the really big
+//   screens, from a 2800px window (a 34" ultrawide, a 32" 4K at 125%); a 27"
+//   QHD (2560) keeps two.
 // The breakpoints leave 20px for a scrollbar.
 $card-w: 440px;
 $card-gap: 20px;
@@ -40,7 +42,7 @@ $filters-on: 22px + $filters-w + 22px + 22px - $card-gap; // + 460px per column
 $filters-off: 22px + 22px - $card-gap; // + 460px per column
 $overlay-max: 845px; // FILTERS_BESIDE_MIN - 1 in index.jsx
 $two-cols: 1306px; // 366 + 2 × 460 + 20
-$wide-from: 1920px;
+$three-cols: 2800px; // filters shown; 3 would fit from 1766, kept to 2 for the overview
 
 // Push mode (drawer squeezes the page instead of floating over it) needs the
 // filter sidebar (320px) + a 440px card in the remaining 55% of the page:
@@ -81,10 +83,8 @@ $push-bp: 1502px;
     --cols: 2;
   }
 
-  @for $k from 1 through 6 {
-    @media (min-width: $wide-from + $k * $card-step) {
-      --cols: #{2 + $k};
-    }
+  @media (min-width: $three-cols) {
+    --cols: 3;
   }
 
   @media (min-width: $overlay-max + 1) {
@@ -96,14 +96,6 @@ $push-bp: 1502px;
       --cols: 3;
       max-width: calc(#{$filters-off} + #{$card-step} * var(--cols));
       grid-template-columns: minmax(0, 1fr);
-    }
-  }
-
-  @for $k from 1 through 6 {
-    @media (min-width: $wide-from + $k * $card-step) {
-      &.filtersCollapsed {
-        --cols: #{3 + $k};
-      }
     }
   }
 
@@ -135,10 +127,14 @@ $push-bp: 1502px;
   }
 }
 
-// List view: rows, not cards. The page is as wide as two card columns with
-// the filters shown and three without, at every width.
+// List view: rows, not cards. The page is as wide as the card view's: two
+// columns with the filters shown (three from 2800px) and three without.
 .page.listMode .body {
   --cols: 2;
+
+  @media (min-width: $three-cols) {
+    --cols: 3;
+  }
 
   &.filtersCollapsed {
     --cols: 3;

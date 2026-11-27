@@ -35,10 +35,14 @@ const PAGE_SIZE = 20;
 // (or back). Same lengths as $vt-roll / $vt-move in dashboard.module.scss.
 // Card view (dashboard.module.scss .body): from 846px the filters sit beside
 // the cards (narrower, they slide in over the page); they can be hidden only
-// from 1424px, where three 440px cards fit without them. Below that hiding
-// them wouldn't add a column, so they stay.
+// from 1424px, where three 440px cards fit without them, up to 2800px, where
+// three (the most there ever are) fit beside them. Outside that, hiding them
+// wouldn't add a column, so they stay. List view follows the same widths; its
+// filters slide in over the rows up to 1300px.
 const FILTERS_BESIDE_MIN = 846;
 const FILTERS_HIDE_MIN = 1424;
+const FILTERS_HIDE_MAX = 2800;
+const LIST_FILTERS_BESIDE_MIN = 1301;
 // The CV drawer pushes the page aside from here: 55% of it holds the filters and a 440px card.
 const CV_PUSH_MIN = 1502;
 
@@ -106,9 +110,13 @@ const CandidateSearchDashboard = () => {
   );
   const filtersBeside = useMinWidth(FILTERS_BESIDE_MIN);
   const roomToHideFilters = useMinWidth(FILTERS_HIDE_MIN);
-  // Hidden only where that helps: list view, the slide-in filters (closed), or
-  // card view from 1424px. Elsewhere they show, whatever was picked before.
-  const canHideFilters = viewMode === 'list' || !filtersBeside || roomToHideFilters;
+  const threeBesideFilters = useMinWidth(FILTERS_HIDE_MAX);
+  const listFiltersBeside = useMinWidth(LIST_FILTERS_BESIDE_MIN);
+  // Hidden only where that helps: the slide-in filters (closed), or from 1424px
+  // up to 2800px, where hiding them adds a column (list view too). Elsewhere
+  // they show, whatever was picked before.
+  const filtersSlideIn = !filtersBeside || (viewMode === 'list' && !listFiltersBeside);
+  const canHideFilters = filtersSlideIn || (roomToHideFilters && !threeBesideFilters);
   const filtersCollapsed = isFilterCollapsed && canHideFilters;
   // For the toolbar's Filters button (the sidebar counts its fields).
   const [activeFiltersCount, setActiveFiltersCount] = useState(0);

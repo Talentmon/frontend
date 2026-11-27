@@ -84,7 +84,7 @@ const Header = () => {
       {/* Three columns from 1280px, so the nav sits in the middle of the page, not between the sides.
           From 1024px the nav stays in the bar, between the sides (the profile button drops the
           company name to make room); narrower, it moves into the menu button. */}
-      <div className="flex items-center justify-between gap-4 xl:grid xl:grid-cols-[1fr_auto_1fr] xl:gap-6 h-16 pl-7 pr-6">
+      <div className="flex items-center justify-between gap-4 xl:grid xl:grid-cols-[1fr_auto_1fr] xl:gap-6 h-16 pl-3 pr-3 sm:pl-7 sm:pr-6">
         {/* Logo Section */}
         <div className="xl:justify-self-start flex items-center">
           <Link
@@ -132,7 +132,7 @@ const Header = () => {
         </nav>
 
         {/* Right Section */}
-        <div className="xl:justify-self-end flex items-center gap-2 sm:gap-4">
+        <div className="xl:justify-self-end flex items-center gap-1.5 sm:gap-4">
           {!navLocked && <CreditCounter />}
           <CompanyNotifications />
           <UserProfileDropdown />

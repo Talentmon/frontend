@@ -480,7 +480,7 @@ const Suggestions = () => {
 
   return (
     <div className={styles.page}>
-      <main className="max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '80px' }}>
+      <main className="max-w-[1180px] mx-auto px-[5px] min-[481px]:px-[22px]" style={{ paddingBottom: '80px' }}>
         {/* ===== Hero ===== */}
         <section className={styles.hero}>
           <span className={styles.heroEyebrow}>

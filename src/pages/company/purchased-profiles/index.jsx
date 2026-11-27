@@ -369,7 +369,7 @@ const PurchasedProfiles = () => {
       </Helmet>
       <div className={`${styles.page} ${isCardsPreviewOpen ? styles.previewOpen : ''}`}>
 
-        <main className={`max-w-[1404px] mx-auto px-[22px] ${isCompact ? cf.cvMain : ''}`}>
+        <main className={`max-w-[1404px] mx-auto px-[5px] min-[481px]:px-[22px] ${isCompact ? cf.cvMain : ''}`}>
           {isCompact ? (
             <header className={cf.cvTitle}>
               <h1>Purchased Profiles</h1>

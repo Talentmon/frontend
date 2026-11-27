@@ -237,7 +237,7 @@ const CreditManagement = () => {
 
   return (
     <div className={styles.page}>
-      <main className="max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '32px' }}>
+      <main className="max-w-[1180px] mx-auto px-[5px] min-[481px]:px-[22px]" style={{ paddingBottom: '32px' }}>
         {/* Page Header */}
         <div className={styles.head}>
           <div>

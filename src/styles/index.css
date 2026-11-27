@@ -10,3 +10,14 @@ body {
   font-family: inherit;
   margin: unset;
 }
+
+/* Company side, phones: text fields type at 16px. iOS Safari zooms the whole
+   page into any field whose text is smaller, on every tap. Written against the
+   body so it also reaches dialogs mounted outside the app shell. */
+@media (max-width: 767px) {
+  body:has(.company-app) input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+  body:has(.company-app) textarea,
+  body:has(.company-app) select {
+    font-size: 16px !important;
+  }
+}

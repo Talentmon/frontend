@@ -73,7 +73,7 @@ const Routes = () => {
         </Route>
 
         {/* Company-facing */}
-        <Route element={<RequireAuth roles={['COMPANY']}><AppLayout header={<Header />} /></RequireAuth>}>
+        <Route element={<RequireAuth roles={['COMPANY']}><AppLayout header={<Header />} className="company-app" /></RequireAuth>}>
           <Route path="/bookmarked-candidates" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><BookmarkedCandidatesPage /></RequireAuth>} />
           <Route path="/credit-management" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CreditManagement /></RequireAuth>} />
           <Route path="/candidate-search-dashboard" element={<RequireAuth roles={['COMPANY']} requireCompleteProfile><CandidateSearchDashboard /></RequireAuth>} />

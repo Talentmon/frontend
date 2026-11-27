@@ -295,7 +295,7 @@ const CompanyProfileSettings = () => {
   if (loading) {
     return (
       <div className={styles.page}>
-        <main className="max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '70px' }}>
+        <main className="max-w-[1180px] mx-auto px-[5px] min-[481px]:px-[22px]" style={{ paddingBottom: '70px' }}>
           <p style={{ color: '#566776', padding: '40px 0' }}>Loading your company profile…</p>
         </main>
       </div>
@@ -304,7 +304,7 @@ const CompanyProfileSettings = () => {
 
   return (
     <div className={styles.page}>
-      <main className="max-w-[1180px] mx-auto px-[22px]" style={{ paddingBottom: '70px' }}>
+      <main className="max-w-[1180px] mx-auto px-[5px] min-[481px]:px-[22px]" style={{ paddingBottom: '70px' }}>
         {/* Page Header — stays put on desktop while the cards scroll under it */}
         <div className={styles.head} ref={headRef}>
           <div>

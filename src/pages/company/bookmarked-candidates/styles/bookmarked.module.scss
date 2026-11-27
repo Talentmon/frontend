@@ -1418,6 +1418,17 @@ $card-gold: #f0ae2e;
     grid-template-rows: 1fr;
     margin: 20px -24px -24px;
   }
+
+  // Phones: the card's padding is 18px 16px (dashboard .scCard), so the band
+  // bleeds that far and no further, and its corners follow the card's 18px.
+  @media (max-width: 480px) {
+    margin: 20px -16px -20px;
+    border-radius: 0 0 17px 17px;
+
+    &.open {
+      margin: 20px -16px -18px;
+    }
+  }
 }
 
 // Hidden once closed, so its fields drop out of the tab order.
@@ -1441,6 +1452,11 @@ $card-gold: #f0ae2e;
   display: flex;
   flex-direction: column;
   gap: 10px;
+
+  @media (max-width: 480px) {
+    padding: 18px 16px;
+    border-radius: 0 0 17px 17px;
+  }
 }
 
 // ===== Empty states =====

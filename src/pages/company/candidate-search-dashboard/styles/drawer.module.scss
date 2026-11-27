@@ -301,8 +301,10 @@ $phone-max: 767px;
   padding: 28px 24px 28px;
   scroll-behavior: smooth;
 
+  // Phones: the paper starts 32px down, at the middle of the X (12–52px), so
+  // the X sits on its top edge as on wide screens.
   @media (max-width: $phone-max) {
-    padding: 12px;
+    padding: 32px 12px 12px;
   }
 }
 
@@ -324,8 +326,9 @@ $phone-max: 767px;
 
   @media (max-width: $phone-max) {
     border-radius: 14px;
-    // The X (12–52px down the drawer) sits above the first line.
-    padding: 46px 18px 24px;
+    // The X reaches 20px into the paper, so the first line starts 8px under
+    // it; the bottom gets the same.
+    padding: 28px 18px 28px;
   }
 }
 

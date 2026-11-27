@@ -1,5 +1,6 @@
 import React from 'react';
 import CandidateFilterBar from '../../candidate-filters/CandidateFilterBar';
+import BookmarkedFilterSidebar from './BookmarkedFilterSidebar';
 
 /**
  * The filter bar above the cards (CandidateFilterBar, shared with Purchased):
@@ -7,7 +8,8 @@ import CandidateFilterBar from '../../candidate-filters/CandidateFilterBar';
  * what the bookmarked candidates have, with how many have it. Whatever is on
  * shows as a chip below, each removable, plus Clear all.
  * (Saved by sits beside Sort, TeamFilterMenu. Beside an open CV,
- * BookmarkedFilterSidebar takes this bar's place.)
+ * BookmarkedFilterSidebar takes this bar's place; on phones and small
+ * tablets the bar slides it in.)
  */
 const BookmarkedCandidatesFilters = ({ filters, onFiltersChange, onClearFilters, opts }) => (
   <CandidateFilterBar
@@ -19,6 +21,9 @@ const BookmarkedCandidatesFilters = ({ filters, onFiltersChange, onClearFilters,
     searchLabel="Search bookmarked candidates"
     searchPlaceholder="Search by position, skills, location…"
     notesLabel="With notes only"
+    renderSidebar={(slide) => (
+      <BookmarkedFilterSidebar filters={filters} onFiltersChange={onFiltersChange} opts={opts} slideIn {...slide} />
+    )}
   />
 );
 

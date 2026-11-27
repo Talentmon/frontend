@@ -28,7 +28,8 @@ const summaryOf = (items) => (items.length > 2 ? `${items.slice(0, 2).join(', ')
  * in the footer under a line (where Search has Save filter), so the groups
  * scroll above it and the card always ends the same way. The page's own groups (`leadGroups`: { id, title, count,
  * summary, clear, body }) come first, then Search's. The lists offer only what
- * the candidates on the page have. Clear all leaves the search alone.
+ * the candidates on the page have. Clear all leaves the search alone. On phones
+ * and small tablets the same card slides in from the bar (CandidateFilterBar).
  */
 const CandidateFilterSidebar = ({
   idPrefix,
@@ -37,7 +38,13 @@ const CandidateFilterSidebar = ({
   opts,
   leadGroups = [],
   defaultOpen = {},
-  notesLabel = 'With notes'
+  notesLabel = 'With notes',
+  // Phones and small tablets (CandidateFilterBar): the card slides in over the
+  // page from the left, as Search's does; `open` says whether it's out, and
+  // `onClose` puts a < in its title that slides it back.
+  slideIn = false,
+  open = false,
+  onClose
 }) => {
   const [openGroups, setOpenGroups] = useState(defaultOpen);
   const [salaryView] = useSalaryView();
@@ -72,7 +79,11 @@ const CandidateFilterSidebar = ({
   const toggleGroup = (id) => setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
 
   return (
-    <section className={`${ds.filters} ${cf.sidebarCard}`} aria-labelledby={`${idPrefix}-filters-title`}>
+    <section
+      className={`${ds.filters} ${cf.sidebarCard} ${slideIn && !open ? ds.collapsed : ''}`}
+      aria-labelledby={`${idPrefix}-filters-title`}
+      inert={slideIn && !open ? '' : undefined}
+    >
       <div className={ds.filtersHead}>
         <div className={ds.filtersHeadRow}>
           <div className={ds.filtersHeadTitle}>
@@ -84,6 +95,13 @@ const CandidateFilterSidebar = ({
             <button type="button" onClick={clearAll} disabled={total === 0} className={ds.filtersClear}>
               Clear all
             </button>
+            {onClose && (
+              <button type="button" onClick={onClose} className={ds.filtersHeadCollapse} aria-label="Close filters">
+                <span className={ds.filtersChevron}>
+                  <Icon name="ChevronLeft" size={18} strokeWidth={2.2} />
+                </span>
+              </button>
+            )}
           </div>
         </div>
       </div>

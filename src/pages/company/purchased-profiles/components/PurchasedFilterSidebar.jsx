@@ -6,8 +6,7 @@ import { SideField, toOptions } from '../../candidate-filters/commonFields';
 import { optionLabel, toggleIn } from '../../candidate-filters/commonFilters';
 import cf from '../../candidate-filters/candidateFilters.module.scss';
 import { STATUS_KEYS } from '../purchasesApi';
-import { UNLOCKED_OPTIONS, filterOptions } from '../purchasedFilters';
-import { STATUS_LABELS } from './PurchasedFilters';
+import { STATUS_LABELS, UNLOCKED_OPTIONS, filterOptions } from '../purchasedFilters';
 import styles from '../styles/purchased.module.scss';
 
 const STATUS_TONES = { new: 'sNew', contacted: 'sContacted', interviewed: 'sInterviewed', hired: 'sHired', rejected: 'sRejected' };
@@ -17,8 +16,9 @@ const STATUS_TONES = { new: 'sNew', contacted: 'sContacted', interviewed: 'sInte
  * Purchased's own groups first — Status (the stages, each with its dot and
  * count; open), "Hiring for" (one position, as in the pipeline) and Unlocked
  * (when) — then Search's. (Unlocked by sits beside Sort, TeamFilterMenu.)
+ * Phones and small tablets slide the same card in from the bar (`slide`).
  */
-const PurchasedFilterSidebar = ({ filters, onFiltersChange, profiles = [] }) => {
+const PurchasedFilterSidebar = ({ filters, onFiltersChange, profiles = [], ...slide }) => {
   const opts = filterOptions(profiles);
   const set = (key, value) => onFiltersChange({ ...filters, [key]: value });
   // A pick that's no longer on offer stays listed while it's picked.
@@ -104,6 +104,7 @@ const PurchasedFilterSidebar = ({ filters, onFiltersChange, profiles = [] }) => 
       opts={opts}
       leadGroups={leadGroups}
       defaultOpen={{ status: true }}
+      {...slide}
     />
   );
 };

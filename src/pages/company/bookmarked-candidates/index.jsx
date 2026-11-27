@@ -65,6 +65,7 @@ const BookmarkedCandidatesPage = () => {
   // Today's rates for the salary filter; the list is filtered again when they arrive.
   const exchangeRates = useExchangeRates();
   const isPushWide = useMinWidth(CV_PUSH_BREAKPOINT);
+  const roomyBar = useMinWidth(768);
 
   useEffect(() => {
     listBookmarks()
@@ -438,7 +439,8 @@ const BookmarkedCandidatesPage = () => {
         recruiters={recruiterOptions}
         savedBy={filters.savedBy}
         onSavedByChange={(savedBy) => setFilters((prev) => ({ ...prev, savedBy }))}
-        compact={isCompact}
+        // Phones: the bar's two compact rows, as beside an open CV.
+        compact={isCompact || !roomyBar}
       />
 
       {/* Bulk Actions Toolbar */}

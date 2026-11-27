@@ -9,6 +9,9 @@ import { salaryBase } from 'lib/salaryView';
 import { makeTextMatcher } from 'utils/skillMatch';
 import { OPEN_STATUSES, daysInStage, needsAttention } from './purchasesApi';
 
+// The pipeline stages as the filters and chips name them.
+export const STATUS_LABELS = { new: 'New', contacted: 'Contacted', interviewed: 'Interviewed', hired: 'Hired', rejected: 'Rejected' };
+
 // Search's filters (shared with Bookmarked) plus Purchased's own.
 export const EMPTY_FILTERS = {
   ...COMMON_EMPTY,

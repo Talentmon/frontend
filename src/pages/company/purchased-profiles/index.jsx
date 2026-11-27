@@ -299,7 +299,8 @@ const PurchasedProfiles = () => {
           unlockers={unlockers}
           unlockedBy={filters.unlockedBy}
           onUnlockedByChange={(unlockedBy) => setFilters((prev) => ({ ...prev, unlockedBy }))}
-          compact={isCompact}
+          // Phones: the bar's two compact rows, as beside an open CV.
+          compact={isCompact || !tableRoom}
         />
       )}
 

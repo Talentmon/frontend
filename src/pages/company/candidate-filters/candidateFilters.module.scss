@@ -24,6 +24,21 @@ $card-muted: #6b7a89;
   transform: rotate(180deg);
 }
 
+// Phones and small tablets: [Filters (n) >] and the search share one row
+// (the search gives up its width; its usual 280px basis would wrap it).
+.fbarSlim {
+  padding: 10px;
+
+  .slimSearch {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+.filtersOpenBtn {
+  flex: none;
+}
+
 // The rest of the filters, under the first row from where the search starts.
 .moreRow {
   display: flex;

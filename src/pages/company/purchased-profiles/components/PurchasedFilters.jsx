@@ -2,9 +2,8 @@ import React from 'react';
 import CandidateFilterBar, { FilterChip } from '../../candidate-filters/CandidateFilterBar';
 import { RadioList } from '../../candidate-filters/commonFields';
 import { optionLabel, toggleIn } from '../../candidate-filters/commonFilters';
-import { UNLOCKED_OPTIONS, filterOptions } from '../purchasedFilters';
-
-export const STATUS_LABELS = { new: 'New', contacted: 'Contacted', interviewed: 'Interviewed', hired: 'Hired', rejected: 'Rejected' };
+import { STATUS_LABELS, UNLOCKED_OPTIONS, filterOptions } from '../purchasedFilters';
+import PurchasedFilterSidebar from './PurchasedFilterSidebar';
 
 /**
  * Needs attention (set from the pipeline's Review) as a chip. Beside an open
@@ -23,7 +22,8 @@ export const AttentionChip = ({ filters, onFiltersChange, className = '' }) =>
  * with Bookmarked): Unlocked, then Search's filters; five show, "More
  * filters" holds the rest. The stage and the position are picked in the
  * pipeline above; they show here as chips. (Unlocked by sits beside Sort,
- * TeamFilterMenu. Beside an open CV, PurchasedFilterSidebar takes this bar's place.)
+ * TeamFilterMenu. Beside an open CV, PurchasedFilterSidebar takes this bar's place;
+ * on phones and small tablets the bar slides it in.)
  */
 const PurchasedFilters = ({ filters, onFiltersChange, onClearFilters, profiles = [] }) => {
   const opts = filterOptions(profiles);
@@ -82,6 +82,9 @@ const PurchasedFilters = ({ filters, onFiltersChange, onClearFilters, profiles =
       leadChips={leadChips}
       searchLabel="Search unlocked candidates"
       searchPlaceholder="Name, email, phone, skills, notes…"
+      renderSidebar={(slide) => (
+        <PurchasedFilterSidebar filters={filters} onFiltersChange={onFiltersChange} profiles={profiles} slideIn {...slide} />
+      )}
     />
   );
 };

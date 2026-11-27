@@ -245,7 +245,7 @@ const AcceptInvite = () => {
             <label className="remember">
               <input type="checkbox" name="terms" />
               <span className="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.2"><path d="M20 6 9 17l-5-5" /></svg></span>
-              I agree to the <a href="/terms-of-service" target="_blank" rel="noreferrer">Terms</a> and <a href="/privacy-policy" target="_blank" rel="noreferrer">Privacy Policy</a>.
+              <span className="terms-text">I agree to the <a href="/terms-of-service" target="_blank" rel="noreferrer">Terms</a> and <a href="/privacy-policy" target="_blank" rel="noreferrer">Privacy Policy</a>.</span>
             </label>
             {errors.terms && <span className="field-hint error">{errors.terms}</span>}
           </div>

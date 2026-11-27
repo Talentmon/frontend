@@ -52,7 +52,8 @@
   }
 
   /* ===== SPLIT LAYOUT ===== */
-  .auth { display: grid; grid-template-columns: 46% 54%; min-height: 100vh; }
+  // dvh: on phones 100vh is taller than the screen while the address bar shows.
+  .auth { display: grid; grid-template-columns: 46% 54%; min-height: 100vh; min-height: 100dvh; }
 
   /* ---- aside ---- */
   .auth-aside {
@@ -151,14 +152,16 @@
     margin-bottom: 16px;
     label { display: block; font-size: .82rem; font-weight: 600; color: var(--ap-ink); margin-bottom: 7px; }
     .ctrl { position: relative; }
+    // 16px: iPhones zoom the page into any field set smaller.
     input {
       width: 100%; border: 1.5px solid var(--ap-line); background: var(--ap-white); border-radius: var(--ap-r-sm);
-      padding: .82em 1em; font-size: .96rem; color: var(--ap-ink); transition: border-color .2s, box-shadow .2s;
+      padding: .77em 1em; font-size: 1rem; color: var(--ap-ink); transition: border-color .2s, box-shadow .2s;
       &::placeholder { color: var(--ap-slate-2); }
       &:hover, &:focus { outline: none; border-color: var(--ap-gold); box-shadow: 0 0 0 3px rgba(230, 169, 60, .18); }
     }
+    .ctrl:has(.pw-toggle) input { padding-right: 48px; }
     .pw-toggle {
-      position: absolute; right: 6px; top: 50%; transform: translateY(-50%); padding: 8px;
+      position: absolute; right: 2px; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; padding: 0;
       color: var(--ap-slate-2); display: grid; place-items: center;
       svg { width: 19px; height: 19px; }
       .eye-off { display: none; }
@@ -173,8 +176,10 @@
 
   .fgrid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 
+  // The text sits in one span (.terms-text), so it wraps as a sentence beside the box.
   .terms-field {
-    .remember { display: flex; align-items: center; }
+    .remember { display: flex; align-items: flex-start; }
+    .box { flex: none; margin-top: 2px; }
     a { font-weight: 600; color: var(--ap-gold-deep); &:hover { text-decoration: underline; } }
   }
 
@@ -220,6 +225,13 @@
     }
     .auth-top { display: none; }
     .auth-card { padding: 36px 22px 40px; max-width: 440px; }
+
+    // Tall enough to tap (44px).
+    .auth-topbar .back-link, .auth-topbar .brand, .tab { min-height: 44px; }
+    .row-between { margin: -6px 0 14px; }
+    .row-between .remember, .forgot { min-height: 44px; }
+    .terms-field { margin-top: -10px; }
+    .terms-field .remember { padding: 10px 0; }
   }
 
   @media (prefers-reduced-motion: reduce) {

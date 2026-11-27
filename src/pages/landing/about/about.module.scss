@@ -61,6 +61,13 @@ $mono: 'JetBrains Mono', monospace;
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 30px;
+
+  // Phones: two equal full-width buttons.
+  @media (max-width: 480px) {
+    flex-direction: column;
+
+    a { justify-content: center; width: 100%; }
+  }
 }
 
 .btnGold,
@@ -127,7 +134,16 @@ $mono: 'JetBrains Mono', monospace;
   }
 
   @media (max-width: 900px) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  @media (max-width: 420px) { grid-template-columns: 1fr; }
+
+  // Small phones: still two by two, just tighter.
+  @media (max-width: 420px) {
+    gap: 10px;
+    margin-top: 40px;
+
+    li { padding: 14px; }
+    b { font-size: 1.3rem; }
+    span { font-size: .82rem; }
+  }
 }
 
 // ===== Sections =====
@@ -296,6 +312,8 @@ $mono: 'JetBrains Mono', monospace;
   color: $white;
   font-size: .64rem;
   font-weight: 700;
+
+  @media (max-width: 767px) { font-size: .6875rem; }
 }
 
 .stepText {
@@ -316,6 +334,8 @@ $mono: 'JetBrains Mono', monospace;
   color: $gold-deep !important;
 
   &:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+  @media (max-width: 767px) { min-height: 44px; }
 }
 
 // Values
@@ -490,6 +510,8 @@ $mono: 'JetBrains Mono', monospace;
   transition: background-color .2s, transform .2s $ease;
 
   &:hover { background: $gold-2; transform: translateY(-1px); }
+
+  @media (max-width: 767px) { min-height: 44px; }
 }
 
 .contactLinks {
@@ -505,6 +527,15 @@ $mono: 'JetBrains Mono', monospace;
     color: rgba(255, 255, 255, .65) !important;
 
     &:hover { color: $gold-2 !important; text-decoration: underline; }
+  }
+
+  // Phones: links tall enough to tap (44px).
+  @media (max-width: 767px) {
+    gap: 0 18px;
+    margin-top: 12px;
+    padding-top: 6px;
+
+    a { padding: 11px 0; line-height: 22px; }
   }
 }
 

@@ -18,6 +18,9 @@ const scrollToId = (id) => {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
+// Phones show this many key points until "Show all" (the rest hide in CSS).
+const KEY_POINTS_ON_PHONE = 4;
+
 const Toc = ({ sections, activeId }) => (
   <ul className={styles.tocList}>
     {sections.map((section) => (
@@ -43,6 +46,10 @@ const LegalLayout = ({ title, subtitle, updated, keyPoints = [], children }) => 
   const bodyRef = useRef(null);
   const [sections, setSections] = useState([]);
   const [activeId, setActiveId] = useState(null);
+  const [allPoints, setAllPoints] = useState(false);
+  const morePoints = keyPoints.length - KEY_POINTS_ON_PHONE;
+
+  useEffect(() => setAllPoints(false), [location.pathname]);
 
   // Give every section heading an anchor and list them for the table of contents.
   useEffect(() => {
@@ -155,12 +162,18 @@ const LegalLayout = ({ title, subtitle, updated, keyPoints = [], children }) => 
                 </div>
                 <ul>
                   {keyPoints.map((point, index) => (
-                    <li key={index}>
+                    <li key={index} className={!allPoints && index >= KEY_POINTS_ON_PHONE ? styles.keyExtra : undefined}>
                       <Icon name="Check" size={16} />
                       <span>{point}</span>
                     </li>
                   ))}
                 </ul>
+                {morePoints > 0 && (
+                  <button type="button" className={styles.keyMore} onClick={() => setAllPoints((v) => !v)} aria-expanded={allPoints}>
+                    {allPoints ? 'Show fewer' : `Show all ${keyPoints.length} key points`}
+                    <Icon name={allPoints ? 'ChevronUp' : 'ChevronDown'} size={16} />
+                  </button>
+                )}
                 <p className={styles.keyNote}>
                   A plain-language summary to help you find your way. It doesn't replace the full text below.
                 </p>

@@ -127,6 +127,14 @@ $two-col-from: 981px;
   @media (max-width: 700px) { margin-left: auto; }
 }
 
+// 700px and below: logo, Log in and the menu button (components/ui/PublicNavMenu).
+@media (max-width: 700px) {
+  .nav .wrap { gap: 8px; }
+  .nav .wrap :global(.pnm-toggle) { display: flex; }
+  // Tall enough to tap (44px).
+  .nav .brand, .navBtn { min-height: 44px; }
+}
+
 // ===== Title band =====
 .hero {
   position: relative;
@@ -202,6 +210,11 @@ $two-col-from: 981px;
   transition: color .2s, border-color .2s, background-color .2s;
 
   &:hover { color: $white; border-color: rgba(255, 255, 255, .35); background: rgba(255, 255, 255, .05); }
+}
+
+// Phones: both pills tall enough to tap Print.
+@media screen and (max-width: 767px) {
+  .metaPill, .metaBtn { min-height: 40px; padding: 8px 14px; }
 }
 
 // Document switcher sitting on the band's bottom edge.
@@ -334,6 +347,17 @@ $two-col-from: 981px;
   box-shadow: 0 1px 2px rgba(11, 26, 44, .04), 0 30px 60px -44px rgba(11, 26, 44, .45);
 
   @media (max-width: 760px) { padding: 28px 22px; border-radius: 16px; }
+
+  // Phones: the sheet runs edge to edge, so the text gets the screen's width
+  // instead of losing it to the page margin and the sheet's padding both.
+  @media screen and (max-width: 560px) {
+    margin: 0 -24px;
+    padding: 24px 20px 28px;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
 }
 
 // Phones/tablets: the table of contents folds into the top of the sheet.
@@ -359,7 +383,12 @@ $two-col-from: 981px;
 
   .tocList {
     margin: 0 14px 12px;
+
+    // Tall enough to tap.
+    button { min-height: 44px; align-items: center; padding-top: 8px; padding-bottom: 8px; }
   }
+
+  summary { min-height: 48px; }
 
   &[open] .tocCaret { transform: rotate(180deg); }
 
@@ -398,6 +427,31 @@ $two-col-from: 981px;
     color: $text;
 
     svg { flex: none; margin-top: 4px; color: $gold-deep; }
+  }
+
+  @media (max-width: 767px) { padding: 18px 16px 16px; }
+}
+
+// Phones: the first points only, until "Show all" (LegalLayout).
+.keyMore { display: none; }
+
+@media screen and (max-width: 767px) {
+  .keyPoints li.keyExtra { display: none; }
+
+  .keyMore {
+    display: inline-flex;
+    align-items: center;
+    gap: .35em;
+    min-height: 44px;
+    margin-top: 4px;
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    font-size: .9rem;
+    font-weight: 700;
+    color: $gold-deep;
+    cursor: pointer;
   }
 }
 
@@ -558,6 +612,8 @@ $two-col-from: 981px;
   transition: background-color .2s, transform .2s $ease;
 
   &:hover { background: $gold-2; transform: translateY(-1px); }
+
+  @media (max-width: 767px) { min-height: 44px; }
 }
 
 // ===== Footer =====
@@ -608,6 +664,14 @@ $two-col-from: 981px;
   }
 
   a { transition: color .2s; &:hover { color: $text-light; } }
+
+  // Phones: links tall enough to tap (44px).
+  @media (max-width: 767px) {
+    gap: 0;
+
+    h4 { margin-bottom: 6px; }
+    a { display: flex; align-items: center; min-height: 44px; }
+  }
 }
 
 .footBottom {

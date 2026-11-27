@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { homePathFor, useCurrentUser } from 'lib/CurrentUserContext';
+import PublicNavMenu from 'components/ui/PublicNavMenu';
 import styles from './legal.module.scss';
 
 // Site nav and footer shared by the public pages that aren't landings:
@@ -22,6 +23,19 @@ const Brand = () => (
   </Link>
 );
 
+// The phone menu (700px and below, where the nav's own links hide).
+const MENU_GROUPS = [
+  [
+    { label: 'For companies', href: '/', icon: 'Building2' },
+    { label: 'For candidates', href: '/landing-page-candidates', icon: 'UserRound' },
+    { label: 'Pricing', href: '/#pricing', icon: 'Coins' },
+  ],
+  [
+    { label: 'About', href: '/about', icon: 'Info' },
+    ...LEGAL_DOCS.map((doc) => ({ label: doc.label, href: doc.path, icon: doc.icon })),
+  ],
+];
+
 export const SiteNav = () => {
   const { role, company } = useCurrentUser();
   const appPath = role ? homePathFor(role, company) : null;
@@ -37,6 +51,7 @@ export const SiteNav = () => {
         <Link to={appPath || '/login'} className={styles.navBtn}>
           {appPath ? 'Open Talentmon' : 'Log in'}
         </Link>
+        <PublicNavMenu groups={MENU_GROUPS} />
       </div>
     </nav>
   );

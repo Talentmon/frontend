@@ -1,7 +1,26 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import PublicScroll, { PUBLIC_SHELL } from 'components/ui/PublicScroll';
+import PublicNavMenu from 'components/ui/PublicNavMenu';
+import SalaryNetGross from '../SalaryNetGross';
 import './styles.scss';
+
+const SUPPORT_EMAIL = 'talentmon.app@gmail.com';
+
+// The phone/tablet menu (below 961px, where the nav's own links hide).
+const MENU_GROUPS = [
+  [
+    { label: 'How it works', href: '#how', icon: 'Search' },
+    { label: 'Salary clause', href: '#salary', icon: 'Banknote' },
+    { label: 'Your CV', href: '#cv', icon: 'FileText' },
+    { label: 'Companies', href: '#companies', icon: 'Building2' },
+    { label: 'What you get', href: '#get', icon: 'Check' },
+  ],
+  [
+    { label: 'For companies', href: '/', icon: 'Building2' },
+    { label: 'About', href: '/about', icon: 'Info' },
+  ],
+];
 
 const RATE_CATEGORIES = [
   { key: 'hiring', label: 'Hiring process', hint: 'Speed, clarity, fairness' },
@@ -96,6 +115,7 @@ const ForCandidates = () => {
           <div className="nav-cta">
             <a href="/login?tab=candidate" className="btn btn-gold">Log in</a>
           </div>
+          <PublicNavMenu groups={MENU_GROUPS} />
         </div>
       </nav>
 
@@ -266,12 +286,15 @@ const ForCandidates = () => {
                     <span className="cv-c"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="3" /><path d="M7 10v7M7 7v.01M11 17v-4a2 2 0 0 1 4 0v4" /></svg>/in/emilybennett</span>
                   </div>
 
-                  <div className="cv-block">
+                  <div className="cv-block cv-prefs">
                     <div className="prefs">
                       <div className="pref"><span className="pl">Work mode</span><span className="pv">On-site</span></div>
-                      <div className="pref"><span className="pl">Type</span><span className="pv">Full-time</span></div>
-                      <div className="pref"><span className="pl">Salary minimum / month</span><span className="pv">3.200 EUR net<br />4.600 EUR gross</span></div>
-                      <div className="pref"><span className="pl">Availability</span><span className="pv">2 weeks</span></div>
+                      <div className="pref pref-type"><span className="pl">Type</span><span className="pv">Full-time</span></div>
+                      <div className="pref pref-salary">
+                        <span className="pl">Salary minimum / month</span>
+                        <SalaryNetGross className="pv pv-salary" net="3.200 EUR net" gross="4.600 EUR gross" label="Salary minimum per month" />
+                      </div>
+                      <div className="pref pref-avail"><span className="pl">Availability</span><span className="pv">2 weeks</span></div>
                     </div>
                   </div>
 
@@ -745,7 +768,7 @@ const ForCandidates = () => {
               Create your free profile
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
             </a>
-            <p className="cta-fine">Free forever · No credit card · Your salary sets the floor</p>
+            <p className="cta-fine"><span>Free forever</span><span>No credit card</span><span>Your salary sets the floor</span></p>
           </div>
         </section>
 
@@ -774,9 +797,9 @@ const ForCandidates = () => {
               <div className="foot-col">
                 <h4>Company</h4>
                 <a href="/landing-page">For companies</a>
-                <a href="#">About</a>
-                <a href="#">Privacy</a>
-                <a href="#">Contact</a>
+                <a href="/about">About</a>
+                <a href="/privacy-policy">Privacy</a>
+                <a href={`mailto:${SUPPORT_EMAIL}`}>Contact</a>
               </div>
             </div>
             <div className="foot-bottom">

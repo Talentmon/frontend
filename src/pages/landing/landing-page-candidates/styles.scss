@@ -14,7 +14,8 @@
   color: var(--lp-ink);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  // clip, not hidden: hidden would make this a scroll box and the nav would stop sticking on phones.
+  overflow-x: clip;
   scroll-behavior: smooth;
 
   *,
@@ -901,11 +902,45 @@
       line-height: 1.55;
     }
 
+    // The four preferences in one row. Where the CV is too narrow for that
+    // (phones, and its narrower column just above 960px) they go two by two,
+    // Work mode | Availability over Salary | Type, so the long salary label
+    // shares its row with the shortest one.
+    .cv-prefs {
+      container-type: inline-size;
+    }
     .prefs {
       display: flex;
       flex-wrap: wrap;
       justify-content: space-between;
       gap: 14px 24px;
+    }
+    @container (max-width: 460px) {
+      .prefs {
+        display: grid;
+        grid-template-columns: auto auto;
+        justify-content: space-between;
+        gap: 14px 12px;
+      }
+      .pref-avail {
+        order: 1;
+      }
+      .pref-salary {
+        order: 2;
+      }
+      .pref-type {
+        order: 3;
+      }
+    }
+    // Net by default, gross while hovered or tapped (../SalaryNetGross): the dotted line says it changes.
+    .pv-salary {
+      align-self: flex-start;
+      &:focus-visible {
+        outline-offset: 1px; // clear of the label just above
+      }
+      .salary-ng-text {
+        text-decoration-color: var(--lp-slate-2);
+      }
     }
     .pref {
       display: flex;
@@ -1291,6 +1326,7 @@
   }
   .clm-confirm {
     flex: 1;
+    white-space: nowrap;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -2286,9 +2322,11 @@
     max-width: 540px;
     margin: 0 auto 1.75rem;
   }
+  // On phones the three points stack instead of running off the screen.
   .cta-fine {
-    display: block;
-    width: max-content;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
     max-width: 100%;
     margin: 1.75rem auto 0;
     text-align: center;
@@ -2296,6 +2334,10 @@
     font-size: 1.15rem;
     color: var(--lp-slate-2);
     white-space: nowrap;
+    span + span::before {
+      content: "·";
+      margin: 0 0.6em;
+    }
   }
 
   /* ============================ FOOTER ============================ */
@@ -2364,44 +2406,48 @@
   /* ============================ RESPONSIVE ============================ */
   @media (max-width: 960px) {
     .hero-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 46px;
     }
     .card-stage {
       order: -1;
+      min-width: 0;
     }
-    .nav-cta {
+    // Logo, Log in and the menu button (components/ui/PublicNavMenu).
+    .modes {
       display: none;
     }
-    .modes {
-      font-size: 0.84rem;
+    .nav-cta {
+      margin-left: auto;
     }
-    .mode {
-      padding: 0.5em 0.8em;
+    .nav-in .pnm-toggle {
+      display: flex;
     }
     .steps {
       grid-template-columns: 1fr 1fr;
     }
+    // minmax(0, …) everywhere: a plain 1fr column grows to its widest line,
+    // which pushed the review cards past the screen.
     .compare {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .cv-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 38px;
     }
     .salary-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 38px;
     }
     .after-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .co-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
       gap: 34px;
     }
     .rep-reviews {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .bgrid {
       grid-template-columns: 1fr 1fr;
@@ -2410,7 +2456,74 @@
       grid-template-columns: 1fr 1fr;
     }
   }
+  // Two a row: the ninth card centred under the others.
+  @media (min-width: 601px) and (max-width: 960px) {
+    .benefit:last-child:nth-child(odd) {
+      grid-column: 1 / -1;
+      justify-self: center;
+      width: calc(50% - 10px);
+    }
+  }
+  // Phones: the headline first, the profile card under it.
+  @media (max-width: 767px) {
+    .card-stage {
+      order: 0;
+    }
+    .cta-fine {
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.82rem;
+      span + span::before {
+        content: none;
+      }
+    }
+    // Mono labels no smaller than 11px.
+    .cv-doc .cv-h,
+    .cv-doc .pref .pl,
+    .clm-eyebrow,
+    .coc-badge,
+    .coc-honor,
+    .rep-stat .l,
+    .rev-cat-l {
+      font-size: 0.6875rem;
+    }
+    .clm-confirm,
+    .clm-cancel {
+      padding-left: 0.9em;
+      padding-right: 0.9em;
+    }
+    // Footer links, the logo and Log in tall enough to tap (44px).
+    .nav .brand,
+    .nav-cta .btn {
+      min-height: 44px;
+    }
+    .foot-col h4 {
+      margin-bottom: 6px;
+    }
+    .foot-col a {
+      display: flex;
+      align-items: center;
+      min-height: 44px;
+      margin-bottom: 0;
+    }
+  }
   @media (max-width: 600px) {
+    // The four rating categories as two rows of two, with a line between the
+    // rows as well as between the columns.
+    .rev-cats {
+      grid-template-columns: 1fr 1fr;
+    }
+    .rev-cat:nth-child(3) {
+      border-left: none;
+    }
+    .rev-cat:nth-child(-n + 2) {
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--lp-line);
+    }
+    .rev-cat:nth-child(n + 3) {
+      padding-top: 10px;
+    }
     .steps {
       grid-template-columns: 1fr;
     }

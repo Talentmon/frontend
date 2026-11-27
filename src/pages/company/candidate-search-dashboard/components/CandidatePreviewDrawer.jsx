@@ -181,7 +181,8 @@ const CandidatePreviewDrawer = ({
                   <span className={styles.nameReal}>{candidate?.name}</span>
                 </div>
                 <div className={styles.role}>
-                  {[candidate?.position, candidate?.experience && `${candidate?.experience} yrs`]?.filter(Boolean)?.join(' · ')}
+                  {/* "9 yrs" never splits over two lines (a no-break space). */}
+                  {[candidate?.position, candidate?.experience && `${candidate?.experience} yrs`]?.filter(Boolean)?.join(' · ')}
                 </div>
                 <div className={styles.loc}>
                   <Icon name="MapPin" size={14} />

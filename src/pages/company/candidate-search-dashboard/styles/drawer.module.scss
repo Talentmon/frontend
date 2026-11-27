@@ -22,7 +22,12 @@ $r-md: 13px;
 $r-sm: 9px;
 $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
 $drawer-w: 45vw;
+// Over the page (below the push widths) it is never narrower than this, so the
+// CV keeps room on tablets and small laptops; in push mode 45vw is already wider.
+$drawer-min: 560px;
 $header-h: 64px;
+// Phones: the CV fills the screen under the app bar.
+$phone-max: 767px;
 
 // ===== Scrim (overlay/medium screens only — push mode on wide screens has none) =====
 .scrim {
@@ -51,10 +56,6 @@ $header-h: 64px;
     visibility: hidden;
     pointer-events: none;
   }
-
-  @media (max-width: 680px) {
-    inset: 0;
-  }
 }
 
 // ===== Drawer shell =====
@@ -62,9 +63,11 @@ $header-h: 64px;
   position: fixed;
   top: $header-h;
   right: 0;
-  width: $drawer-w;
+  width: max(#{$drawer-w}, #{$drawer-min});
   max-width: 100vw;
   height: calc(100vh - #{$header-h});
+  // Phone browsers: the visible height, so the footer isn't under their toolbar.
+  height: calc(100dvh - #{$header-h});
   background: $white;
   border-left: 1px solid $line;
   box-shadow: -40px 0 80px -40px rgba(11, 26, 44, 0.5);
@@ -95,10 +98,10 @@ $header-h: 64px;
     }
   }
 
-  @media (max-width: 680px) {
-    top: 0;
+  @media (max-width: $phone-max) {
     width: 100vw;
-    height: 100vh;
+    border: none;
+    box-shadow: none;
   }
 }
 
@@ -125,6 +128,16 @@ $header-h: 64px;
     background: linear-gradient($red-bg, $red-bg), $white;
     color: $red;
   }
+
+  // Phones: a bigger target for a finger, in the CV's top corner (the paper
+  // leaves room above its content for it).
+  @media (max-width: $phone-max) {
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border: 1px solid $line;
+  }
 }
 
 .identity {
@@ -133,6 +146,11 @@ $header-h: 64px;
   align-items: flex-start;
   padding-bottom: 24px;
   border-bottom: 1px solid $line;
+
+  @media (max-width: $phone-max) {
+    gap: 14px;
+    padding-bottom: 20px;
+  }
 }
 
 // ----- Photo (matches candidate-profile's .cv-photo) -----
@@ -144,6 +162,12 @@ $header-h: 64px;
   flex: none;
   overflow: hidden;
   background: $mist;
+
+  @media (max-width: $phone-max) {
+    width: 64px;
+    height: 64px;
+    border-radius: 14px;
+  }
 }
 
 .photoImg {
@@ -191,6 +215,11 @@ $header-h: 64px;
   font-size: 1.15rem;
   letter-spacing: 0.06em;
   line-height: 1.1;
+
+  @media (max-width: $phone-max) {
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+  }
 }
 
 .nameReal {
@@ -200,6 +229,10 @@ $header-h: 64px;
   font-size: 1.7rem;
   line-height: 1.1;
   color: $ink;
+
+  @media (max-width: $phone-max) {
+    font-size: 1.35rem;
+  }
 }
 
 .drawer:not(.revealed) .nameAnon {
@@ -215,6 +248,10 @@ $header-h: 64px;
   color: $gold-deep;
   font-weight: 600;
   margin-top: 3px;
+
+  @media (max-width: $phone-max) {
+    font-size: 0.95rem;
+  }
 }
 
 .loc {
@@ -259,9 +296,14 @@ $header-h: 64px;
 .body {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain; // the page under it doesn't scroll on past the CV's end
   background: $paper;
   padding: 28px 24px 28px;
   scroll-behavior: smooth;
+
+  @media (max-width: $phone-max) {
+    padding: 12px;
+  }
 }
 
 // ----- The CV itself: a literal paper sheet, copied 1:1 from
@@ -277,6 +319,14 @@ $header-h: 64px;
   border-radius: $r-lg;
   box-shadow: 0 18px 40px -32px rgba(11, 26, 44, 0.4);
   padding: 34px 38px 38px;
+  // The preferences row asks how wide the CV itself is (.prefs), not the window.
+  container: cv / inline-size;
+
+  @media (max-width: $phone-max) {
+    border-radius: 14px;
+    // The X (12–52px down the drawer) sits above the first line.
+    padding: 46px 18px 24px;
+  }
 }
 
 // ----- Anonymity banner (matches candidate-profile's dark .cv-banner) -----
@@ -410,8 +460,14 @@ $header-h: 64px;
   display: flex;
   align-items: center;
   gap: 0.5em;
+  min-width: 0;
   font-size: 0.86rem;
   color: #2c3a47;
+
+  // A long email or LinkedIn link breaks rather than run past a phone's edge.
+  span {
+    overflow-wrap: anywhere;
+  }
 
   svg {
     width: 15px;
@@ -422,11 +478,24 @@ $header-h: 64px;
 }
 
 // ----- Preferences (work mode / type / salary / availability) -----
+// One row on a wide CV; on a narrower one (phones, tablets, a laptop's CV
+// over the page, a push from 1502px) two by two, never three and one alone.
 .prefs {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: space-evenly;
-  gap: 24px;
+  gap: 16px 24px;
+
+  @container cv (max-width: 599px) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 24px;
+
+    .pl,
+    .pv {
+      white-space: normal;
+    }
+  }
 }
 
 .pref {
@@ -434,6 +503,7 @@ $header-h: 64px;
   flex-direction: column;
   gap: 6px;
   flex: none;
+  min-width: 0;
 }
 
 .pl {
@@ -663,6 +733,10 @@ $header-h: 64px;
   gap: 10px;
   align-items: center;
   background: $white;
+
+  @media (max-width: $phone-max) {
+    padding: 12px 16px;
+  }
 }
 
 .bookmarkBtn {

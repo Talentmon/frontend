@@ -83,10 +83,10 @@ const UserProfileDropdown = () => {
         <span aria-hidden="true" className="flex-none w-[34px] h-[34px] rounded-[9px] bg-[#E6A93C] text-[#1B2330] inline-flex items-center justify-center text-[15px] font-extrabold">
           {companyName.charAt(0).toUpperCase()}
         </span>
-        {/* Hidden below 1024px; a long name is cut at 200px and shown in full on hover. */}
+        {/* From 1280px (below that the nav needs the room); a long name is cut at 200px and shown in full on hover. */}
         <span
           title={companyName}
-          className="hidden lg:block text-left text-sm leading-[18px] font-medium text-white truncate max-w-[200px]"
+          className="hidden xl:block text-left text-sm leading-[18px] font-medium text-white truncate max-w-[200px]"
         >
           {companyName}
         </span>
@@ -97,9 +97,10 @@ const UserProfileDropdown = () => {
           className={`flex-none transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
         />
       </button>
-      {/* Dropdown Menu */}
+      {/* Dropdown Menu: under the button; on phones it spans the screen less a 16px gutter,
+          since the menu button to the right leaves too little room for 320px. */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-popover border border-border rounded-xl shadow-elevation-3 z-[1100] animate-slide-up">
+        <div className="absolute right-0 top-full mt-2 w-80 max-sm:fixed max-sm:top-[72px] max-sm:left-4 max-sm:right-4 max-sm:w-auto max-sm:mt-0 bg-popover border border-border rounded-xl shadow-elevation-3 z-[1100] animate-slide-up">
           {/* Company Info Header */}
           <div className="p-4 border-b border-border">
             <div className="flex items-center space-x-3">

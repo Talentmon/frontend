@@ -82,8 +82,9 @@ const Header = () => {
   return (
     <header className="relative flex-none z-[1000] bg-[#0B1A2C] border-b border-[#10243A]">
       {/* Three columns from 1280px, so the nav sits in the middle of the page, not between the sides.
-          Narrower, the bar doesn't fit everything and the nav moves into the menu button. */}
-      <div className="flex items-center justify-between xl:grid xl:grid-cols-[1fr_auto_1fr] xl:gap-6 h-16 pl-7 pr-6">
+          From 1024px the nav stays in the bar, between the sides (the profile button drops the
+          company name to make room); narrower, it moves into the menu button. */}
+      <div className="flex items-center justify-between gap-4 xl:grid xl:grid-cols-[1fr_auto_1fr] xl:gap-6 h-16 pl-7 pr-6">
         {/* Logo Section */}
         <div className="xl:justify-self-start flex items-center">
           <Link
@@ -105,7 +106,7 @@ const Header = () => {
         {/* Desktop Navigation */}
         <nav
           aria-label="Main"
-          className="hidden xl:flex xl:justify-self-center items-center gap-1.5 p-1 rounded-xl bg-[#2B3646] border border-white/[0.06]"
+          className="hidden lg:flex xl:justify-self-center items-center gap-1.5 p-1 rounded-xl bg-[#2B3646] border border-white/[0.06]"
         >
           {navigationItems?.map((item) => navLocked ? (
             <span
@@ -141,7 +142,7 @@ const Header = () => {
             ref={menuButtonRef}
             type="button"
             onClick={toggleMobileMenu}
-            className={`xl:hidden flex-none inline-flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${headerTray(isMobileMenuOpen)} ${HEADER_FOCUS}`}
+            className={`lg:hidden flex-none inline-flex items-center justify-center w-11 h-11 rounded-xl transition-colors ${headerTray(isMobileMenuOpen)} ${HEADER_FOCUS}`}
             aria-label="Toggle mobile menu"
             aria-expanded={isMobileMenuOpen}
           >
@@ -151,7 +152,7 @@ const Header = () => {
       </div>
       {/* Mobile Navigation Menu: a full-width strip on phones, a panel under the menu button on wider screens */}
       {isMobileMenuOpen && (
-        <div ref={menuRef} className="xl:hidden bg-[#0B1A2C] border-t border-[#10243A] animate-slide-up md:absolute md:right-6 md:top-full md:mt-2 md:w-72 md:rounded-xl md:border md:border-white/10 md:shadow-elevation-3">
+        <div ref={menuRef} className="lg:hidden bg-[#0B1A2C] border-t border-[#10243A] animate-slide-up md:absolute md:right-6 md:top-full md:mt-2 md:w-72 md:rounded-xl md:border md:border-white/10 md:shadow-elevation-3">
           <nav aria-label="Main" className="px-6 py-4 space-y-2 md:p-2 md:space-y-1">
             {navigationItems?.map((item) => navLocked ? (
               <span

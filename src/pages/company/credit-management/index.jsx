@@ -7,6 +7,7 @@ import UsageAnalytics from './components/UsageAnalytics';
 import LowBalanceAlertSettings from './components/LowBalanceAlertSettings';
 import PaymentMethods from './components/PaymentMethods';
 import Icon from 'components/AppIcon';
+import Select from 'components/ui/Select';
 import { usePaddleCheckout } from 'lib/usePaddleCheckout';
 import { useCreditBalance } from 'lib/creditBalance';
 import { useCurrentUser } from 'lib/CurrentUserContext';
@@ -259,6 +260,23 @@ const CreditManagement = () => {
               </button>
             )}
           </div>
+        </div>
+
+        {/* Phones: the tabs as one dropdown showing the current one (as on Settings). */}
+        <div className={styles.tabPicker}>
+          <Select
+            id="credits-section"
+            aria-label="Credits section"
+            options={tabs.map((tab) => ({ value: tab.id, label: tab.name, icon: tab.icon }))}
+            value={activeTab}
+            onChange={setActiveTab}
+            renderLabel={(option) => (
+              <span className={styles.tabPickerOption}>
+                <Icon name={option?.icon} size={18} />
+                {option?.label}
+              </span>
+            )}
+          />
         </div>
 
         {/* Navigation Tabs */}

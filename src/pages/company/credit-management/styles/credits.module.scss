@@ -132,6 +132,36 @@ $ease: cubic-bezier(0.2, 0.7, 0.2, 1);
   border-bottom: 1px solid $line;
   margin-bottom: 24px;
   overflow-x: auto;
+
+  // Phones: six tabs don't fit (History was cut), so the dropdown stands in.
+  @media (max-width: 767px) {
+    display: none;
+  }
+}
+
+.tabPicker {
+  display: none;
+
+  @media (max-width: 767px) {
+    display: block;
+    margin-bottom: 20px;
+
+    button[role="combobox"] {
+      height: 48px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+  }
+}
+
+.tabPickerOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+
+  svg {
+    color: $gold-deep;
+  }
 }
 
 .tab {
@@ -1481,10 +1511,12 @@ $pkg-rows-mq: "(min-width: 561px) and (max-width: #{$pkg-rows})";
     display: flex;
     width: 100%;
 
+    // Each label on one line ("12 months" broke in two); the longer ones get more room.
     .histSegBtn {
-      flex: 1;
+      flex: 1 1 auto;
       padding: 0.5em 0.3em;
-      font-size: 0.84rem;
+      font-size: 0.82rem;
+      white-space: nowrap;
     }
   }
 }

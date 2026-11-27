@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useClerk } from '@clerk/clerk-react';
 import Icon from 'components/AppIcon';
+import Select from 'components/ui/Select';
 import { useCurrentUser } from 'lib/CurrentUserContext';
 import { clearSalaryView } from 'lib/salaryView';
 import CompanyInformationTab from './components/CompanyInformationTab';
@@ -375,6 +376,28 @@ const CompanyProfileSettings = () => {
         )}
 
         <div className={styles.layout}>
+          {/* Phones and tablets: the sections as one dropdown showing the current one. */}
+          <div className={styles.tabPicker}>
+            <Select
+              id="settings-section"
+              aria-label="Settings section"
+              options={tabs.map((tab) => ({ value: tab.id, label: tab.name, icon: tab.icon, sub: tab.description }))}
+              value={activeTab}
+              onChange={setActiveTab}
+              renderLabel={(option, where) => (
+                <span className={styles.tabPickerOption}>
+                  <span className={styles.navIcon}>
+                    <Icon name={option?.icon} size={17} />
+                  </span>
+                  <span className={styles.tabPickerText}>
+                    <b>{option?.label}</b>
+                    {where === 'list' && <span>{option?.sub}</span>}
+                  </span>
+                </span>
+              )}
+            />
+          </div>
+
           {/* Sidebar Navigation */}
           <nav className={styles.sidenav}>
             {tabs?.map((tab) => (

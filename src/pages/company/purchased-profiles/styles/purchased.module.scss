@@ -388,6 +388,14 @@ $card-muted: #5f6b78;
   margin: 16px -24px -24px;
   padding: 4px 16px 16px;
   border-top: 1px solid #e9ebef;
+
+  // Phones: the card's padding is 18px 16px (dashboard .scCard), so the bar
+  // bleeds that far and no further; 8px sides keep the toggle's icon on the
+  // card's 16px line and leave the pills the room for one row.
+  @media (max-width: 480px) {
+    margin: 16px -16px -18px;
+    padding: 4px 8px 12px;
+  }
 }
 
 .htToggle {
@@ -481,7 +489,7 @@ $card-muted: #5f6b78;
   align-items: center;
   // One line on a 440px card: 2px between the pills, 6px inside the bar's
   // sides and 7px inside the pills leave a few px to spare even with the
-  // widest pill bold; what's left is spread between them. A phone wraps.
+  // widest pill bold; what's left is spread between them.
   justify-content: space-between;
   gap: 6px 2px;
   margin-top: 6px;
@@ -489,6 +497,13 @@ $card-muted: #5f6b78;
   background: #f8f9fa;
   border: 1px solid #e9ebef;
   border-radius: 12px;
+
+  // Phones: still one line down to 360px, with 11px pills and the arrows
+  // pulled in (see .stage, .pipeArrow and .pipeOr).
+  @media (max-width: 480px) {
+    padding: 8px 4px;
+    gap: 6px 1px;
+  }
 }
 
 .stage {
@@ -508,6 +523,11 @@ $card-muted: #5f6b78;
     filter 0.15s ease,
     border-color 0.2s $ease,
     box-shadow 0.2s $ease;
+
+  @media (max-width: 480px) {
+    padding: 0 4px;
+    font-size: 0.6875rem;
+  }
 
   &:hover {
     filter: brightness(0.96);
@@ -536,6 +556,11 @@ $card-muted: #5f6b78;
 .pipeArrow {
   flex: none;
   color: $slate-2;
+
+  // The chevron's ink is ~4px of its 12px box: a 6px slot is enough.
+  @media (max-width: 480px) {
+    margin: 0 -3px;
+  }
 }
 
 .pipeOr {
@@ -543,6 +568,11 @@ $card-muted: #5f6b78;
   font-size: 0.75rem;
   line-height: 16px;
   color: $card-muted;
+
+  @media (max-width: 480px) {
+    padding: 0 1px;
+    font-size: 0.6875rem;
+  }
 }
 
 .pcFoot {
@@ -1758,6 +1788,13 @@ $t-cols: minmax(200px, 1.3fr) 104px 148px 124px 160px minmax(260px, 1.9fr) 168px
 
     & + & {
       border-left: 0;
+    }
+
+    // A half-width tile just over phone width: the chip drops under the
+    // number only when it does not fit beside it.
+    .kpiBody {
+      flex-wrap: wrap;
+      row-gap: 2px;
     }
   }
 

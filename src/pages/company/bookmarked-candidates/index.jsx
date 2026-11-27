@@ -489,7 +489,7 @@ const BookmarkedCandidatesPage = () => {
 
   return (
     <div className={`${styles.page} ${previewId !== null ? styles.previewOpen : ''}`}>
-      <main className={`max-w-[1404px] mx-auto px-[5px] min-[481px]:px-[22px] ${isCompact ? cf.cvMain : ''}`}>
+      <main className={`max-w-[1404px] mx-auto px-[10px] min-[481px]:px-[22px] ${isCompact ? cf.cvMain : ''}`}>
         {/* Title, the slots strip and Search candidates (just the title beside an open CV) */}
         {isCompact ? (
           <header className={cf.cvTitle}>

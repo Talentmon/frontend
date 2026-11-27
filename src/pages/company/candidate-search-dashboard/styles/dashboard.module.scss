@@ -109,10 +109,10 @@ $push-bp: 1502px;
     grid-template-columns: 1fr;
   }
 
-  // Phones: a 5px edge (all company pages), so the card gets the width.
+  // Phones: a 10px edge (all company pages), so the card gets the width.
   @media (max-width: 480px) {
-    padding-left: 5px;
-    padding-right: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   // Wide screens with the CV drawer open (push mode): shrink the results

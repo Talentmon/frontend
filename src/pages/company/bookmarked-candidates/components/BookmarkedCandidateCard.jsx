@@ -45,7 +45,7 @@ const BookmarkedCandidateCard = ({
   };
 
   return (
-    <article className={`${dashboardStyles.card} ${dashboardStyles.scCard} ${isUnlocked ? dashboardStyles.unlocked : ''} ${isActive ? dashboardStyles.active : ''} ${stillClass}`}>
+    <article className={`${dashboardStyles.card} ${dashboardStyles.scCard} ${styles.bmCard} ${isUnlocked ? dashboardStyles.unlocked : ''} ${isActive ? dashboardStyles.active : ''} ${stillClass}`}>
       {/* Top row: who saved it and when (left) + remove (right) */}
       <div className={styles.cardTop}>
         <p className={`${styles.savedBy} ${reorderMode || selectionMode ? styles.savedByShifted : ''}`}>

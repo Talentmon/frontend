@@ -1394,6 +1394,16 @@ $card-gold: #f0ae2e;
   }
 }
 
+// The card cuts what's inside along its own rounded corners. Closing, the
+// notes band's top line ends up in the corners for a moment (the band's own
+// corners shrink with its height); cut by the card, it follows the curve
+// instead of poking out past it. Only the Bookmarked card: Search and
+// Purchased share .scCard. (clip where supported, hidden before that.)
+.bmCard {
+  overflow: hidden;
+  overflow: clip;
+}
+
 // ===== Notes band =====
 // Bleeds to the card's edges at the bottom. Opens via the grid 0fr -> 1fr
 // trick so the card grows smoothly. Its top line stays put, 20px under the

@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Helmet } from 'react-helmet';
 import PublicScroll, { PUBLIC_SHELL } from 'components/ui/PublicScroll';
+import PublicNavMenu from 'components/ui/PublicNavMenu';
 import { scrollPageToTop } from 'components/ui/appScroll';
 import Icon from 'components/AppIcon';
+import SalaryNetGross from '../SalaryNetGross';
 import './styles.scss';
 
 // Same cards as the company Purchase tab, in EUR. Kept in step by hand with the
@@ -37,9 +39,26 @@ const shortDate = (date) => (
 );
 
 const COPIED_MS = 1600;
+const ADDED_MS = 2600;
+
+// The phone/tablet menu (below 961px, where the nav's own links hide).
+const MENU_GROUPS = [
+  [
+    { label: 'How it works', href: '#how', icon: 'Search' },
+    { label: 'What you get', href: '#reveal', icon: 'Unlock' },
+    { label: 'Pricing', href: '#pricing', icon: 'Coins' },
+  ],
+  [
+    { label: 'For candidates', href: '/landing-page-candidates', icon: 'UserRound' },
+    { label: 'About', href: '/about', icon: 'Info' },
+  ],
+];
+
+// One column (phones, tablets): the demo balance is far up the page, so "Buy now"
+// confirms on the card instead of scrolling back to it.
+const SINGLE_COLUMN = '(max-width: 960px)';
 
 const LandingPage = () => {
-  const [navOpen, setNavOpen] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [flashing, setFlashing] = useState(false);
   const [balance, setBalance] = useState(8);
@@ -57,9 +76,11 @@ const LandingPage = () => {
   const [recruitmentStatus, setRecruitmentStatus] = useState('new');
   const [isTrackingOpen, setIsTrackingOpen] = useState(false);
   const [copied, setCopied] = useState(null);
+  const [added, setAdded] = useState(null); // { plan, balance } after "Buy now" on one column
   const rootRef = useRef(null);
   const bookmarkMsgTimeoutRef = useRef(null);
   const copiedTimeoutRef = useRef(null);
+  const addedTimeoutRef = useRef(null);
 
   useEffect(() => {
     const nodes = rootRef.current?.querySelectorAll('.fx') || [];
@@ -98,8 +119,15 @@ const LandingPage = () => {
     document.getElementById('reveal')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
-  const handleBuyCredits = (credits) => {
-    setBalance((b) => b + credits);
+  const handleBuyCredits = (plan) => {
+    const next = balance + plan.credits;
+    setBalance(next);
+    if (window.matchMedia(SINGLE_COLUMN).matches) {
+      setAdded({ plan: plan.name, balance: next });
+      if (addedTimeoutRef.current) clearTimeout(addedTimeoutRef.current);
+      addedTimeoutRef.current = setTimeout(() => setAdded(null), ADDED_MS);
+      return;
+    }
     setBalanceBump(true);
     document.getElementById('heroBalance')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     if (balanceBumpTimeoutRef.current) clearTimeout(balanceBumpTimeoutRef.current);
@@ -116,6 +144,7 @@ const LandingPage = () => {
     if (bookmarkMsgTimeoutRef.current) clearTimeout(bookmarkMsgTimeoutRef.current);
     if (balanceBumpTimeoutRef.current) clearTimeout(balanceBumpTimeoutRef.current);
     if (copiedTimeoutRef.current) clearTimeout(copiedTimeoutRef.current);
+    if (addedTimeoutRef.current) clearTimeout(addedTimeoutRef.current);
   }, []);
 
   // Once saved, the bookmark button becomes the notes pencil (notesButton).
@@ -267,9 +296,7 @@ const LandingPage = () => {
           <div className="nav-cta">
             <a href="/login" className="btn btn-gold">Log in</a>
           </div>
-          <button className="nav-toggle" aria-label="Menu" onClick={() => setNavOpen((v) => !v)}>
-            <span /><span /><span />
-          </button>
+          <PublicNavMenu groups={MENU_GROUPS} />
         </div>
       </nav>
 
@@ -279,7 +306,8 @@ const LandingPage = () => {
           <div className="wrap hero-grid">
             <div className="hero-copy fx">
               <span className="eyebrow">Pre-screened talent · Pay per unlock</span>
-              <h1>Find top talent <span className="u">without</span> posting a job.</h1>
+              {/* "a job." stays together, so "job." never sits alone on the last line. */}
+              <h1>Find top talent <span className="u">without</span> posting a&nbsp;job.</h1>
               <p className="hero-tagline">See enough to choose. Pay to connect.</p>
               <p className="hero-sub">Browse a pool of vetted candidates anonymously. Spend a credit only when unlocking the contact details of someone genuinely worth reaching out to.</p>
               <div className="hero-actions">
@@ -610,7 +638,7 @@ const LandingPage = () => {
                     <div><span className="k">Location</span><span className="v">San Francisco, USA</span></div>
                     <div><span className="k">Work mode</span><span className="v">Remote</span></div>
                     <div><span className="k">Type</span><span className="v">Full-time</span></div>
-                    <div><span className="k">Salary minimum (gross)</span><span className="v gold">$150,000 / year</span><span className="v-sub">$8,300 net / month</span></div>
+                    <div><span className="k">Salary minimum</span>{/* No-break spaces: on a narrow phone it breaks only before "/ month", never inside "net /". */}<SalaryNetGross className="v gold" net={'$8,300 net / month'} gross={'$150,000 gross / year'} label="Salary minimum" /></div>
                     <div><span className="k">Availability</span><span className="v">2 weeks</span></div>
                     <div><span className="k">Status</span><span className="v">Actively searching</span></div>
                   </div>
@@ -835,11 +863,17 @@ const LandingPage = () => {
                   )}
                   <a
                     href="#heroBalance"
-                    onClick={(e) => { e.preventDefault(); handleBuyCredits(plan.credits); }}
+                    onClick={(e) => { e.preventDefault(); handleBuyCredits(plan); }}
                     className={`btn ${plan.popular ? 'btn-gold' : 'btn-ghost'}`}
                   >
                     <Icon name="ShoppingCart" size={16} />Buy now
                   </a>
+                  {added?.plan === plan.name && (
+                    <p className="plan-added" role="status">
+                      <Icon name="Check" size={14} />
+                      +{plan.credits} {plan.credits === 1 ? 'Credit' : 'Credits'} · demo balance {added.balance}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
@@ -867,7 +901,7 @@ const LandingPage = () => {
               </a>
               <a href="/landing-page-candidates" className="btn btn-ghost btn-lg">Join as a candidate</a>
             </div>
-            <p className="cta-fine">Free to browse · No card to sign up · Credits never expire</p>
+            <p className="cta-fine"><span>Free to browse</span><span>No card to sign up</span><span>Credits never expire</span></p>
           </div>
         </section>
 
@@ -913,17 +947,6 @@ const LandingPage = () => {
             </div>
           </div>
         </footer>
-
-        {/* mobile nav (simple slide list under sticky nav) */}
-        {navOpen && (
-          <div className="wrap" style={{ background: 'var(--lp-ink-2)', padding: '16px 24px', display: 'grid', gap: '12px' }}>
-            <a href="#how" onClick={() => setNavOpen(false)} style={{ color: 'var(--lp-text-light)' }}>How it works</a>
-            <a href="#reveal" onClick={() => setNavOpen(false)} style={{ color: 'var(--lp-text-light)' }}>What you get</a>
-            <a href="#pricing" onClick={() => setNavOpen(false)} style={{ color: 'var(--lp-text-light)' }}>Pricing</a>
-            <a href="/landing-page-candidates" style={{ color: 'var(--lp-text-light)' }}>For candidates</a>
-            <a href="/login" style={{ color: 'var(--lp-gold)', fontWeight: 600 }}>Log in</a>
-          </div>
-        )}
       </PublicScroll>
     </div>
   );

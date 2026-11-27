@@ -1,0 +1,33 @@
+// Landing salary, net / gross on hover (SalaryNetGross.jsx). The pages set the
+// font and colours (and the dotted line's colour) through their own classes.
+.salary-ng.salary-ng {
+  display: inline-grid;
+  justify-items: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+// Both amounts in one cell; only the current one shows.
+.salary-ng-text.salary-ng-text {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  text-decoration: underline dotted;
+  text-underline-offset: 4px;
+
+  &.on {
+    visibility: visible;
+    animation: salary-ng-in .18s ease;
+  }
+}
+
+@keyframes salary-ng-in {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .salary-ng-text.salary-ng-text.on { animation: none; }
+}

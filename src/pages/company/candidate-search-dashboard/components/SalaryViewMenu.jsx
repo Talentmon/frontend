@@ -77,6 +77,8 @@ const SalaryViewMenu = ({ fitButton = false }) => {
         <span className={styles.barValue}>{basis} · {period}</span>
         <Icon name="ChevronDown" size={14} strokeWidth={2.4} className={styles.barChevron} aria-hidden="true" />
       </button>
+      {/* Phones: the dimmed page behind the sheet; a tap on it only closes it. */}
+      {open && <div className={styles.menuScrim} onClick={() => setOpen(false)} aria-hidden="true" />}
       {open && (
         <div id={`${id}-pop`} role="dialog" aria-labelledby={`${id}-title`} data-salary-view-pop="" className={`${styles.salaryPop} ${fitButton ? styles.salaryPopFit : ''}`}>
           <p id={`${id}-title`} className={styles.salaryPopTitle}>Show salaries as</p>

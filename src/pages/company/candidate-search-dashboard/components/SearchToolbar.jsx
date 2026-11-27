@@ -92,6 +92,8 @@ const SortMenu = ({ value, onChange }) => {
         <span className={styles.sortValue}>{SORT_OPTIONS[current].short}</span>
         <Icon name="ChevronDown" size={15} strokeWidth={2.4} className={styles.barChevron} aria-hidden="true" />
       </button>
+      {/* Phones: the dimmed page behind the sheet; a tap on it only closes the list. */}
+      {open && <div className={styles.menuScrim} onClick={close} aria-hidden="true" />}
       {open && (
         <div id="sort-list" role="listbox" aria-label="Sort candidates" className={styles.sortList}>
           {SORT_OPTIONS.map((option, i) => (

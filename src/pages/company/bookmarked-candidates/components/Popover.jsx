@@ -68,6 +68,8 @@ const Popover = ({
         'aria-haspopup': role === 'listbox' ? 'listbox' : 'true',
         'aria-controls': open ? panelId : undefined
       })}
+      {/* Phones: the dimmed page behind the sheet; a tap on it only closes the menu. */}
+      {open && <div className={styles.popScrim} onClick={onClose} aria-hidden="true" />}
       {open && (
         <div
           id={panelId}

@@ -1,5 +1,7 @@
 // Gold/ink theme for the bookmarked-candidates page.
 // Scoped via CSS Modules so it can't leak into the rest of the Tailwind-based app.
+@use '../../../../styles/phoneSheet' as *;
+
 $ink: #0b1a2c;
 $ink-2: #10243a;
 $paper: #eef0f2;
@@ -445,6 +447,17 @@ $push-bp: 1400px;
   border: 1px solid $line;
   border-radius: 12px;
   box-shadow: 0 16px 36px -12px rgba(11, 26, 44, 0.28);
+
+  // Phones: a sheet from the bottom (Sort, Saved by, Hiring for…).
+  @include phone-sheet;
+
+  @media (max-width: $phone-sheet-max) {
+    padding: 8px 8px calc(14px + env(safe-area-inset-bottom));
+  }
+}
+
+.popScrim {
+  @include phone-sheet-scrim;
 }
 
 // Panels with fields (Languages, Skills, Salary).

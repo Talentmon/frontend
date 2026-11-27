@@ -1,0 +1,61 @@
+// Phones: a small menu that hangs off its button (Sort, Salaries, Saved by…)
+// opens as a sheet from the bottom of the screen instead, full width, over a
+// dimmed page. The dim is a real element (phone-sheet-scrim, rendered beside
+// the panel while it's open), so a tap on it only closes the menu and never
+// reaches the card underneath.
+//
+// Not for panels with a text field: iOS keeps a fixed sheet behind the
+// keyboard, so those stay by their button.
+
+$phone-sheet-max: 767px;
+
+@keyframes phone-sheet-up {
+  from {
+    transform: translateY(32px);
+    opacity: 0.4;
+  }
+
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@mixin phone-sheet {
+  @media (max-width: $phone-sheet-max) {
+    // !important: the panels set their place and width inline or per variant.
+    position: fixed !important;
+    top: auto !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: 75dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom));
+    border-bottom: 0;
+    border-radius: 18px 18px 0 0;
+    z-index: 1201;
+    box-shadow: 0 -12px 32px -8px rgba(11, 26, 44, 0.3);
+    animation: phone-sheet-up 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
+
+    @media (prefers-reduced-motion: reduce) {
+      animation: none;
+    }
+  }
+}
+
+@mixin phone-sheet-scrim {
+  display: none;
+
+  @media (max-width: $phone-sheet-max) {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1200;
+    background: rgba(11, 26, 44, 0.45);
+  }
+}

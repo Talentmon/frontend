@@ -1714,6 +1714,11 @@ $t-cols: minmax(200px, 1.3fr) 104px 148px 124px 160px minmax(260px, 1.9fr) 168px
   @media (max-width: 1180px) {
     flex-direction: column;
   }
+
+  // Two by two: the tiles' own corners stay inside the card's round ones.
+  @media (max-width: 999px) {
+    overflow: hidden;
+  }
 }
 
 .kpis {
@@ -1722,6 +1727,15 @@ $t-cols: minmax(200px, 1.3fr) 104px 148px 124px 160px minmax(260px, 1.9fr) 168px
 
   @media (max-width: 1180px) {
     flex-wrap: wrap;
+  }
+
+  // Narrower, two by two, never three and one alone. The 1px gaps show the
+  // card's line colour as the dividers.
+  @media (max-width: 999px) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: #eef0f3;
   }
 }
 
@@ -1737,6 +1751,34 @@ $t-cols: minmax(200px, 1.3fr) 104px 148px 124px 160px minmax(260px, 1.9fr) 168px
 
   @media (max-width: 1180px) {
     flex: 1 1 220px;
+  }
+
+  @media (max-width: 999px) {
+    background: $white;
+
+    & + & {
+      border-left: 0;
+    }
+  }
+
+  // Phones: no icon (a half-width tile needs the room for "Same as last
+  // week"), and that chip goes under the number.
+  @media (max-width: 480px) {
+    align-items: flex-start;
+    padding: 12px 14px;
+
+    .kpiIcon {
+      display: none;
+    }
+
+    .kpiLabel {
+      white-space: normal;
+    }
+
+    .kpiBody {
+      flex-wrap: wrap;
+      gap: 2px 6px;
+    }
   }
 }
 
@@ -2106,6 +2148,40 @@ $kpi-tones: (
   overflow: hidden;
 }
 
+// Laptops: the stages are narrower, so the waiting badge takes a line of its
+// own under "67% · avg 20 days" (beside the name it covered "Contacted"), and
+// the arrows keep a little less padding.
+@media (max-width: 1180px) {
+  .seg {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  // (.seg first: these come before .segMain's and .segWait's own rules.)
+  .seg .segMain {
+    flex: none;
+    width: 100%;
+  }
+
+  .seg .segWait {
+    margin-top: 0;
+  }
+
+  .segChevron {
+    padding: 0 22px 0 26px;
+
+    &.segFirst {
+      padding-left: 16px;
+    }
+  }
+
+  .segBox {
+    width: 160px;
+  }
+}
+
 .segMain {
   flex: 1;
   min-width: 0;
@@ -2198,7 +2274,7 @@ $kpi-tones: (
 }
 
 // Narrow pages (and phones): the stages as tiles, without the arrows.
-@media (max-width: 900px) {
+@media (max-width: 960px) {
   .pipeRow {
     flex-direction: column;
     gap: 10px;
@@ -2220,11 +2296,26 @@ $kpi-tones: (
   .segChevron.segFirst,
   .segBox {
     width: auto;
+    height: auto;
+    min-height: 84px;
     margin-left: 0;
-    padding: 0 14px;
+    padding: 12px 14px;
     border-radius: 12px;
     clip-path: none;
     overflow: hidden;
+  }
+}
+
+// Phones: "33%" and "avg 22 days" on two lines in a half-width tile (no dot between).
+@media (max-width: 480px) {
+  .segSub {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .segSep {
+    display: none;
   }
 }
 

@@ -39,11 +39,16 @@ import styles from './styles/purchased.module.scss';
 // below doesn't fire mid-animation, while the single-column layout is still
 // settling into place.
 const LAYOUT_SETTLE_MS = 360;
+// From here the table is offered beside the cards.
+const TABLE_MIN = 768;
 
 const PurchasedProfiles = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [viewMode, setViewMode] = useState('cards');
+  const [pickedView, setViewMode] = useState('cards');
+  // Phones get the cards only: a table row has no room there (the Cards / Table switch goes too).
+  const tableRoom = useMinWidth(TABLE_MIN);
+  const viewMode = tableRoom ? pickedView : 'cards';
   // ?status=new — the Analytics tab's "still at New" notice links straight to that filter.
   const [filters, setFilters] = useState(() => {
     const status = searchParams.get('status');
@@ -290,7 +295,7 @@ const PurchasedProfiles = () => {
           sortBy={sortBy}
           onSortChange={setSortBy}
           viewMode={viewMode}
-          onViewModeChange={setViewMode}
+          onViewModeChange={tableRoom ? setViewMode : undefined}
           unlockers={unlockers}
           unlockedBy={filters.unlockedBy}
           onUnlockedByChange={(unlockedBy) => setFilters((prev) => ({ ...prev, unlockedBy }))}

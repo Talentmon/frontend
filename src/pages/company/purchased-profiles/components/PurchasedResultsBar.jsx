@@ -72,7 +72,8 @@ const PurchasedResultsBar = ({
   onUnlockedByChange,
   compact = false
 }) => {
-  const view = <ViewToggle value={viewMode} onChange={onViewModeChange} options={VIEW_OPTIONS} />;
+  // No switch where only the cards are offered (phones: no onViewModeChange).
+  const view = onViewModeChange ? <ViewToggle value={viewMode} onChange={onViewModeChange} options={VIEW_OPTIONS} /> : null;
   return (
     <div className={bm.resultsBar}>
       <ResultsCount shown={shown} total={total} fill={compact} />

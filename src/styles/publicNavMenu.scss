@@ -1,0 +1,131 @@
+// The public pages' phone/tablet menu (components/ui/PublicNavMenu). The page's
+// own stylesheet shows .pnm-toggle below its breakpoint. Selectors carry two
+// classes so the pages' resets (.lp *, .fc *) can't undo them.
+
+.pnm-toggle.pnm-toggle {
+  display: none; // the page turns it on
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: 0 -10px 0 6px; // the bars line up with the page's right edge
+  padding: 0;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #E9F0F7;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    transition: transform .28s cubic-bezier(.2, .7, .2, 1), opacity .2s;
+  }
+
+  &.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  &.open span:nth-child(2) { opacity: 0; }
+  &.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+  &:focus-visible { outline: 3px solid #E6A93C; outline-offset: 0; }
+}
+
+.pnm-panel.pnm-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  max-height: calc(100dvh - 100%);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: #0E2034; // solid: the page's big white headline showed through even 2% see-through
+  border-bottom: 1px solid rgba(255, 255, 255, .08);
+  box-shadow: 0 28px 48px -24px rgba(0, 0, 0, .6);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity .2s, transform .24s cubic-bezier(.2, .7, .2, 1), visibility 0s .24s;
+
+  &.open {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: opacity .2s, transform .24s cubic-bezier(.2, .7, .2, 1);
+  }
+
+  .pnm-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 8px 12px 14px;
+  }
+
+  .pnm-group {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+
+    & + .pnm-group {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255, 255, 255, .08);
+    }
+  }
+
+  .pnm-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 48px;
+    padding: 0 12px;
+    border-radius: 10px;
+    color: #E9F0F7;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background-color .15s;
+    -webkit-tap-highlight-color: transparent;
+
+    &:hover,
+    &:active { background: rgba(255, 255, 255, .06); }
+    &[aria-current='page'] { color: #F2C871; }
+    &:focus-visible { outline: 3px solid #E6A93C; outline-offset: -3px; }
+  }
+
+  .pnm-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    background: rgba(230, 169, 60, .12);
+    color: #E6A93C;
+  }
+}
+
+.pnm-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 59; // under the public navs (60)
+  background: rgba(4, 10, 18, .45);
+  animation: pnm-fade .2s ease;
+}
+
+@keyframes pnm-fade {
+  from { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pnm-toggle.pnm-toggle span,
+  .pnm-panel.pnm-panel { transition: none; }
+  .pnm-scrim { animation: none; }
+}
